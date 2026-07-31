@@ -15,6 +15,13 @@
       "when": 1785527812929,
       "tag": "0001_triple_verification",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1785539000913,
+      "tag": "0002_password_credentials",
+      "breakpoints": true
     }
   ]
 }

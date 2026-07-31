@@ -34,6 +34,31 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+export const passwordCredentials = mysqlTable(
+  "passwordCredentials",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    email: varchar("email", { length: 320 }).notNull(),
+    // Format: scrypt:N:r:p:saltB64:hashB64
+    passwordHash: varchar("passwordHash", { length: 512 }).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt")
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("passwordCredentials_userId_unique").on(table.userId),
+    uniqueIndex("passwordCredentials_email_unique").on(table.email),
+  ],
+);
+
+export type PasswordCredential = typeof passwordCredentials.$inferSelect;
+export type InsertPasswordCredential = typeof passwordCredentials.$inferInsert;
+
 // ── Resonance data model ───────────────────────────────────────────────
 
 export type ProfilePrompt = { question: string; answer: string };

@@ -182,7 +182,7 @@ function Hero() {
             transition={{ duration: 0.32, delay: 0.62, ease: EASE_OUT }}
           >
             {/* AUTH-SLOT: rewired to useAuth() in Phase 5 */}
-            <BtnPrimary to="/login">Get started</BtnPrimary>
+            <BtnPrimary to="/signin">Get started</BtnPrimary>
             <BtnGhost
               onClick={() =>
                 document
@@ -872,7 +872,7 @@ function FinalCta() {
             aria-hidden="true"
           />
           {/* AUTH-SLOT: rewired to useAuth() in Phase 5 */}
-          <BtnPrimary to="/login" className="h-14 px-10">
+          <BtnPrimary to="/signin" className="h-14 px-10">
             Create your profile
           </BtnPrimary>
         </div>

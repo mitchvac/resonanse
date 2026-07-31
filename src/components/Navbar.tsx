@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import BrandMark from '@/components/BrandMark';
 import { BtnPrimary, BtnGhost } from '@/components/ui/buttons';
 import { useAuth } from '@/hooks/useAuth';
-import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
 
 const LINKS = [
@@ -97,10 +96,10 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <BtnGhost to={LOGIN_PATH} className="hidden sm:inline-flex">
+              <BtnGhost to="/signin" className="hidden sm:inline-flex">
                 Sign in
               </BtnGhost>
-              <BtnPrimary to={LOGIN_PATH} className="h-10 px-5">
+              <BtnPrimary to="/signin" className="h-10 px-5">
                 Get started
               </BtnPrimary>
             </>
