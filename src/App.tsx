@@ -13,6 +13,7 @@ import Profile from '@/pages/Profile'
 import Settings from '@/pages/Settings'
 import Login from '@/pages/Login'
 import NotFound from '@/pages/NotFound'
+import RequireProfile from '@/components/RequireProfile'
 
 export default function App() {
   return (
@@ -22,8 +23,16 @@ export default function App() {
       {/* Auth — plain placeholder, overwritten by the backend graft (Phase 5) */}
       <Route path="/login" element={<Login />} />
 
-      {/* App pages — nested under the phone-shell layout */}
-      <Route element={<Layout />}>
+      {/* App pages — nested under the phone-shell layout; signed-in users
+          who haven't answered the onboarding questionnaire are routed there
+          first (onboarding/profile-setup stay reachable during the flow) */}
+      <Route
+        element={
+          <RequireProfile>
+            <Layout />
+          </RequireProfile>
+        }
+      >
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/profile-setup" element={<ProfileSetup />} />
         <Route path="/discover" element={<Discover />} />
