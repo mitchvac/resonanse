@@ -22,8 +22,6 @@ const CANDIDATES = [
   { handle: '@jules', name: 'Jules', photo: '/avatar-08.jpg' },
 ];
 
-const EASE_SPRING = [0.34, 1.56, 0.64, 1] as [number, number, number, number];
-
 export default function ConstellationStep({
   draft,
   update,

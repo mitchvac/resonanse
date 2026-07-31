@@ -49,13 +49,14 @@ function ExpiryRing({ pct, index }: { pct: number; index: number }) {
         initial={{ strokeDashoffset: RING_C }}
         whileInView={{ strokeDashoffset: target }}
         viewport={{ once: true, amount: 0.4 }}
-        transition={{ duration: 0.6, delay: 0.06 * index, ease: [0.22, 1, 0.36, 1] }}
         {...(nearExpiry
           ? {
               animate: { opacity: [1, 0.45, 1] },
               transition: { duration: 1.6, repeat: Infinity, ease: 'easeInOut' },
             }
-          : {})}
+          : {
+              transition: { duration: 0.6, delay: 0.06 * index, ease: [0.22, 1, 0.36, 1] },
+            })}
       />
     </svg>
   );
