@@ -7,6 +7,7 @@ import {
   int,
   boolean,
   json,
+  longtext,
   varchar,
   text,
   timestamp,
@@ -79,6 +80,8 @@ export const profiles = mysqlTable(
     politics: varchar("politics", { length: 60 }),
     familyPlans: varchar("familyPlans", { length: 60 }),
     verified: boolean("verified").notNull().default(false),
+    idVerifiedAt: timestamp("idVerifiedAt"),
+    idDocType: varchar("idDocType", { length: 32 }),
     verificationStatus: mysqlEnum("verificationStatus", [
       "unverified",
       "pending",
@@ -170,6 +173,7 @@ export const matches = mysqlTable(
     weMet: mysqlEnum("weMet", ["none", "met", "dated"])
       .notNull()
       .default("none"),
+    videoVerifiedAt: timestamp("videoVerifiedAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [
@@ -219,7 +223,13 @@ export const messages = mysqlTable(
     senderId: bigint("senderId", { mode: "number", unsigned: true })
       .notNull()
       .references(() => users.id),
-    kind: mysqlEnum("kind", ["text", "ai_starter", "date_idea", "system"])
+    kind: mysqlEnum("kind", [
+      "text",
+      "ai_starter",
+      "date_idea",
+      "system",
+      "video_note",
+    ])
       .notNull()
       .default("text"),
     content: text("content").notNull(),
@@ -372,3 +382,85 @@ export const feedback = mysqlTable(
 
 export type Feedback = typeof feedback.$inferSelect;
 export type InsertFeedback = typeof feedback.$inferInsert;
+
+// ── Triple verification: video notes + live video calls ────────────────
+
+export const videoNotes = mysqlTable(
+  "videoNotes",
+  {
+    id: serial("id").primaryKey(),
+    conversationId: bigint("conversationId", {
+      mode: "number",
+      unsigned: true,
+    })
+      .notNull()
+      .references(() => conversations.id),
+    senderId: bigint("senderId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    data: longtext("data").notNull(),
+    durationSec: int("durationSec").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [index("videoNotes_conversation_idx").on(table.conversationId)],
+);
+
+export type VideoNote = typeof videoNotes.$inferSelect;
+export type InsertVideoNote = typeof videoNotes.$inferInsert;
+
+export const callSessions = mysqlTable(
+  "callSessions",
+  {
+    id: serial("id").primaryKey(),
+    conversationId: bigint("conversationId", {
+      mode: "number",
+      unsigned: true,
+    })
+      .notNull()
+      .references(() => conversations.id),
+    callerId: bigint("callerId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    calleeId: bigint("calleeId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    status: mysqlEnum("status", [
+      "ringing",
+      "active",
+      "declined",
+      "ended",
+      "missed",
+    ])
+      .notNull()
+      .default("ringing"),
+    answeredAt: timestamp("answeredAt"),
+    endedAt: timestamp("endedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [
+    index("callSessions_callee_status_idx").on(table.calleeId, table.status),
+    index("callSessions_conversation_idx").on(table.conversationId),
+  ],
+);
+
+export type CallSession = typeof callSessions.$inferSelect;
+export type InsertCallSession = typeof callSessions.$inferInsert;
+
+export const callSignals = mysqlTable(
+  "callSignals",
+  {
+    id: serial("id").primaryKey(),
+    sessionId: bigint("sessionId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => callSessions.id),
+    fromUserId: bigint("fromUserId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    payload: text("payload").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [index("callSignals_session_id_idx").on(table.sessionId, table.id)],
+);
+
+export type CallSignal = typeof callSignals.$inferSelect;
+export type InsertCallSignal = typeof callSignals.$inferInsert;

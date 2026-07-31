@@ -126,6 +126,22 @@ export async function markVerified(userId: number): Promise<Profile> {
   return profile;
 }
 
+export type IdDocType = "state_id" | "drivers_license";
+
+export async function markIdVerified(
+  userId: number,
+  docType: IdDocType,
+): Promise<Profile> {
+  const db = getDb();
+  await db
+    .update(profiles)
+    .set({ idVerifiedAt: new Date(), idDocType: docType })
+    .where(eq(profiles.userId, userId));
+  const profile = await findProfileByUserId(userId);
+  if (!profile) throw new Error("Profile not found");
+  return profile;
+}
+
 export async function updateProfileSettings(
   userId: number,
   settings: { anonymityMode?: boolean; hiddenWords?: string[] },

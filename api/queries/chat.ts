@@ -4,11 +4,14 @@ import {
   matches,
   messages,
   profiles,
+  videoNotes,
   type Conversation,
   type InsertMessage,
+  type InsertVideoNote,
   type Match,
   type Message,
   type Profile,
+  type VideoNote,
 } from "@db/schema";
 import { getDb } from "./connection";
 
@@ -60,6 +63,32 @@ export async function insertMessage(data: Omit<InsertMessage, "id">): Promise<Me
   const message = rows.at(0);
   if (!message) throw new Error("Failed to insert message");
   return message;
+}
+
+export async function insertVideoNote(
+  data: Omit<InsertVideoNote, "id">,
+): Promise<VideoNote> {
+  const db = getDb();
+  const [{ id }] = await db.insert(videoNotes).values(data).$returningId();
+  const rows = await db
+    .select()
+    .from(videoNotes)
+    .where(eq(videoNotes.id, id))
+    .limit(1);
+  const note = rows.at(0);
+  if (!note) throw new Error("Failed to insert video note");
+  return note;
+}
+
+export async function findVideoNoteById(
+  noteId: number,
+): Promise<VideoNote | undefined> {
+  const rows = await getDb()
+    .select()
+    .from(videoNotes)
+    .where(eq(videoNotes.id, noteId))
+    .limit(1);
+  return rows.at(0);
 }
 
 export async function countMessages(conversationId: number): Promise<number> {

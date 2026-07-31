@@ -4,8 +4,10 @@ import type { Profile } from "@db/schema";
 import { createRouter, authedQuery } from "./middleware";
 import {
   countMessages,
+  findVideoNoteById,
   getConversationContext,
   insertMessage,
+  insertVideoNote,
   listMessages,
   setConversationEphemeral,
 } from "./queries/chat";
@@ -228,6 +230,78 @@ export const chatRouter = createRouter({
         },
       });
       return { message };
+    }),
+
+  sendVideoNote: authedQuery
+    .input(
+      z.object({
+        conversationId: z.number().int().positive(),
+        data: z
+          .string()
+          .max(5_000_000)
+          .refine((value) => value.startsWith("data:video/"), {
+            message: "data must be a video data-URL",
+          }),
+        durationSec: z.number().int().min(1).max(15),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const context = await getConversationContext(
+        input.conversationId,
+        ctx.user.id,
+      );
+      if (!context) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conversation not found",
+        });
+      }
+
+      const note = await insertVideoNote({
+        conversationId: input.conversationId,
+        senderId: ctx.user.id,
+        data: input.data,
+        durationSec: input.durationSec,
+      });
+
+      const message = await insertMessage({
+        conversationId: input.conversationId,
+        senderId: ctx.user.id,
+        kind: "video_note",
+        content: "",
+        meta: { noteId: note.id, durationSec: note.durationSec },
+      });
+
+      return { message };
+    }),
+
+  videoNote: authedQuery
+    .input(z.object({ noteId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const note = await findVideoNoteById(input.noteId);
+      if (!note) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Video note not found",
+        });
+      }
+      const context = await getConversationContext(
+        note.conversationId,
+        ctx.user.id,
+      );
+      if (!context) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Video note not found",
+        });
+      }
+      return {
+        id: note.id,
+        data: note.data,
+        durationSec: note.durationSec,
+        senderId: note.senderId,
+        createdAt: note.createdAt,
+      };
     }),
 
   setEphemeral: authedQuery

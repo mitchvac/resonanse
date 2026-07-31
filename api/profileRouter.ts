@@ -6,6 +6,7 @@ import {
   ensureEntitlement,
   ensureProfile,
   findProfileById,
+  markIdVerified,
   markVerified,
   updateProfileSettings,
   upsertProfile,
@@ -47,7 +48,8 @@ const profileInput = z.object({
 
 /** Strip viewer-private fields for other users' eyes. */
 function publicProfileView(profile: Profile) {
-  const { hiddenWords, anonymityMode, ...rest } = profile;
+  // idVerifiedAt stays: it's a public trust badge. idDocType never leaves the server.
+  const { hiddenWords, anonymityMode, idDocType, ...rest } = profile;
   // Anonymity mode hides desires from non-matches in the demo build.
   return { ...rest, desires: anonymityMode ? null : profile.desires };
 }
@@ -72,6 +74,17 @@ export const profileRouter = createRouter({
     const profile = await markVerified(ctx.user.id);
     return { profile };
   }),
+
+  verifyId: authedQuery
+    .input(z.object({ docType: z.enum(["state_id", "drivers_license"]) }))
+    .mutation(async ({ ctx, input }) => {
+      // Ensure a profile row exists before stamping the ID check.
+      await ensureProfile(ctx.user.id, {
+        displayName: ctx.user.name ?? "New member",
+      });
+      const profile = await markIdVerified(ctx.user.id, input.docType);
+      return { profile };
+    }),
 
   byId: authedQuery
     .input(z.object({ id: z.number().int().positive() }))

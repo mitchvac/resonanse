@@ -7,6 +7,7 @@ import { matchesRouter } from "./matchesRouter";
 import { premiumRouter } from "./premiumRouter";
 import { profileRouter } from "./profileRouter";
 import { safetyRouter } from "./safetyRouter";
+import { videoCallRouter } from "./videoCallRouter";
 import { createRouter, publicQuery } from "./middleware";
 
 export const appRouter = createRouter({
@@ -21,6 +22,7 @@ export const appRouter = createRouter({
   events: eventsRouter,
   premium: premiumRouter,
   safety: safetyRouter,
+  videoCall: videoCallRouter,
 });
 
 export type AppRouter = typeof appRouter;
