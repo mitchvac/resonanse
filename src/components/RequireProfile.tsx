@@ -16,11 +16,21 @@ export default function RequireProfile({ children }: { children: React.ReactNode
   const me = trpc.profile.me.useQuery(undefined, { enabled: isAuthenticated })
   const { pathname } = useLocation()
 
-  if (!isAuthenticated) return <>{children}</>
-  if (authLoading || me.isLoading) return null
+  /* 1. Wait for auth to resolve before rendering anything — otherwise
+        signed-in users get a flash of the app (and its authed queries)
+        before the redirect can fire. */
+  if (authLoading) return null
 
+  /* 2. Signed-out visitors: demo mode, no gate. */
+  if (!isAuthenticated) return <>{children}</>
+
+  /* 3. Signed in: wait for the profile row; only a definitive,
+        successfully-loaded incomplete profile triggers the redirect
+        (errors never redirect — avoids loops). `!complete` also covers
+        drivers that surface booleans as 0/1. */
+  if (me.isLoading) return null
   const complete = me.data?.profile?.onboardingComplete
-  if (complete === false && !ONBOARDING_PATHS.some((p) => pathname.startsWith(p))) {
+  if (me.isSuccess && !complete && !ONBOARDING_PATHS.some((p) => pathname.startsWith(p))) {
     return <Navigate to="/onboarding" replace />
   }
   return <>{children}</>
