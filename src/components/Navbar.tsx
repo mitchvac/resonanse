@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 import BrandMark from '@/components/BrandMark';
 import { BtnPrimary, BtnGhost } from '@/components/ui/buttons';
+import { useAuth } from '@/hooks/useAuth';
+import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
 
 const LINKS = [
@@ -20,6 +22,7 @@ const LINKS = [
  */
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -71,13 +74,30 @@ export default function Navbar() {
               </motion.a>
             ))}
           </div>
-          {/* AUTH-SLOT: rewired to useAuth() in Phase 5 */}
-          <BtnGhost to="/login" className="hidden sm:inline-flex">
-            Sign in
-          </BtnGhost>
-          <BtnPrimary to="/login" className="h-10 px-5">
-            Get started
-          </BtnPrimary>
+          {isLoading ? (
+            <span className="inline-block h-10 w-24 rounded-full bg-white/10" aria-hidden="true" />
+          ) : isAuthenticated ? (
+            <>
+              <BtnGhost to="/discover" className="hidden sm:inline-flex">
+                Open app
+              </BtnGhost>
+              <BtnPrimary to="/discover" className="h-10 px-5">
+                {user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'Continue'}
+              </BtnPrimary>
+              <BtnGhost onClick={() => logout()} className="hidden md:inline-flex">
+                Sign out
+              </BtnGhost>
+            </>
+          ) : (
+            <>
+              <BtnGhost to={LOGIN_PATH} className="hidden sm:inline-flex">
+                Sign in
+              </BtnGhost>
+              <BtnPrimary to={LOGIN_PATH} className="h-10 px-5">
+                Get started
+              </BtnPrimary>
+            </>
+          )}
         </div>
       </nav>
     </header>
