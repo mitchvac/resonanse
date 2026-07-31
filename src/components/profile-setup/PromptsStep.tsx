@@ -1,0 +1,249 @@
+import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Search, Sparkles, X } from 'lucide-react';
+import GlassCard from '@/components/GlassCard';
+import GlassSheet from '@/components/GlassSheet';
+import { BtnGlass } from '@/components/ui/buttons';
+import { Block, FlowTextArea, SegmentedControl, StaggerGroup } from '@/components/flow/controls';
+import type { ProfileSetupDraft, PromptEntry } from './draft';
+
+/**
+ * PromptsStep — profile-create.md §2
+ * t-heading "Answer 3–5 prompts". Chosen prompts render as GlassCards
+ * (edge:none, rings only): question as eyebrow (t-caption 700 var(--text)),
+ * answer TextArea (t-value, 140-char cap, live counter fades in only when
+ * typing). "+ Add a prompt" opens the picker sheet: search + mood segmented
+ * control (Playful / Honest / Spicy / Deep). Sparkle per card → 3 AI
+ * suggestion chips sliding up staggered 60ms. Cards stagger 80ms.
+ */
+
+const EASE_SPRING = [0.34, 1.56, 0.64, 1] as [number, number, number, number];
+const MAX_PROMPTS = 5;
+const MAX_ANSWER = 140;
+
+const PROMPT_BANK: { question: string; moods: string[] }[] = [
+  { question: 'The way to my heart is…', moods: ['Honest', 'Deep'] },
+  { question: 'Two truths and a lie:', moods: ['Playful'] },
+  { question: 'My most controversial food opinion…', moods: ['Playful', 'Spicy'] },
+  { question: 'A perfect Sunday looks like…', moods: ['Deep'] },
+  { question: "I'm unreasonably good at…", moods: ['Playful'] },
+  { question: 'Green flags I look for…', moods: ['Honest'] },
+  { question: "We'll get along if…", moods: ['Honest', 'Spicy'] },
+  { question: 'My simple pleasure is…', moods: ['Deep'] },
+];
+
+const MOODS = ['Playful', 'Honest', 'Spicy', 'Deep'];
+
+const SUGGESTIONS: Record<string, string[]> = {
+  'The way to my heart is…': [
+    'Cooking something ambitious and laughing when it flops.',
+    'Long walks that accidentally become 12km.',
+    'Remembering the small stuff I mentioned once.',
+  ],
+  'Green flags I look for…': [
+    'You ask follow-up questions. You tip well. You mean what you say.',
+    'Curiosity over judgement, every single time.',
+    'You introduce me to your friends like you mean it.',
+  ],
+  'Two truths and a lie:': [
+    "I've swum with bioluminescence. I hate cilantro. I met my best friend on a plane.",
+    'I make pottery badly but proudly. I once lived on a boat. I can name every capital.',
+    'I ran a marathon on a dare. I speak three languages. I have a pet snail.',
+  ],
+};
+
+function suggestionsFor(question: string): string[] {
+  return (
+    SUGGESTIONS[question] ?? [
+      'Something specific from last weekend, not a cliché.',
+      'The honest version — people comment on real.',
+      'Start with the detail, skip the preamble.',
+    ]
+  );
+}
+
+export default function PromptsStep({
+  draft,
+  update,
+}: {
+  draft: ProfileSetupDraft;
+  update: (patch: Partial<ProfileSetupDraft>) => void;
+}) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [mood, setMood] = useState('Playful');
+  const [query, setQuery] = useState('');
+  const [assistOpen, setAssistOpen] = useState<number | null>(null);
+
+  const setPrompts = (prompts: PromptEntry[]) => update({ prompts });
+
+  const available = useMemo(() => {
+    const chosen = new Set(draft.prompts.map((p) => p.question));
+    return PROMPT_BANK.filter(
+      (p) =>
+        !chosen.has(p.question) &&
+        p.moods.includes(mood) &&
+        (query.trim() === '' || p.question.toLowerCase().includes(query.trim().toLowerCase())),
+    );
+  }, [draft.prompts, mood, query]);
+
+  const addPrompt = (question: string) => {
+    setPrompts([...draft.prompts, { question, answer: '' }]);
+    setPickerOpen(false);
+    setQuery('');
+  };
+
+  return (
+    <div className="px-5 pt-6 pb-8">
+      <Block>
+        <h1 className="t-heading" style={{ color: 'var(--text-ink)' }}>
+          Answer 3–5 prompts
+        </h1>
+        <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+          This is what people comment on. Specific beats clever.
+        </p>
+      </Block>
+
+      <StaggerGroup step={0.08} delay={0.08} className="mt-6 flex flex-col gap-3">
+        {draft.prompts.map((prompt, i) => (
+          <Block key={prompt.question}>
+            <GlassCard edge="none">
+              <div className="px-5 py-4">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="t-caption font-bold" style={{ color: 'var(--text)' }}>
+                    {prompt.question}
+                  </p>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setAssistOpen(assistOpen === i ? null : i)}
+                      aria-label={`AI suggestions for “${prompt.question}”`}
+                      className="flex h-9 w-9 items-center justify-center rounded-full transition-opacity duration-fast active:opacity-70"
+                      style={{ color: 'var(--violet)' }}
+                    >
+                      <Sparkles size={16} aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPrompts(draft.prompts.filter((_, j) => j !== i))}
+                      aria-label={`Remove prompt “${prompt.question}”`}
+                      className="flex h-9 w-9 items-center justify-center rounded-full transition-opacity duration-fast active:opacity-70"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      <X size={16} aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <FlowTextArea
+                    value={prompt.answer}
+                    onChange={(e) =>
+                      setPrompts(
+                        draft.prompts.map((p, j) =>
+                          j === i ? { ...p, answer: e.target.value } : p,
+                        ),
+                      )
+                    }
+                    placeholder="Your answer — make it specific."
+                    rows={3}
+                    maxLength={MAX_ANSWER}
+                    aria-label={`Answer to “${prompt.question}”`}
+                  />
+                </div>
+
+                {/* AI assist: 3 suggestion chips, slide up staggered 60ms */}
+                <AnimatePresence initial={false}>
+                  {assistOpen === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="flex flex-col gap-2 pt-3">
+                        {suggestionsFor(prompt.question).map((suggestion, k) => (
+                          <motion.button
+                            key={suggestion}
+                            type="button"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: k * 0.06, duration: 0.24, ease: EASE_SPRING }}
+                            onClick={() => {
+                              setPrompts(
+                                draft.prompts.map((p, j) =>
+                                  j === i ? { ...p, answer: suggestion.slice(0, MAX_ANSWER) } : p,
+                                ),
+                              );
+                              setAssistOpen(null);
+                            }}
+                            className="t-caption rounded-2xl px-3.5 py-2.5 text-left transition-opacity duration-fast active:opacity-70"
+                            style={{ background: 'var(--field)', color: 'var(--text)' }}
+                          >
+                            {suggestion}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </GlassCard>
+          </Block>
+        ))}
+
+        {draft.prompts.length < MAX_PROMPTS && (
+          <Block>
+            <BtnGlass onClick={() => setPickerOpen(true)} className="w-full">
+              <Plus size={18} aria-hidden="true" />
+              Add a prompt
+            </BtnGlass>
+          </Block>
+        )}
+      </StaggerGroup>
+
+      {/* Prompt picker sheet — search + mood segmented control */}
+      <GlassSheet open={pickerOpen} onClose={() => setPickerOpen(false)} labelledBy="picker-title">
+        <div className="px-5 pb-8 pt-2">
+          <h2 id="picker-title" className="t-title-sm px-1" style={{ color: 'var(--text)' }}>
+            Pick a prompt
+          </h2>
+          <div className="mt-3">
+            <SegmentedControl options={MOODS} value={mood} onChange={setMood} ariaLabel="Prompt mood" />
+          </div>
+          <div
+            className="mt-3 flex items-center gap-2 rounded-2xl px-3.5"
+            style={{ background: 'var(--field)' }}
+          >
+            <Search size={16} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} aria-hidden="true" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search prompts"
+              aria-label="Search prompts"
+              className="t-value h-11 w-full bg-transparent outline-none"
+              style={{ color: 'var(--text)' }}
+            />
+          </div>
+          <div className="mt-3 flex max-h-[320px] flex-col gap-2 overflow-y-auto no-scrollbar">
+            {available.length === 0 && (
+              <p className="t-caption px-1 py-4 text-center" style={{ color: 'var(--text-secondary)' }}>
+                No prompts here yet — try another mood.
+              </p>
+            )}
+            {available.map((p) => (
+              <button
+                key={p.question}
+                type="button"
+                onClick={() => addPrompt(p.question)}
+                className="t-value min-h-[52px] rounded-2xl px-4 py-3 text-left transition-opacity duration-fast active:opacity-70"
+                style={{ background: 'var(--field)', color: 'var(--text)' }}
+              >
+                {p.question}
+              </button>
+            ))}
+          </div>
+        </div>
+      </GlassSheet>
+    </div>
+  );
+}
