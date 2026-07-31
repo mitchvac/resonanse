@@ -12,6 +12,7 @@ import Premium from '@/pages/Premium'
 import Profile from '@/pages/Profile'
 import Settings from '@/pages/Settings'
 import Login from '@/pages/Login'
+import NotFound from '@/pages/NotFound'
 
 export default function App() {
   return (
@@ -34,6 +35,9 @@ export default function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
+
+      {/* Catch-all */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   )
 }
