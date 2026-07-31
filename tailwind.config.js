@@ -4,7 +4,19 @@ module.exports = {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+      },
       colors: {
+        violet: {
+          DEFAULT: "#7B49F5",
+          pressed: "#6435D6",
+        },
+        ember: "#FF5C33",
+        ok: "#63D98A",
+        warn: "#FFC95C",
+        danger: "#FF6B5C",
+        stage: "#050507",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -50,14 +62,25 @@ module.exports = {
         },
       },
       borderRadius: {
+        glass: "20px",
         xl: "calc(var(--radius) + 4px)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
         xs: "calc(var(--radius) - 6px)",
       },
+      transitionTimingFunction: {
+        'glassy-out': 'cubic-bezier(0.22, 1, 0.36, 1)',
+        'glassy-spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
+      transitionDuration: {
+        fast: '160ms',
+        med: '320ms',
+        slow: '560ms',
+      },
       boxShadow: {
         xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        'violet-glow': '0 8px 28px rgba(123,73,245,0.45)',
       },
       keyframes: {
         "accordion-down": {

@@ -3,38 +3,8 @@
 @tailwind utilities;
 
 @layer base {
+  /* shadcn/ui theme variables (dark defaults — Glassy stage is dark-native) */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.625rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
@@ -54,6 +24,7 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+    --radius: 0.625rem;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -63,13 +34,300 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* ============================================================
+     Glassy design system — design.md §3.1 dark (source of truth)
+     ============================================================ */
+  :root, [data-theme="dark"] {
+    /* — Stage — */
+    --stage-base: #050507;
+    --stage-bloom: radial-gradient(60% 80% at 85% 95%, rgba(109,77,246,0.65) 0%, rgba(109,77,246,0.18) 45%, transparent 75%);
+    --stage-bloom-2: radial-gradient(45% 35% at 12% 0%, rgba(109,77,246,0.26) 0%, transparent 70%);
+
+    /* — Smoke glass (EXACT — do not alter) — */
+    --glass-a: linear-gradient(112.83deg, rgba(255,255,255,0.47) 0%, rgba(255,255,255,0) 110.84%);
+    --glass-b: linear-gradient(112.32deg, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 101.12%);
+    --glass-blur: 21px;
+    --glass-radius: 20px;
+    --glass-solid: rgba(34,34,42,0.94);
+    --glass-fallback: linear-gradient(112.83deg, rgba(120,120,132,0.55) 0%, rgba(40,40,48,0.85) 100%);
+
+    /* — Sheen (0 or 1 per surface) — */
+    --sheen: linear-gradient(107.45deg, rgba(255,255,255,0.47) -5.43%, rgba(255,255,255,0) 98.17%);
+
+    /* — Textures — */
+    --ring-stroke: rgba(255,255,255,0.06);
+    --grain-opacity: 0.2;
+
+    /* — Type — */
+    --text: #FFFFFF;
+    --text-ink: #FFFFFF;
+    --text-secondary: rgba(255,255,255,0.64);
+    --text-ink-secondary: rgba(255,255,255,0.64);
+
+    /* — Accents — */
+    --violet: #7B49F5;
+    --violet-pressed: #6435D6;
+    --violet-glow: 0 8px 28px rgba(123,73,245,0.45);
+    --ember: #FF5C33;
+    --ember-on-stage: #FF5C33;
+
+    /* — Semantic micro-accents — */
+    --ok: #63D98A;
+    --warn: #FFC95C;
+    --danger: #FF6B5C;
+
+    /* — Fields, scrims, photo treatment — */
+    --field: rgba(255,255,255,0.10);
+    --field-focus: rgba(255,255,255,0.16);
+    --scrim: rgba(3,3,5,0.66);
+    --photo-scrim: linear-gradient(180deg, rgba(5,5,7,0) 42%, rgba(5,5,7,0.74) 100%);
+    --tabbar-bg: rgba(10,10,14,0.55);
+
+    /* — Motion tokens (design.md §7.1) — */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --dur-fast: 160ms;
+    --dur-med: 320ms;
+    --dur-slow: 560ms;
+
+    color-scheme: dark;
+  }
+
+  /* ============================================================
+     §3.2 Light theme — "Resonance Day"
+     ============================================================ */
+  [data-theme="light"] {
+    --stage-base: #F4F1EB;
+    --stage-bloom: radial-gradient(60% 80% at 85% 95%, rgba(109,77,246,0.32) 0%, rgba(109,77,246,0.10) 45%, transparent 75%);
+    --stage-bloom-2: radial-gradient(45% 35% at 12% 0%, rgba(255,140,90,0.12) 0%, transparent 70%);
+
+    --glass-a: linear-gradient(112.83deg, rgba(24,19,40,0.46) 0%, rgba(24,19,40,0) 110.84%);
+    --glass-b: linear-gradient(112.32deg, rgba(24,19,40,0.36) 0%, rgba(24,19,40,0) 101.12%);
+    --glass-solid: rgba(43,37,60,0.94);
+    --glass-fallback: linear-gradient(112.83deg, rgba(70,62,96,0.6) 0%, rgba(38,32,54,0.9) 100%);
+    --sheen: linear-gradient(107.45deg, rgba(24,19,40,0.40) -5.43%, rgba(24,19,40,0) 98.17%);
+    --ring-stroke: rgba(24,19,40,0.10);
+    --grain-opacity: 0.18;
+
+    --text: #FFFFFF;
+    --text-ink: #251F31;
+    --text-secondary: rgba(255,255,255,0.72);
+    --text-ink-secondary: rgba(37,31,49,0.62);
+
+    --violet: #7B49F5;
+    --violet-pressed: #6435D6;
+    --violet-glow: 0 8px 24px rgba(123,73,245,0.30);
+    --ember: #FF5C33;
+    --ember-on-stage: #D8431C;
+
+    --ok: #1F9D55;
+    --warn: #B97E0A;
+    --danger: #D8431C;
+
+    --field: rgba(24,19,40,0.08);
+    --field-focus: rgba(24,19,40,0.14);
+    --scrim: rgba(244,241,235,0.62);
+    --photo-scrim: linear-gradient(180deg, rgba(5,5,7,0) 42%, rgba(5,5,7,0.74) 100%);
+    --tabbar-bg: rgba(244,241,235,0.6);
+
+    color-scheme: light;
+  }
+
+  html {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    background-color: var(--stage-base);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--stage-base);
+    color: var(--text-ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background-color 320ms var(--ease-out);
+  }
+
+  ::selection {
+    background: rgba(123, 73, 245, 0.45);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+  }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@layer components {
+  /* ============================================================
+     §3.3 Glass recipes
+     ============================================================ */
+  .glass {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--glass-radius);
+    background: var(--glass-a);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    color: var(--text);
   }
-  body {
-    @apply bg-background text-foreground;
+  .glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: var(--glass-b);
   }
+  .glass .rings {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .glass .grain {
+    position: absolute;
+    inset: -37% -8%;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .glass > .glass-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Sheen variants (choose ≤1 per surface) */
+  .sheen-right { position: absolute; left: 66.77%; right: 0; top: 0; bottom: 0; border-radius: 0 20px 20px 0; background: var(--sheen); pointer-events: none; }
+  .sheen-band  { position: absolute; left: 0; right: 0; top: 40%; height: 37%; background: var(--sheen); pointer-events: none; }
+  .sheen-orb   { position: absolute; left: 60%; top: 44%; width: 58%; aspect-ratio: 1; border-radius: 50%; background: var(--sheen); pointer-events: none; backdrop-filter: blur(21px); -webkit-backdrop-filter: blur(21px); }
+  .sheen-strip { position: absolute; left: 36.53%; right: 36.53%; top: 0; bottom: 0; background: var(--sheen); pointer-events: none; }
+
+  /* ============================================================
+     §2 Stage + phone shell
+     ============================================================ */
+  .stage-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: var(--stage-base);
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .stage-backdrop::before,
+  .stage-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  .stage-backdrop::before { background: var(--stage-bloom); }
+  .stage-backdrop::after { background: var(--stage-bloom-2); }
+
+  .stage-ringfield {
+    position: absolute;
+    inset: -10%;
+    opacity: 1;
+    animation: ringfield-drift 26s linear infinite alternate;
+  }
+  @keyframes ringfield-drift {
+    from { transform: translate3d(0, 0, 0) rotate(15deg); }
+    to   { transform: translate3d(0, 40px, 0) rotate(15deg); }
+  }
+
+  .phone-shell {
+    background: var(--stage-base);
+  }
+  .phone-shell .phone-bloom {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--stage-bloom), var(--stage-bloom-2);
+    background-size: 430px auto, 430px auto;
+    z-index: 0;
+  }
+  @media (min-width: 768px) {
+    .phone-shell {
+      border-radius: 40px;
+      outline: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 80px rgba(123, 73, 245, 0.22), 0 0 160px rgba(123, 73, 245, 0.10);
+    }
+  }
+
+  /* ============================================================
+     §4 Typography tokens
+     ============================================================ */
+  .t-logo      { font-size: 25px; line-height: 32px; font-weight: 700; letter-spacing: -0.03em; }
+  .t-display   { font-size: 40px; line-height: 46px; font-weight: 700; letter-spacing: -0.03em; }
+  .t-heading   { font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.02em; }
+  .t-title     { font-size: 22px; line-height: 150.2%; font-weight: 700; }
+  .t-title-sm  { font-size: 18px; line-height: 150.2%; font-weight: 700; }
+  .t-value     { font-size: 16px; line-height: 21px; font-weight: 400; }
+  .t-body      { font-size: 15px; line-height: 22px; font-weight: 400; }
+  .t-button    { font-size: 15px; line-height: 20px; font-weight: 700; }
+  .t-caption   { font-size: 12px; line-height: 16px; font-weight: 400; }
+  .t-eyebrow   { font-size: 10px; line-height: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ember); }
+  .t-eyebrow-on-stage { font-size: 10px; line-height: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ember-on-stage); }
+  .t-micro     { font-size: 9px; line-height: 12px; font-weight: 400; letter-spacing: -0.03em; }
+
+  .text-secondary { color: var(--text-secondary); }
+  .text-ink-secondary { color: var(--text-ink-secondary); }
+
+  /* Photo scrim overlay */
+  .photo-scrim {
+    background: var(--photo-scrim);
+  }
+
+  /* Skeleton shimmer (§7.2) */
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.4) 50%, transparent 80%);
+    transform: translateX(-100%);
+    animation: shimmer 1.4s linear infinite;
+  }
+  @keyframes shimmer {
+    to { transform: translateX(100%); }
+  }
+}
+
+@layer utilities {
+  .text-violet { color: var(--violet); }
+  .bg-violet { background-color: var(--violet); }
+  .text-ember { color: var(--ember); }
+  .bg-field { background-color: var(--field); }
+  .bg-field-focus { background-color: var(--field-focus); }
+  .bg-scrim { background-color: var(--scrim); }
+  .shadow-violet-glow { box-shadow: var(--violet-glow); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* Glass fallbacks (§3.3) */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass { background: var(--glass-fallback); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--glass-solid);
+  }
+}
+
+/* Reduced motion: degrade to ≤200ms crossfades (§7.2) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 200ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 200ms !important;
+  }
+  .stage-ringfield { animation: none; }
+  html { scroll-behavior: auto; }
 }
