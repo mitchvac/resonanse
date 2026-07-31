@@ -11,8 +11,10 @@ const COLUMNS: { title: string; links: string[] }[] = [
 
 /**
  * Marketing footer — home.md "Global page furniture"
- * Glass top edge (single blurred strip): wordmark, ember micro label, link
- * columns, social icons, microcopy.
+ * Glass top edge (single blurred strip): wordmark, ember micro label
+ * "DATE WITH INTENT", link columns, social icons, microcopy. All text is
+ * var(--text)/var(--text-secondary) — warm ink in Warm Glass, white in
+ * Night HUD.
  */
 export default function Footer() {
   return (
@@ -25,7 +27,9 @@ export default function Footer() {
           <div className="flex flex-col gap-10 md:flex-row md:justify-between">
             <div className="max-w-xs">
               <div className="flex items-center gap-2.5">
-                <span className="t-logo text-white">Resonance.</span>
+                <span className="t-logo" style={{ color: 'var(--text)' }}>
+                  Resonance.
+                </span>
                 <BrandMark size={26} />
               </div>
               <p className="t-eyebrow mt-4">Date with intent</p>
@@ -38,7 +42,10 @@ export default function Footer() {
                   <a
                     key={i}
                     href="#"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-field text-white/70 transition-colors duration-fast hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-field transition-colors duration-fast"
+                    style={{ color: 'var(--text-secondary)' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
                     aria-label="Social link"
                   >
                     <Icon size={18} aria-hidden="true" />
@@ -50,13 +57,18 @@ export default function Footer() {
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
               {COLUMNS.map((col) => (
                 <div key={col.title}>
-                  <h3 className="t-micro uppercase text-white/50">{col.title}</h3>
+                  <h3 className="t-micro uppercase" style={{ color: 'var(--text-secondary)' }}>
+                    {col.title}
+                  </h3>
                   <ul className="mt-3 space-y-2.5">
                     {col.links.map((link) => (
                       <li key={link}>
                         <a
                           href="#"
-                          className="t-caption text-white/70 transition-colors duration-fast hover:text-white"
+                          className="t-caption transition-colors duration-fast"
+                          style={{ color: 'var(--text-secondary)' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
                         >
                           {link}
                         </a>
@@ -68,11 +80,16 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <div
+            className="mt-12 flex flex-col gap-2 border-t pt-6 sm:flex-row sm:items-center sm:justify-between"
+            style={{ borderColor: 'var(--ring-stroke)' }}
+          >
             <p className="t-caption text-secondary">
               © Resonance. Made for meeting in real life.
             </p>
-            <p className="t-micro text-white/40">Best experienced in the dark.</p>
+            <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
+              Warm Glass by day, Night HUD by night — switch in Settings.
+            </p>
           </div>
         </div>
       </div>

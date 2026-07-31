@@ -4,10 +4,12 @@ import { X, Heart, Sparkle, BadgeCheck } from 'lucide-react';
 
 /**
  * HeroPhone — home.md §1 "live phone mock".
- * A real rendered queue card (avatar-01 → avatar-03) inside a phone shell,
- * with a working ActionDock (demo state, no auth): Like fires the §7.2 heart
- * burst, Pulse plays the sheen sweep + pin, Pass flings the card. One
- * scripted swipe-right plays on load as a silent product demo.
+ * A real rendered queue card (avatar-01 → avatar-03) inside a phone shell
+ * (theme-aware slab chrome: warm glass rim + studio shadow in Warm Glass,
+ * icy rim + device glow in Night HUD), with a working ActionDock (demo
+ * state, no auth): Like fires the §7.2 heart burst (violet particles in
+ * light, white in dark), Pulse plays the light sweep + pin, Pass flings
+ * the card. One scripted swipe-right plays on load as a silent product demo.
  * Framer Motion only — no GSAP in this tree (library isolation).
  */
 
@@ -54,7 +56,8 @@ function LikeBurst({ burstKey }: { burstKey: number }) {
       {particles.map((p, i) => (
         <motion.span
           key={i}
-          className="absolute left-1/2 top-1/2 h-1 w-1 rounded-full bg-white"
+          className="absolute left-1/2 top-1/2 h-1 w-1 rounded-full"
+          style={{ background: 'var(--particle)' }}
           initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
           animate={{ x: p.x, y: p.y, opacity: 0, scale: 0.4 }}
           transition={{ duration: 0.4, ease: EASE_OUT }}
@@ -106,13 +109,7 @@ export default function HeroPhone() {
   }, []);
 
   return (
-    <div
-      className="phone-shell relative mx-auto w-[300px] overflow-hidden rounded-[36px] sm:w-[320px]"
-      style={{
-        outline: '1px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 0 80px rgba(123,73,245,0.25), 0 0 160px rgba(123,73,245,0.12)',
-      }}
-    >
+    <div className="phone-shell phone-chrome relative mx-auto w-[300px] overflow-hidden rounded-[36px] sm:w-[320px]">
       <div className="phone-bloom" aria-hidden="true" />
       <div className="relative z-10 px-4 pb-6 pt-4">
         {/* Queue card */}
@@ -120,7 +117,7 @@ export default function HeroPhone() {
           <AnimatePresence>
             <motion.article
               key={index}
-              className="absolute inset-0 overflow-hidden rounded-[20px]"
+              className="absolute inset-0 overflow-hidden rounded-[16px]"
               initial={{ scale: 0.96, y: 28, opacity: 0 }}
               animate={
                 exit === 'like'
@@ -153,13 +150,12 @@ export default function HeroPhone() {
                 <span className="t-title-sm text-violet">LIKE</span>
               </motion.div>
 
-              {/* Glass info panel — sheen-orb, the only blurred surface per card */}
-              <div className="glass absolute inset-x-2 bottom-2 rounded-[20px]">
-                <div className="sheen-orb" aria-hidden="true" />
+              {/* Glass info panel — edge:none, the only blurred surface per card (§8.7) */}
+              <div className="glass absolute inset-x-2 bottom-2 rounded-[24px]">
                 <div className="grain" aria-hidden="true" />
                 <div className="glass-content p-4">
                   <div className="flex items-center gap-1.5">
-                    <span className="t-title text-white">{profile.name}</span>
+                    <span className="t-title">{profile.name}</span>
                     <span
                       className="flex h-4 w-4 items-center justify-center rounded-full"
                       style={{ background: 'var(--violet)' }}
@@ -172,14 +168,14 @@ export default function HeroPhone() {
                     {profile.intents.map((tag) => (
                       <span
                         key={tag}
-                        className="t-caption rounded-full bg-field px-2.5 py-1 text-white"
+                        className="t-caption rounded-full bg-field px-2.5 py-1"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <p className="t-value mt-2 text-white">{profile.prompt}</p>
-                  <p className="t-micro mt-2 text-white">{profile.compat}</p>
+                  <p className="t-value mt-2">{profile.prompt}</p>
+                  <p className="t-micro mt-2">{profile.compat}</p>
                 </div>
               </div>
             </motion.article>
@@ -187,7 +183,7 @@ export default function HeroPhone() {
         </div>
 
         {/* Remaining likes micro label */}
-        <p className="t-micro mt-4 text-center text-white">3 LIKES LEFT TODAY</p>
+        <p className="t-micro mt-4 text-center">3 LIKES LEFT TODAY</p>
 
         {/* ActionDock — Pass / Like (elevated) / Pulse */}
         <div className="mt-2 flex items-end justify-center gap-5">
@@ -199,7 +195,7 @@ export default function HeroPhone() {
             whileTap={{ scale: 0.92 }}
           >
             <span className="glass-content flex">
-              <X size={20} color="#fff" aria-hidden="true" />
+              <X size={20} style={{ color: 'var(--text)' }} aria-hidden="true" />
             </span>
           </motion.button>
 
@@ -251,7 +247,7 @@ export default function HeroPhone() {
               <Sparkle
                 size={20}
                 aria-hidden="true"
-                color={pulsed ? 'var(--violet)' : '#fff'}
+                style={{ color: pulsed ? 'var(--violet)' : 'var(--text)' }}
                 fill={pulsed ? 'var(--violet)' : 'none'}
               />
             </motion.span>

@@ -4,9 +4,9 @@ import { cn } from '@/lib/utils';
 
 /**
  * GlassSheet — design.md §8.3
- * Glass surface pinned to screen bottom, radius 20px top corners, drag handle
- * (36×4px white 0.4 pill), scrim --scrim behind (opacity 0→1, 200ms).
- * Sheet slides up 24px + fade, 320ms spring.
+ * Glass surface pinned to screen bottom, radius 24px top corners, drag handle
+ * (36×4px --text at 0.4 pill), scrim --scrim behind (opacity 0→1, 200ms).
+ * Sheet slides up 24px + fade, 320ms spring. Sheets are always edge:none.
  */
 export default function GlassSheet({
   open,
@@ -45,7 +45,7 @@ export default function GlassSheet({
               'glass fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[430px] rounded-b-none',
               className,
             )}
-            style={{ borderRadius: '20px 20px 0 0' }}
+            style={{ borderRadius: '24px 24px 0 0' }}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}
@@ -55,7 +55,7 @@ export default function GlassSheet({
               <div className="flex justify-center pt-3 pb-1">
                 <div
                   className="h-1 w-9 rounded-full"
-                  style={{ background: 'rgba(255,255,255,0.4)' }}
+                  style={{ background: 'var(--text)', opacity: 0.4 }}
                   aria-hidden="true"
                 />
               </div>

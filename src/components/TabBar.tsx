@@ -1,14 +1,15 @@
 import { NavLink } from 'react-router';
 import { Compass, Heart, MessageCircle, CalendarDays, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 /**
  * TabBar — design.md §8.4
- * Height 72px + safe-area. One blurred container (.glass, radius 20px,
- * floating 12px from edges/bottom). 5 tabs, icon 22px + micro label 9px
- * −0.03em. Active: solid white icon + violet 6px dot beneath; inactive:
- * white at 0.64. Likes tab carries a count badge (violet pill, 10px 700).
- * Unread chat dot on Matches (--ok).
+ * Height 72px + safe-area. One blurred container (.glass, radius 24px,
+ * --tabbar-bg fill, floating 12px from edges/bottom — 1 of the ≤8 blurred
+ * surfaces). 5 tabs, icon 22px + micro label 9px −0.03em. Active: solid
+ * --text icon + violet 6px dot beneath; inactive: --text at 0.64 (Warm Glass)
+ * / white 0.64 (Night HUD) — i.e. var(--text-secondary). Likes tab carries a
+ * count badge (violet pill, 10px 700, white text). Unread chat dot on
+ * Matches (--ok).
  */
 const TABS = [
   { to: '/discover', label: 'Discover', icon: Compass },
@@ -31,7 +32,10 @@ export default function TabBar({
       className="absolute inset-x-3 bottom-3 z-30"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="glass h-[72px] rounded-[20px]">
+      <div
+        className="glass h-[72px] rounded-[24px]"
+        style={{ background: 'var(--tabbar-bg)' }}
+      >
         <div className="glass-content grid h-full grid-cols-5">
           {TABS.map((tab) => (
             <NavLink
@@ -49,7 +53,7 @@ export default function TabBar({
                       style={{
                         color: isActive
                           ? 'var(--text)'
-                          : 'rgba(255,255,255,0.64)',
+                          : 'var(--text-secondary)',
                       }}
                       aria-hidden="true"
                     />
@@ -71,8 +75,10 @@ export default function TabBar({
                     )}
                   </span>
                   <span
-                    className={cn('t-micro', !isActive && 'opacity-60')}
-                    style={{ color: 'var(--text)' }}
+                    className="t-micro"
+                    style={{
+                      color: isActive ? 'var(--text)' : 'var(--text-secondary)',
+                    }}
                   >
                     {tab.label}
                   </span>

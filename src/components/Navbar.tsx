@@ -8,7 +8,7 @@ import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
 
 const LINKS = [
-  { label: 'Philosophy', href: '#philosophy' },
+  { label: 'How it works', href: '#philosophy' },
   { label: 'Modes', href: '#modes' },
   { label: 'Safety', href: '#safety' },
   { label: 'Pricing', href: '#pricing' },
@@ -16,9 +16,10 @@ const LINKS = [
 
 /**
  * Marketing navbar — home.md "Global page furniture"
- * Fixed, 64px; blurs into a thin glass bar after 24px of scroll.
- * Left wordmark "Resonance." + brand mark; right anchor links + Sign in
- * (→ /login) + Get started (→ /login).
+ * Fixed, 64px; blurs into a thin frosted glass bar after 24px of scroll.
+ * Text is var(--text-ink)/var(--text) — warm ink in Warm Glass, white in
+ * Night HUD. Left wordmark "Resonance." + brand mark; right anchor links +
+ * Sign in (→ /login) + Get started (→ /login).
  */
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -47,6 +48,7 @@ export default function Navbar() {
           background: 'var(--glass-a)',
           backdropFilter: 'blur(var(--glass-blur))',
           WebkitBackdropFilter: 'blur(var(--glass-blur))',
+          borderBottom: '1px solid var(--ring-stroke)',
         }}
         aria-hidden="true"
       />
@@ -55,7 +57,9 @@ export default function Navbar() {
         aria-label="Marketing"
       >
         <Link to="/" className="flex items-center gap-2.5" aria-label="Resonance home">
-          <span className="t-logo text-white">Resonance.</span>
+          <span className="t-logo" style={{ color: 'var(--text-ink)' }}>
+            Resonance.
+          </span>
           <BrandMark size={26} />
         </Link>
 
@@ -65,7 +69,10 @@ export default function Navbar() {
               <motion.a
                 key={link.href}
                 href={link.href}
-                className="t-caption rounded-full px-3 py-2 text-white/60 transition-colors duration-fast hover:text-white"
+                className="t-caption rounded-full px-3 py-2 transition-colors duration-fast"
+                style={{ color: 'var(--text-secondary)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.04 * i, duration: 0.32 }}
@@ -75,7 +82,7 @@ export default function Navbar() {
             ))}
           </div>
           {isLoading ? (
-            <span className="inline-block h-10 w-24 rounded-full bg-white/10" aria-hidden="true" />
+            <span className="inline-block h-10 w-24 rounded-full bg-field" aria-hidden="true" />
           ) : isAuthenticated ? (
             <>
               <BtnGhost to="/discover" className="hidden sm:inline-flex">

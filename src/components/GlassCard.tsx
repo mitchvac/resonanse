@@ -1,22 +1,32 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
+export type GlassEdge = 'none' | 'amber' | 'hud';
+/** @deprecated Replaced by `edge` — kept for backwards compatibility, maps to 'none'. */
 export type GlassSheen = 'none' | 'right' | 'band' | 'orb' | 'strip';
 
 /**
  * GlassCard — design.md §8.2
- * `.glass` utility (§3.3) + optional sheen slot (≤1 per surface) + ring-crop
- * offset prop (`ringX`) + grain. All card text is solid var(--text) white.
+ * `.glass` utility (§3.3) + optional ring-crop offset prop (`ringX`) + grain.
+ * All card text is solid var(--text) — warm ink in Warm Glass, white in Night HUD.
+ *
+ * `edge`: 'none' = quiet border (default); 'amber' / 'hud' = `.glass-edge`
+ * hero glow. Both resolve to the same class — the active theme supplies the
+ * gradient; the prop names express intent per theme. One edge ≠ 'none' card
+ * per view region max (§3.3 budget).
  */
 export default function GlassCard({
   children,
-  sheen = 'none',
+  edge = 'none',
+  sheen,
   ringX = 0,
   className,
   style,
   onClick,
 }: {
   children: ReactNode;
+  edge?: GlassEdge;
+  /** @deprecated use `edge` — any value maps to edge 'none' */
   sheen?: GlassSheen;
   /** Horizontal offset (px) of the ring texture crop, per instance */
   ringX?: number;
@@ -24,8 +34,13 @@ export default function GlassCard({
   style?: CSSProperties;
   onClick?: () => void;
 }) {
+  void sheen; // deprecated: sheen variants replaced by the edge-glow system
   return (
-    <div className={cn('glass', className)} style={style} onClick={onClick}>
+    <div
+      className={cn('glass', edge !== 'none' && 'glass-edge', className)}
+      style={style}
+      onClick={onClick}
+    >
       <svg
         className="rings"
         width="100%"
@@ -44,7 +59,6 @@ export default function GlassCard({
           <circle cx="10%" cy="90%" r="90" />
         </g>
       </svg>
-      {sheen !== 'none' && <div className={`sheen-${sheen}`} aria-hidden="true" />}
       <div className="grain" aria-hidden="true" />
       <div className="glass-content h-full">{children}</div>
     </div>

@@ -25,6 +25,7 @@ import BrandMark from '@/components/BrandMark';
 import { BtnPrimary, BtnGhost } from '@/components/ui/buttons';
 import LandingFX from '@/components/landing/LandingFX';
 import HeroPhone from '@/components/landing/HeroPhone';
+import LightTrail from '@/components/LightTrail';
 import { cn } from '@/lib/utils';
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as [number, number, number, number];
@@ -161,11 +162,12 @@ function Hero() {
           >
             Dating, de-noised
           </motion.p>
-          <h1 className="t-display mt-4 text-white">
+          <h1 className="t-display mt-4" style={{ color: 'var(--text-ink)' }}>
             <Words text="Less swiping. More meeting." onLoad delay={0.1} />
           </h1>
           <motion.p
-            className="t-value mt-5 max-w-md text-secondary"
+            className="t-value mt-5 max-w-md"
+            style={{ color: 'var(--text-ink)' }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.32, delay: 0.5, ease: EASE_OUT }}
@@ -192,7 +194,8 @@ function Hero() {
             </BtnGhost>
           </motion.div>
           <motion.p
-            className="t-caption mt-5 text-white/50"
+            className="t-caption mt-5"
+            style={{ color: 'var(--text-secondary)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.32, delay: 0.74 }}
@@ -236,25 +239,40 @@ function Problem() {
           </p>
         </Reveal>
       </div>
-      <div className="mx-auto mt-12 grid max-w-4xl gap-4 px-5 sm:grid-cols-3">
-        {STATS.map((s, i) => (
-          <Reveal key={s.label} delay={0.08 * i}>
-            <GlassCard
-              sheen="band"
-              ringX={s.ringX}
-              className="p-6 text-center transition-transform duration-med ease-glassy-out hover:-translate-y-0.5"
-            >
-              <p className="t-title text-white">
-                {s.static ? (
-                  s.static
-                ) : (
-                  <CountUp to={s.value ?? 0} suffix={s.suffix ?? ''} />
-                )}
-              </p>
-              <p className="t-micro mt-2 text-white">{s.label}</p>
-            </GlassCard>
-          </Reveal>
-        ))}
+      <div className="relative mx-auto mt-12 max-w-4xl px-5">
+        {/* Light-trail thread connecting the three stat cards (home.md §2) —
+            draws via dashoffset 600ms on entry; sits above the stage, below cards */}
+        <LightTrail
+          width={896}
+          height={160}
+          d="M 20 80 C 180 20, 300 140, 448 80 S 716 20, 876 80"
+          nodes={[
+            { x: 20, y: 80 },
+            { x: 448, y: 80 },
+            { x: 876, y: 80 },
+          ]}
+          className="hidden sm:block"
+          style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 0 }}
+        />
+        <div className="relative grid gap-4 sm:grid-cols-3">
+          {STATS.map((s, i) => (
+            <Reveal key={s.label} delay={0.08 * i}>
+              <GlassCard
+                ringX={s.ringX}
+                className="p-6 text-center transition-[transform,box-shadow] duration-med ease-glassy-out hover:-translate-y-0.5 hover:shadow-[var(--glass-shadow-lift)]"
+              >
+                <p className="t-title">
+                  {s.static ? (
+                    s.static
+                  ) : (
+                    <CountUp to={s.value ?? 0} suffix={s.suffix ?? ''} />
+                  )}
+                </p>
+                <p className="t-micro mt-2">{s.label}</p>
+              </GlassCard>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -305,7 +323,7 @@ function Loop() {
         <div className="relative mt-14">
           {/* violet progress line (mobile timeline) */}
           <div
-            className="absolute left-[7px] top-0 h-full w-0.5 bg-white/10 md:hidden"
+            className="absolute left-[7px] top-0 h-full w-0.5 bg-field md:hidden"
             aria-hidden="true"
           />
           <div
@@ -326,7 +344,7 @@ function Loop() {
                     className="h-full p-6 transition-transform duration-med ease-glassy-out hover:-translate-y-0.5"
                   >
                     <p className="t-title text-violet">{step.n}</p>
-                    <h3 className="t-title-sm mt-2 text-white">{step.title}</h3>
+                    <h3 className="t-title-sm mt-2">{step.title}</h3>
                     <p className="t-caption mt-2 text-secondary">{step.body}</p>
                   </GlassCard>
                 </Reveal>
@@ -415,7 +433,10 @@ function ModeVignette({ kind }: { kind: string }) {
             style={{ left: p.l, top: p.t }}
           />
         ))}
-        <span className="absolute left-[38%] top-[30%] h-3.5 w-3.5 rounded-full bg-white" />
+        <span
+          className="absolute left-[38%] top-[30%] h-3.5 w-3.5 rounded-full"
+          style={{ background: 'var(--text)' }}
+        />
       </div>
     );
   if (kind === 'events')
@@ -432,7 +453,7 @@ function ModeVignette({ kind }: { kind: string }) {
   return (
     <div className="flex items-center justify-center gap-2" aria-hidden="true">
       {['LIS', 'TYO', 'CDG'].map((c) => (
-        <span key={c} className="t-micro rounded-full bg-field px-2.5 py-1.5 text-white">
+        <span key={c} className="t-micro rounded-full bg-field px-2.5 py-1.5">
           {c}
         </span>
       ))}
@@ -457,10 +478,18 @@ function ModePanel({ mode, index }: { mode: (typeof MODES)[number]; index: numbe
           transition={{ duration: 0.48, ease: EASE_OUT }}
         >
           <div className="absolute inset-0 [backface-visibility:hidden]">
-            <GlassCard sheen={index % 2 === 0 ? 'right' : 'none'} ringX={index * 40 - 60} className="h-full p-6 text-left">
+            {/* Daily Queue is the rail hero — the only edge-glow surface in
+                this section (home.md §4 / design.md §3.3 budget) */}
+            <GlassCard
+              edge={index === 0 ? 'amber' : 'none'}
+              ringX={index * 40 - 60}
+              className="h-full p-6 text-left"
+            >
               <div className="flex h-full flex-col">
-                <p className="t-micro text-white/60">{mode.tier}</p>
-                <h3 className="t-title-sm mt-2 text-white">{mode.title}</h3>
+                <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
+                  {mode.tier}
+                </p>
+                <h3 className="t-title-sm mt-2">{mode.title}</h3>
                 <p className="t-caption mt-2 text-secondary">{mode.caption}</p>
                 <div className="mt-auto">
                   <ModeVignette kind={mode.vignette} />
@@ -470,10 +499,10 @@ function ModePanel({ mode, index }: { mode: (typeof MODES)[number]; index: numbe
           </div>
           <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">
             <GlassCard className="h-full p-6 text-left">
-              <h3 className="t-title-sm text-white">{mode.title}</h3>
+              <h3 className="t-title-sm">{mode.title}</h3>
               <ul className="mt-4 space-y-3">
                 {mode.bullets.map((b) => (
-                  <li key={b} className="t-caption flex items-start gap-2 text-white">
+                  <li key={b} className="t-caption flex items-start gap-2">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet" aria-hidden="true" />
                     {b}
                   </li>
@@ -529,16 +558,18 @@ function Outcomes() {
         <div className="photo-scrim absolute inset-0" aria-hidden="true" />
         <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-6xl px-5 pb-10">
           <Reveal y={40}>
-            <GlassCard sheen="orb" className="max-w-lg p-7">
+            {/* Section hero glow surface (home.md §5): edge amber in Warm
+                Glass / HUD gradient in Night HUD */}
+            <GlassCard edge="amber" className="max-w-lg p-7">
               <p className="t-eyebrow">Outcomes, not engagement</p>
-              <h2 className="t-heading mt-3 text-white">
+              <h2 className="t-heading mt-3">
                 The metric we optimize is your first date.
               </h2>
-              <p className="t-value mt-3 text-secondary">
+              <p className="t-value mt-3">
                 Our We Met loop asks how it went — and every answer makes the
                 next queue sharper.
               </p>
-              <p className="t-caption mt-4 text-white/80">
+              <p className="t-caption mt-4 text-secondary">
                 68% match→conversation · 31% conversation→date · 4.6★ match
                 quality (beta cohort)
               </p>
@@ -584,14 +615,14 @@ function Safety() {
             <Reveal key={row.title} delay={0.06 * i}>
               <div className="group flex items-start gap-4 rounded-[20px] bg-field p-5 transition-transform duration-med ease-glassy-out hover:-translate-y-0.5">
                 <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-field-focus">
-                  <row.icon size={20} color="#fff" aria-hidden="true" />
+                  <row.icon size={20} style={{ color: 'var(--text)' }} aria-hidden="true" />
                   <span
                     className="absolute inset-0 rounded-full opacity-0 ring-2 ring-violet transition-opacity duration-med group-hover:opacity-100"
                     aria-hidden="true"
                   />
                 </span>
                 <div>
-                  <h3 className="t-title-sm text-white">{row.title}</h3>
+                  <h3 className="t-title-sm">{row.title}</h3>
                   <p className="t-caption mt-1 text-secondary">{row.body}</p>
                 </div>
               </div>
@@ -644,7 +675,7 @@ function Testimonials() {
                   className="h-10 w-10 rounded-full object-cover"
                   loading="lazy"
                 />
-                <p className="t-value mt-4 text-white">“{q.quote}”</p>
+                <p className="t-value mt-4">“{q.quote}”</p>
                 <p className="t-caption mt-4 text-secondary">{q.name}</p>
               </GlassCard>
             </Reveal>
@@ -660,8 +691,8 @@ function Testimonials() {
 /* ------------------------------------------------------------------ */
 
 function Pricing() {
-  const sheenRef = useRef<HTMLDivElement>(null);
-  const sheenInView = useInView(sheenRef, { amount: 0.5, once: true });
+  const plusRef = useRef<HTMLDivElement>(null);
+  const plusInView = useInView(plusRef, { amount: 0.5, once: true });
 
   return (
     <section id="pricing" className="relative py-24 md:py-32">
@@ -680,31 +711,28 @@ function Pricing() {
         <div className="mx-auto mt-12 grid max-w-4xl gap-4 text-left sm:grid-cols-3">
           <Reveal>
             <GlassCard ringX={-40} className="h-full p-6">
-              <p className="t-micro text-white/60">FREE</p>
-              <h3 className="t-title-sm mt-2 text-white">Start with intent</h3>
+              <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
+                FREE
+              </p>
+              <h3 className="t-title-sm mt-2">Start with intent</h3>
               <p className="t-caption mt-3 text-secondary">
                 Daily queue · Limited likes · Full safety stack · Events RSVP
               </p>
             </GlassCard>
           </Reveal>
           <Reveal delay={0.08}>
-            <div ref={sheenRef}>
-              <GlassCard sheen="right" className="relative h-full overflow-hidden p-6">
-                {sheenInView && (
-                  <motion.span
-                    className="pointer-events-none absolute inset-y-0 w-1/2"
-                    style={{
-                      background:
-                        'linear-gradient(100deg, transparent, rgba(255,255,255,0.18), transparent)',
-                    }}
-                    initial={{ x: '-220%' }}
-                    animate={{ x: '320%' }}
-                    transition={{ duration: 0.56, ease: EASE_OUT }}
-                    aria-hidden="true"
-                  />
+            <div ref={plusRef}>
+              {/* Teaser hero (home.md §8): edge amber/hud + one-time edge-glow
+                  energize (opacity 0→1, 560ms) when scrolled into view */}
+              <GlassCard
+                edge="amber"
+                className={cn(
+                  'relative h-full p-6',
+                  plusInView ? 'edge-energize' : 'edge-gated',
                 )}
+              >
                 <p className="t-micro text-violet">RESONANCE+</p>
-                <h3 className="t-title-sm mt-2 text-white">Deeper signal</h3>
+                <h3 className="t-title-sm mt-2">Deeper signal</h3>
                 <p className="t-caption mt-3 text-secondary">
                   See who likes you · More Pulses · Advanced filters · Nearby feed
                 </p>
@@ -712,9 +740,11 @@ function Pricing() {
             </div>
           </Reveal>
           <Reveal delay={0.16}>
-            <GlassCard sheen="strip" ringX={60} className="h-full p-6">
-              <p className="t-micro text-white/60">RESONANCE X</p>
-              <h3 className="t-title-sm mt-2 text-white">Go anywhere</h3>
+            <GlassCard ringX={60} className="h-full p-6">
+              <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
+                RESONANCE X
+              </p>
+              <h3 className="t-title-sm mt-2">Go anywhere</h3>
               <p className="t-caption mt-3 text-secondary">
                 Everything in + · Travel mode · Priority placement · X-only events
               </p>
@@ -781,13 +811,13 @@ function Faq() {
                     aria-expanded={isOpen}
                     className="flex min-h-[44px] w-full items-center justify-between gap-4 rounded-2xl bg-field px-5 py-4 text-left"
                   >
-                    <span className="t-value font-bold text-white">{item.q}</span>
+                    <span className="t-value font-bold">{item.q}</span>
                     <motion.span
                       animate={{ rotate: isOpen ? 180 : 0 }}
                       transition={{ duration: 0.24, ease: EASE_OUT }}
                       className="shrink-0"
                     >
-                      <ChevronDown size={18} color="#fff" aria-hidden="true" />
+                      <ChevronDown size={18} style={{ color: 'var(--text)' }} aria-hidden="true" />
                     </motion.span>
                   </button>
                   <AnimatePresence initial={false}>
@@ -846,7 +876,7 @@ function FinalCta() {
             Create your profile
           </BtnPrimary>
         </div>
-        <p className="t-caption mt-5 text-white/50">
+        <p className="t-caption mt-5" style={{ color: 'var(--text-secondary)' }}>
           Free to start · Takes two minutes · Photo verification required
         </p>
       </Reveal>

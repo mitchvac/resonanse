@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -11,14 +11,16 @@
     <meta property="og:image" content="/og-cover.png" />
     <meta property="og:type" content="website" />
     <script>
-      // Theme bootstrap: persisted choice wins, else OS preference, default dark.
+      // Theme bootstrap: persisted choice wins, else OS preference, default light (Warm Glass).
       (function () {
         try {
           var saved = localStorage.getItem('resonance-theme');
-          var theme = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          var theme = (saved === 'light' || saved === 'dark')
+            ? saved
+            : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme', theme);
         } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'dark');
+          document.documentElement.setAttribute('data-theme', 'light');
         }
       })();
     </script>

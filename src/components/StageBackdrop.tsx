@@ -3,8 +3,10 @@ import { memo } from 'react';
 /**
  * StageBackdrop — design.md §8.1 / §2.1
  * Fixed layer: --stage-bloom + --stage-bloom-2 over --stage-base, z-index −1.
- * Desktop adds the decorative ring-field SVG (2px var(--ring-stroke),
- * rotate(15deg)) drifting 40px on a 26s loop (transform only).
+ * Warm Glass: warm cream stage + amber bloom; Night HUD: navy + blue bloom.
+ * Desktop adds the decorative ring-field SVG (2px var(--ring-stroke) — warm
+ * ink strokes in light, icy strokes in dark — group rotate(15°)) drifting
+ * 40px on a 26s loop (transform only). Theme change = 320ms re-bloom.
  * `inPhone` variant scales blooms to the 430px phone width.
  */
 function RingField() {

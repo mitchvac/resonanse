@@ -6,9 +6,10 @@ import { cn } from '@/lib/utils';
 /**
  * Buttons — design.md §8.5
  * BtnPrimary: pill 999px, height 52px, violet fill, --violet-glow, t-button,
- *   white text. Press: scale 1→0.96 (120ms) → spring back (§7.2).
- * BtnGlass: pill, glass recipe (radius 999px pill variant of the stack), white text.
- * BtnGhost: text-only, t-button, white → on press opacity 0.7.
+ *   white text (both themes). Press: scale 1→0.96 (120ms) → spring back (§7.2).
+ * BtnGlass: pill, glass recipe (radius 999px pill variant of the stack, quiet
+ *   border), var(--text) text — ink in Warm Glass, white in Night HUD.
+ * BtnGhost: text-only, t-button, var(--text) → on press opacity 0.7.
  * BtnDanger: pill, transparent + t-button in --danger with 1px --danger inset ring.
  */
 
@@ -41,15 +42,15 @@ function render(
       'h-[52px] rounded-full px-7 text-white shadow-violet-glow',
       'bg-violet transition-colors duration-fast hover:bg-violet-pressed active:bg-violet-pressed',
     ),
-    glass: cn(base, 'glass h-[52px] rounded-full px-7 text-white'),
+    glass: cn(base, 'glass h-[52px] rounded-full px-7', 'text-[var(--text)]'),
     ghost: cn(
       base,
-      'px-3 text-white transition-opacity duration-fast active:opacity-70',
+      'px-3 text-[var(--text)] transition-opacity duration-fast active:opacity-70',
     ),
     danger: cn(
       base,
-      'h-[52px] rounded-full bg-transparent px-7 text-danger',
-      'ring-1 ring-inset ring-danger',
+      'h-[52px] rounded-full bg-transparent px-7 text-[var(--danger)]',
+      'ring-1 ring-inset ring-[var(--danger)]',
     ),
   };
   const cls = cn(styles[variant], disabled && 'opacity-50 pointer-events-none', className);

@@ -3,10 +3,11 @@ import StageBackdrop from '@/components/StageBackdrop';
 
 /**
  * Layout — the PHONE SHELL (design.md §2)
- * StageBackdrop (fixed violet bloom stage) + centered 430px phone frame on
- * desktop (radius 40px, 1px frame ring, soft violet device glow), full-bleed
- * on mobile. Content slot renders <Outlet/> — App wires app pages as nested
- * routes under this layout. Status bar spacer 12px top.
+ * StageBackdrop (fixed themed stage: warm cream + amber bloom in Warm Glass,
+ * navy + blue bloom in Night HUD) + centered 430px phone frame on desktop
+ * (radius 40px, theme-aware slab rim + shadow/glow via .phone-shell chrome),
+ * full-bleed on mobile. Content slot renders <Outlet/> — App wires app pages
+ * as nested routes under this layout. Status bar spacer 12px top.
  *
  * The landing page `/` renders full-screen WITHOUT this shell.
  */
