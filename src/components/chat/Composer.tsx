@@ -9,6 +9,7 @@ import {
   AudioLines,
   MapPin,
   Video,
+  Clapperboard,
   CalendarHeart,
   Timer,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ const ACTIONS = [
   { key: 'voice', label: 'Voice', icon: AudioLines },
   { key: 'date', label: 'Date idea', icon: CalendarHeart },
   { key: 'video', label: 'Video check', icon: Video },
+  { key: 'note', label: 'Video note', icon: Clapperboard },
   { key: 'location', label: 'Location', icon: MapPin },
 ] as const;
 
@@ -39,6 +41,7 @@ export default function Composer({
   onToggleEphemeral,
   onDateIdea,
   onVideoCheck,
+  onVideoNote,
   onActionToast,
 }: {
   peerName: string;
@@ -50,6 +53,7 @@ export default function Composer({
   onToggleEphemeral: () => void;
   onDateIdea: () => void;
   onVideoCheck: () => void;
+  onVideoNote: () => void;
   onActionToast: (text: string) => void;
 }) {
   const [actionsOpen, setActionsOpen] = useState(false);
@@ -92,6 +96,7 @@ export default function Composer({
     setActionsOpen(false);
     if (key === 'date') onDateIdea();
     else if (key === 'video') onVideoCheck();
+    else if (key === 'note') onVideoNote();
     else onActionToast('Available after your first date — keep it in-app for now.');
   };
 
@@ -101,7 +106,7 @@ export default function Composer({
       <AnimatePresence>
         {actionsOpen && (
           <motion.div
-            className="mb-2 grid grid-cols-5 gap-2 rounded-[24px] px-3 py-3"
+            className="mb-2 grid grid-cols-6 gap-2 rounded-[24px] px-3 py-3"
             style={{
               background: 'var(--glass-a)',
               border: 'var(--glass-quiet-border)',
@@ -120,7 +125,7 @@ export default function Composer({
                 className="flex min-h-[44px] flex-col items-center justify-center gap-1 rounded-2xl py-1.5"
                 style={{ background: 'var(--field)', color: 'var(--text)' }}
               >
-                <a.icon size={18} style={{ color: a.key === 'date' ? 'var(--violet)' : 'var(--text)' }} aria-hidden="true" />
+                <a.icon size={18} style={{ color: a.key === 'date' || a.key === 'note' ? 'var(--violet)' : 'var(--text)' }} aria-hidden="true" />
                 <span className="t-micro">{a.label}</span>
               </button>
             ))}

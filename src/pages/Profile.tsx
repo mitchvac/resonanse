@@ -13,11 +13,13 @@ import {
   Minus,
   Plus,
   EyeOff,
+  IdCard,
   TriangleAlert,
   TrendingUp,
 } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import GlassSheet from '@/components/GlassSheet';
+import IdVerifySheet from '@/components/verify/IdVerifySheet';
 import TabBar from '@/components/TabBar';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import CountUp from '@/components/CountUp';
@@ -168,6 +170,7 @@ export default function Profile() {
 
   const [goalOpen, setGoalOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [idVerifyOpen, setIdVerifyOpen] = useState(false);
   const [weeklyGoal, setWeeklyGoal] = useState(1);
   const [mainPhotoIdx, setMainPhotoIdx] = useState(0);
 
@@ -312,6 +315,30 @@ export default function Profile() {
                     <TriangleAlert size={14} aria-hidden="true" />
                     Verification pending — we'll notify you when it's reviewed.
                   </p>
+                )}
+                {/* ID verification — badge row when done, CTA row otherwise */}
+                {profile?.idVerifiedAt ? (
+                  <p
+                    className="t-caption mt-3 flex items-center gap-1.5 rounded-[12px] px-3 py-2 font-bold"
+                    style={{ background: 'var(--field)', color: 'var(--ok)' }}
+                  >
+                    <IdCard size={14} aria-hidden="true" />
+                    ID verified ✓
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIdVerifyOpen(true)}
+                    className="t-caption mt-3 flex min-h-[44px] w-full items-center gap-1.5 rounded-[12px] px-3 py-2 text-left font-bold"
+                    style={{ background: 'var(--field)', color: 'var(--text)' }}
+                  >
+                    <IdCard size={14} style={{ color: 'var(--violet)' }} aria-hidden="true" />
+                    <span className="flex-1">Verify your ID</span>
+                    <span className="font-normal" style={{ color: 'var(--text-secondary)' }}>
+                      Scanned in-browser — never stored
+                    </span>
+                    <ChevronRight size={15} style={{ color: 'var(--text-secondary)' }} aria-hidden="true" />
+                  </button>
                 )}
                 <div className="mt-4 grid grid-cols-1 gap-2">
                   <BtnGlass onClick={() => navigate('/profile-setup')} className="h-11 w-full">
@@ -587,6 +614,9 @@ export default function Profile() {
 
       {/* ── TabBar (Profile is a tab root — Settings hides it, §2.3) ── */}
       <TabBar likesCount={likesReceived} />
+
+      {/* ── ID verification takeover (privacy-first, in-browser scan) ── */}
+      <IdVerifySheet open={idVerifyOpen} onClose={() => setIdVerifyOpen(false)} />
 
       {/* ── Goal sheet — edit weekly goal (stepper 1–3) ────────────── */}
       <GlassSheet open={goalOpen} onClose={() => setGoalOpen(false)} labelledBy="goal-title">

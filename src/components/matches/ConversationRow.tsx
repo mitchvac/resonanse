@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Archive, BellOff, Bell, Flag, MapPin, Timer } from 'lucide-react';
+import { Archive, BellOff, Bell, Check, Flag, MapPin, Timer } from 'lucide-react';
 import type { MatchEntry } from '@/components/chat/types';
 import { relTime } from '@/components/chat/types';
 import { cn } from '@/lib/utils';
@@ -96,7 +96,13 @@ export default function ConversationRow({
   const preview = typing
     ? null
     : last
-      ? `${last.senderId === myUserId ? 'You: ' : ''}${last.kind === 'date_idea' ? '📍 Date idea' : last.content}`
+      ? `${last.senderId === myUserId ? 'You: ' : ''}${
+          last.kind === 'date_idea'
+            ? '📍 Date idea'
+            : last.kind === 'video_note'
+              ? '🎥 Video note'
+              : last.content
+        }`
       : 'Say hello';
 
   return (
@@ -173,8 +179,18 @@ export default function ConversationRow({
         </span>
 
         <span className="min-w-0 flex-1">
-          <span className="t-value block truncate font-bold" style={{ color: 'var(--text)' }}>
-            {name}
+          <span className="t-value flex items-center gap-1 truncate font-bold" style={{ color: 'var(--text)' }}>
+            <span className="truncate">{name}</span>
+            {entry.match.videoVerifiedAt && (
+              <span
+                className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full"
+                style={{ background: 'var(--ok)' }}
+                aria-label="Video verified"
+                role="img"
+              >
+                <Check size={9} strokeWidth={3.5} color="#fff" aria-hidden="true" />
+              </span>
+            )}
           </span>
           {typing ? (
             <TypingDots />

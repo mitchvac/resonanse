@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
+import IdVerifySheet from '@/components/verify/IdVerifySheet';
+import { DarkSurfaceBtn } from '@/components/call/CallOverlay';
 import { BtnGhost, BtnGlass } from '@/components/ui/buttons';
 import { ParticleRing, VerifiedBadge } from '@/components/flow/feedback';
 import { cn } from '@/lib/utils';
@@ -35,6 +37,9 @@ export default function VerifyStep({
   const [burst, setBurst] = useState(0);
   const [whyOpen, setWhyOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [idOpen, setIdOpen] = useState(false);
+  const [idDone, setIdDone] = useState(false);
+  const [idDismissed, setIdDismissed] = useState(false);
   const finishing = useRef(false);
 
   const capture = () => {
@@ -240,6 +245,23 @@ export default function VerifyStep({
                 </motion.span>
                 <p className="t-title-sm mt-3 text-white">You&rsquo;re verified.</p>
                 <p className="t-micro mt-1 text-white/60">BADGE APPEARS ON YOUR PROFILE</p>
+                {/* Optional second stage — government ID check (skippable) */}
+                {idDone ? (
+                  <p className="t-caption mt-3 flex items-center gap-1 font-bold text-white/85">
+                    <VerifiedBadge size={13} /> ID verified ✓
+                  </p>
+                ) : (
+                  !idDismissed && (
+                    <div className="mt-4 flex flex-col items-center gap-1">
+                      <DarkSurfaceBtn onClick={() => setIdOpen(true)} className="h-11 px-5">
+                        Add ID verification (optional)
+                      </DarkSurfaceBtn>
+                      <BtnGhost onClick={() => setIdDismissed(true)} className="t-caption text-white/70">
+                        Do it later
+                      </BtnGhost>
+                    </div>
+                  )
+                )}
               </motion.div>
             )}
 
@@ -299,6 +321,13 @@ export default function VerifyStep({
           </p>
         </div>
       </GlassSheet>
+
+      {/* Optional ID verification — second stage, privacy-first */}
+      <IdVerifySheet
+        open={idOpen}
+        onClose={() => setIdOpen(false)}
+        onVerified={() => setIdDone(true)}
+      />
 
       {/* Support sheet (failure state) */}
       <GlassSheet open={helpOpen} onClose={() => setHelpOpen(false)} labelledBy="verify-help-title">

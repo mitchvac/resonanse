@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
   BadgeCheck,
+  Check,
   Video,
   Shield,
   ShieldAlert,
   X,
-  PhoneOff,
 } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
 import { BtnPrimary } from '@/components/ui/buttons';
@@ -19,6 +19,11 @@ import StartersTray from '@/components/chat/StartersTray';
 import DateIdeasSheet from '@/components/chat/DateIdeasSheet';
 import SafetySheet from '@/components/chat/SafetySheet';
 import Composer from '@/components/chat/Composer';
+import TrustSheet from '@/components/chat/TrustSheet';
+import VideoNoteBubble from '@/components/chat/VideoNoteBubble';
+import VideoNoteRecorder from '@/components/chat/VideoNoteRecorder';
+import CallOverlay from '@/components/call/CallOverlay';
+import type { CallEndReason, CallRole } from '@/components/call/useVideoCall';
 import { Toast, useToast } from '@/components/chat/Toast';
 import type { ChatMessage } from '@/components/chat/types';
 import {
@@ -90,7 +95,7 @@ function TypingBubble() {
 
 export default function Chat() {
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const myUserId = user?.id ?? null;
@@ -132,8 +137,11 @@ export default function Chat() {
   const [usedStarter, setUsedStarter] = useState(false);
   const [dateSheetOpen, setDateSheetOpen] = useState(false);
   const [safetyOpen, setSafetyOpen] = useState(false);
+  const [trustOpen, setTrustOpen] = useState(false);
   const [videoSheetOpen, setVideoSheetOpen] = useState(false);
-  const [videoCall, setVideoCall] = useState(false);
+  const [callSession, setCallSession] = useState<{ sessionId: number; role: CallRole } | null>(null);
+  const [justVideoVerified, setJustVideoVerified] = useState(false);
+  const [noteRecorderOpen, setNoteRecorderOpen] = useState(false);
   const [showWeMet, setShowWeMet] = useState(false);
   const [acceptedTime, setAcceptedTime] = useState<string | undefined>();
   const [safetyBarDismissed, setSafetyBarDismissed] = useState(true);
@@ -182,7 +190,7 @@ export default function Chat() {
   useEffect(() => {
     const el = streamRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages.length, peerTyping, showWeMet, videoCall]);
+  }, [messages.length, peerTyping, showWeMet]);
 
   const sendMut = trpc.chat.send.useMutation();
   const proposeMut = trpc.chat.proposeDate.useMutation();
@@ -285,15 +293,60 @@ export default function Chat() {
     }
   };
 
-  /* ---- Video check (§6) ---- */
-  const sendVideoInvite = () => {
+  /* ---- Video check (§6) — consent sheet starts a REAL WebRTC call ---- */
+  const startCallMut = trpc.videoCall.start.useMutation();
+  const startRealCall = () => {
     setVideoSheetOpen(false);
-    showToast('Video-check invite sent.');
-    later(() => setVideoCall(true), 2000);
+    if (callSession || startCallMut.isPending) return;
+    startCallMut.mutate(
+      { conversationId },
+      {
+        onSuccess: ({ sessionId }) => setCallSession({ sessionId, role: 'caller' }),
+        onError: (err) =>
+          showToast(
+            err.data?.code === 'CONFLICT'
+              ? 'A call is already in progress.'
+              : "Couldn't start the video check.",
+          ),
+      },
+    );
+  };
+
+  /* Entering as the callee after accepting from the global incoming sheet */
+  const incomingSessionId = Number(searchParams.get('call'));
+  useEffect(() => {
+    if (Number.isFinite(incomingSessionId) && incomingSessionId > 0) {
+      setCallSession((cur) => cur ?? { sessionId: incomingSessionId, role: 'callee' });
+    }
+  }, [incomingSessionId]);
+
+  const handleCallClosed = (reason: CallEndReason, videoVerified: boolean) => {
+    setCallSession(null);
+    if (searchParams.get('call')) setSearchParams({}, { replace: true });
+    if (videoVerified) {
+      setJustVideoVerified(true);
+      showToast('Video verified ✓', <BadgeCheck size={13} style={{ color: 'var(--ok)' }} />);
+      void utils.matches.list.invalidate();
+      void utils.chat.messages.invalidate();
+      return;
+    }
+    if (reason === 'declined') showToast('Call declined.');
+    else if (reason === 'missed') showToast('No answer.');
+    else showToast('Call ended.');
+  };
+
+  /* ---- Video notes (live camera) ---- */
+  const handleVideoNoteSent = (message: ChatMessage) => {
+    setMessages((m) => [...m, message]);
+    showToast('Video note sent.');
   };
 
   /* ---- We Met (§6) ---- */
   const matchId = match?.id ?? matchEntry?.match.id ?? 0;
+
+  /* Video verified — this match finished a 30s+ live call */
+  const videoVerifiedAt = match?.videoVerifiedAt ?? matchEntry?.match.videoVerifiedAt ?? null;
+  const showVideoVerified = justVideoVerified || !!videoVerifiedAt;
 
   /* Peer presence — deterministic for seed profiles */
   const activeNow = (peer?.id ?? 1) % 2 === 0;
@@ -354,6 +407,16 @@ export default function Chat() {
                 {peer?.verified && (
                   <BadgeCheck size={16} style={{ color: 'var(--violet)' }} aria-label="Verified" />
                 )}
+                {showVideoVerified && (
+                  <span
+                    className="t-micro flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 font-bold"
+                    style={{ background: 'var(--field)', color: 'var(--ok)' }}
+                    aria-label="Video verified"
+                  >
+                    <Check size={9} strokeWidth={3} aria-hidden="true" />
+                    Video ✓
+                  </span>
+                )}
               </p>
               {activeNow && (
                 <p className="t-caption flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
@@ -373,10 +436,10 @@ export default function Chat() {
             </button>
             <button
               type="button"
-              onClick={() => setSafetyOpen(true)}
+              onClick={() => setTrustOpen(true)}
               className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
-              aria-label="Safety tools"
+              aria-label={`Ways to verify ${peerName}`}
             >
               <Shield size={18} aria-hidden="true" />
             </button>
@@ -520,6 +583,12 @@ export default function Chat() {
                       onAccept={() => markDateStatus(m.id, 'accepted', (m.meta as DateMeta)?.time)}
                       onDecline={() => markDateStatus(m.id, 'declined')}
                     />
+                  ) : m.kind === 'video_note' ? (
+                    <VideoNoteBubble
+                      message={m}
+                      own={own}
+                      index={Math.max(0, messages.length - i - 1)}
+                    />
                   ) : (
                     <MessageBubble
                       message={m}
@@ -534,42 +603,6 @@ export default function Chat() {
             })}
 
             <AnimatePresence>{peerTyping && <TypingBubble />}</AnimatePresence>
-
-            {/* In-thread video-check card (§6) */}
-            <AnimatePresence>
-              {videoCall && (
-                <motion.div
-                  className="relative mx-auto w-full max-w-[320px] overflow-hidden rounded-[24px]"
-                  style={{ border: 'var(--glass-quiet-border)' }}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.32 }}
-                >
-                  <img src={peerPhoto} alt={`${peerName} on video check`} className="h-56 w-full object-cover" />
-                  <img
-                    src="/self-01.jpg"
-                    alt="You on video check"
-                    className="absolute bottom-12 right-3 h-20 w-16 rounded-xl border-2 border-white/70 object-cover"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-3 py-2" style={{ background: 'var(--photo-scrim)' }}>
-                    <span className="t-caption text-white">Video check · 3:00</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setVideoCall(false);
-                        showToast('Video check ended.');
-                      }}
-                      className="flex h-9 w-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-white"
-                      style={{ background: 'var(--danger)' }}
-                      aria-label="End video check"
-                    >
-                      <PhoneOff size={15} aria-hidden="true" />
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* §6 We Met card */}
             {showWeMet && matchId > 0 && match?.weMet === 'none' && (
@@ -613,6 +646,7 @@ export default function Chat() {
           onToggleEphemeral={toggleEphemeral}
           onDateIdea={() => setDateSheetOpen(true)}
           onVideoCheck={() => setVideoSheetOpen(true)}
+          onVideoNote={() => setNoteRecorderOpen(true)}
           onActionToast={showToast}
         />
       )}
@@ -642,7 +676,7 @@ export default function Chat() {
         onToast={showToast}
       />
 
-      {/* §6 Video-check consent sheet */}
+      {/* §6 Video-check consent sheet — confirm starts the real call */}
       <GlassSheet open={videoSheetOpen} onClose={() => setVideoSheetOpen(false)} labelledBy="video-check-title">
         <div className="px-5 pb-6 pt-1">
           <h2 id="video-check-title" className="t-title" style={{ color: 'var(--text)' }}>
@@ -651,11 +685,58 @@ export default function Chat() {
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
             Both cameras, 3 minutes, no recording stored.
           </p>
-          <BtnPrimary className="mt-4 w-full" onClick={sendVideoInvite}>
-            Send video-check invite
+          <BtnPrimary className="mt-4 w-full" onClick={startRealCall} disabled={startCallMut.isPending}>
+            {startCallMut.isPending ? 'Starting…' : 'Send video-check invite'}
           </BtnPrimary>
         </div>
       </GlassSheet>
+
+      {/* Ways to verify — trust surface (three identity checks, live status) */}
+      <TrustSheet
+        open={trustOpen}
+        onClose={() => setTrustOpen(false)}
+        peerName={peerName}
+        state={{
+          photoVerified: peer?.verified === true || peer?.verificationStatus === 'verified',
+          idVerified: !!peer?.idVerifiedAt,
+          videoVerified: showVideoVerified,
+        }}
+        onVideoCall={() => {
+          setTrustOpen(false);
+          setVideoSheetOpen(true);
+        }}
+        onVideoNote={() => {
+          setTrustOpen(false);
+          setNoteRecorderOpen(true);
+        }}
+        onSafety={() => {
+          setTrustOpen(false);
+          setSafetyOpen(true);
+        }}
+      />
+
+      {/* Video note recorder (live camera only) */}
+      <VideoNoteRecorder
+        open={noteRecorderOpen}
+        conversationId={conversationId}
+        onClose={() => setNoteRecorderOpen(false)}
+        onSent={handleVideoNoteSent}
+        onToast={showToast}
+      />
+
+      {/* Real WebRTC call — full-screen takeover */}
+      <AnimatePresence>
+        {callSession && (
+          <CallOverlay
+            key={callSession.sessionId}
+            sessionId={callSession.sessionId}
+            role={callSession.role}
+            peerName={peerName}
+            peerPhoto={peerPhoto}
+            onClose={handleCallClosed}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

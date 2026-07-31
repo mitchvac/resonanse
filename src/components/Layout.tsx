@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router';
 import StageBackdrop from '@/components/StageBackdrop';
+import IncomingCallListener from '@/components/call/IncomingCallListener';
 
 /**
  * Layout — the PHONE SHELL (design.md §2)
@@ -23,6 +24,8 @@ export default function Layout() {
           <div className="relative z-10 flex-1 overflow-hidden">
             <Outlet />
           </div>
+          {/* Global incoming video-call takeover (polls videoCall.incoming) */}
+          <IncomingCallListener />
         </div>
       </div>
     </div>
