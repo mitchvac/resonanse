@@ -10,6 +10,7 @@ import AboutYouStep from '@/components/onboarding/AboutYouStep';
 import IntentStep from '@/components/onboarding/IntentStep';
 import VerifyStep from '@/components/onboarding/VerifyStep';
 import PermissionsStep from '@/components/onboarding/PermissionsStep';
+import WalletAuthorityStep from '@/components/onboarding/WalletAuthorityStep';
 import DoneStep from '@/components/onboarding/DoneStep';
 import {
   ageFromBirthday,
@@ -31,12 +32,14 @@ import { cn } from '@/lib/utils';
  * right 320ms var(--ease-out) + fade; back reverses.
  *
  * Flow: 0 Welcome → 1 About you → 2 Intent → 3 Photo verification
- * (mandatory gate) → 4 Permissions → 5 Done → /profile-setup.
+ * (mandatory gate) → 4 Permissions → 5 Smart Custody Wallet authority
+ * (mandatory gate when wallet.state.hasWallet === false; skipped in demo
+ * mode and for existing wallet holders) → 6 Done → /profile-setup.
  * Auth is owned by the backend graft — unauthenticated CTAs go to /login.
  * Every step persists to a localStorage draft; returning resumes the flow.
  */
 
-const STEP_COUNT = 5;
+const STEP_COUNT = 6;
 const EASE_OUT = [0.22, 1, 0.36, 1] as [number, number, number, number];
 const EASE_SPRING = [0.34, 1.56, 0.64, 1] as [number, number, number, number];
 
@@ -193,6 +196,13 @@ export default function Onboarding() {
     navigate('/profile-setup');
   };
 
+  /* Smart Custody gate: demo-mode visitors never hit the wallet step — the
+     agreement requires a signed-in account. Existing wallet holders are
+     auto-advanced by the step itself once wallet.state resolves. */
+  useEffect(() => {
+    if (step === 5 && !authLoading && !isAuthenticated) goTo(6);
+  }, [step, authLoading, isAuthenticated, goTo]);
+
   /* — sticky CTA config per step (computed each render so actions never
        close over stale draft state) — */
   const cta = (() => {
@@ -214,11 +224,11 @@ export default function Onboarding() {
       case 4:
         return { label: 'Continue', enabled: true, action: () => goTo(5) };
       default:
-        return null; // steps 0 & 5 carry their own CTAs
+        return null; // steps 0, 5 (wallet authority) & 6 (done) carry their own CTAs
     }
   })();
 
-  const showChrome = step >= 1 && step <= 4;
+  const showChrome = step >= 1 && step <= 5;
 
   return (
     <div className="relative flex h-full min-h-[100dvh] flex-col md:min-h-0">
@@ -260,7 +270,8 @@ export default function Onboarding() {
             {step === 4 && (
               <PermissionsStep draft={draft} update={update} onSkip={() => goTo(5)} />
             )}
-            {step === 5 && <DoneStep onContinue={finishFlow} />}
+            {step === 5 && <WalletAuthorityStep onDone={() => goTo(6)} />}
+            {step === 6 && <DoneStep onContinue={finishFlow} />}
           </motion.div>
         </AnimatePresence>
       </div>

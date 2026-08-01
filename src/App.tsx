@@ -9,6 +9,7 @@ import Matches from '@/pages/Matches'
 import Chat from '@/pages/Chat'
 import Events from '@/pages/Events'
 import Premium from '@/pages/Premium'
+import Wallet from '@/pages/Wallet'
 import Profile from '@/pages/Profile'
 import Settings from '@/pages/Settings'
 import Login from '@/pages/Login'
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="/chat/:id" element={<Chat />} />
         <Route path="/events" element={<Events />} />
         <Route path="/premium" element={<Premium />} />
+        <Route path="/wallet" element={<Wallet />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
