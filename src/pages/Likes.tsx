@@ -48,13 +48,28 @@ export default function Likes() {
   const [preview, setPreview] = useState<'Auto' | 'Free' | '+'>('Auto');
   const blurred = preview === 'Auto' ? serverBlurred : preview === 'Free';
 
+  const [unlocking, setUnlocking] = useState(false);
+
+  /* Real upgrade moment: server tier flips free → paid (likes.received
+     unblurs) — play the same diagonal wave the demo toggle previews. */
+  const prevServerBlurred = useRef<boolean | null>(null);
+  useEffect(() => {
+    const prev = prevServerBlurred.current;
+    prevServerBlurred.current = serverBlurred;
+    if (prev === true && !serverBlurred && !reduced) {
+      setUnlocking(true);
+      const t = window.setTimeout(() => setUnlocking(false), 1400);
+      return () => window.clearTimeout(t);
+    }
+    return undefined;
+  }, [serverBlurred, reduced]);
+
   const pulses = useMemo(() => receivedQuery.data?.pulses ?? [], [receivedQuery.data]);
   const likesAll = useMemo(() => receivedQuery.data?.likes ?? [], [receivedQuery.data]);
 
   const [viewedPulses, setViewedPulses] = useState<Set<number>>(new Set());
   const [sort, setSort] = useState<SortMode>('Compatibility');
   const [sortOpen, setSortOpen] = useState(false);
-  const [unlocking, setUnlocking] = useState(false);
   const [teaser, setTeaser] = useState<ReceivedLike | null>(null);
   const [sheetLike, setSheetLike] = useState<ReceivedLike | null>(null);
   const [quickAction, setQuickAction] = useState<ReceivedLike | null>(null);
@@ -187,6 +202,19 @@ export default function Likes() {
       <div className="no-scrollbar flex-1 overflow-y-auto px-5 pb-32 pt-4">
         {receivedQuery.isLoading ? (
           <LikesSkeleton />
+        ) : receivedQuery.isError ? (
+          <div className="flex flex-col items-center px-6 py-16 text-center">
+            <BrandMark size={56} />
+            <h2 className="t-title-sm mt-5" style={{ color: 'var(--text-ink)' }}>
+              Couldn't load your likes.
+            </h2>
+            <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+              Check your connection and try again.
+            </p>
+            <BtnGlass className="mt-6" onClick={() => void receivedQuery.refetch()}>
+              Retry
+            </BtnGlass>
+          </div>
         ) : totalCount === 0 ? (
           /* zero likes — EmptyState */
           <div className="flex flex-col items-center px-6 py-16 text-center">
