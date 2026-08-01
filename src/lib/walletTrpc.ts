@@ -115,3 +115,12 @@ export function formatUsdMicro(micro: number | undefined | null): string {
     maximumFractionDigits: 2,
   })}`;
 }
+
+/** micro-USD per-coin price → "$0.105" (3 decimals — the +0.005 ratchet must be visible) */
+export function formatPriceMicro(micro: number | undefined | null): string {
+  if (micro === undefined || micro === null || !Number.isFinite(micro)) return '$0.100';
+  return `$${(micro / 1_000_000).toLocaleString('en-US', {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  })}`;
+}

@@ -19,7 +19,7 @@ import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import { Toggle } from '@/components/settings/controls';
 import CryptoCheckoutSheet from '@/components/wallet/CryptoCheckoutSheet';
 import { useAuth } from '@/hooks/useAuth';
-import { useWalletUtils, walletTrpc, formatCoins } from '@/lib/walletTrpc';
+import { useWalletUtils, walletTrpc, formatCoins, formatPriceMicro } from '@/lib/walletTrpc';
 import { LOGIN_PATH } from '@/const';
 import type { WalletSale, WalletState } from '@/types/wallet-router';
 
@@ -153,7 +153,7 @@ function SaleRow({ sale }: { sale: WalletSale }) {
         </span>
         <span className="t-micro block" style={{ color: 'var(--text-secondary)' }}>
           {dateText}
-          {sale.pricePerCoin !== undefined && ` · ${String(sale.pricePerCoin)} / coin`}
+          {sale.pricePerCoin !== undefined && ` · ${formatPriceMicro(Number(sale.pricePerCoin))} / coin`}
         </span>
       </span>
       <span className="t-value font-bold" style={{ color: 'var(--text)' }}>
@@ -382,7 +382,7 @@ export default function Wallet() {
                       LIVE SYSTEM PRICE
                     </p>
                     <p className="t-title mt-0.5" style={{ color: 'var(--text)' }}>
-                      {String(state.price)}
+                      {formatPriceMicro(Number(state.price))}
                     </p>
                   </div>
                   <div className="text-right">

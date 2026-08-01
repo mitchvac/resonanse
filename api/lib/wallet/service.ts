@@ -313,9 +313,13 @@ export async function createPaymentIntent(
   userId: number,
   purpose: (typeof schema.DC_INTENT_PURPOSE)[number],
   asset: (typeof schema.DC_PAID_WITH)[number],
+  opts?: { usdMicro?: number },
 ): Promise<CreatePaymentResult> {
   const db = getDb();
-  const quotedUsdMicro = PURPOSE_USD_MICRO[purpose];
+  const quotedUsdMicro =
+    purpose === "TOP_UP" && opts?.usdMicro
+      ? opts.usdMicro
+      : PURPOSE_USD_MICRO[purpose];
   const address =
     asset === "BTC" ? env.merchantBtcAddress : env.merchantXrpAddress;
 

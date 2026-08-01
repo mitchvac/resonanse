@@ -91,10 +91,16 @@ export const walletRouter = createRouter({
       z.object({
         purpose: z.enum(["SUBSCRIPTION_PLUS", "SUBSCRIPTION_X", "TOP_UP"]),
         asset: z.enum(["XRP", "RLUSD", "BTC"]),
+        /** TOP_UP only: chosen USD amount in micro-USD (defaults to the $10 pack) */
+        usdMicro: z.number().int().min(1_000_000).max(10_000_000_000).optional(),
       }),
     )
     .mutation(({ ctx, input }) =>
-      run(() => createPaymentIntent(ctx.user.id, input.purpose, input.asset)),
+      run(() =>
+        createPaymentIntent(ctx.user.id, input.purpose, input.asset, {
+          usdMicro: input.usdMicro,
+        }),
+      ),
     ),
 
   /** Server-side on-chain verification + atomic settlement (idempotent). */

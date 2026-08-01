@@ -69,7 +69,7 @@ export type PaymentIntent = {
   intentId: string;
   address: string;
   /** destination tag (XRP/RLUSD) or memo; empty when not required */
-  memoOrTag?: string;
+  memoOrTag?: string | null;
   expectedAmountText: string;
   asset: WalletAsset;
   expiresAt: string | Date;

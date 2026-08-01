@@ -15,7 +15,7 @@ import BrandMark from '@/components/BrandMark';
 import AppToast from '@/components/AppToast';
 import type { ToastPayload } from '@/components/AppToast';
 import { BtnGhost, BtnGlass, BtnPrimary } from '@/components/ui/buttons';
-import { useWalletUtils, walletTrpc, formatCoins, formatUsdMicro } from '@/lib/walletTrpc';
+import { useWalletUtils, walletTrpc, formatCoins, formatUsdMicro, formatPriceMicro } from '@/lib/walletTrpc';
 import { trpc } from '@/providers/trpc';
 import type {
   PaymentIntent,
@@ -308,7 +308,7 @@ export default function CryptoCheckoutSheet({
                     <>
                       <span className="t-caption" style={{ color: 'var(--text-secondary)' }}>
                         {formatUsdMicro(quoteQuery.data?.totalUsdMicro)} at{' '}
-                        {String(quoteQuery.data?.pricePerCoin ?? '—')} / coin
+                        {quoteQuery.data?.pricePerCoin !== undefined ? formatPriceMicro(Number(quoteQuery.data.pricePerCoin)) : '—'} / coin
                       </span>
                       <span className="t-value font-bold" style={{ color: 'var(--text)' }}>
                         {formatCoins(quoteQuery.data?.coins)} DC
@@ -431,7 +431,7 @@ export default function CryptoCheckoutSheet({
                     {(intent.coins !== undefined || intent.pricePerCoin !== undefined) && (
                       <p className="t-caption mt-3" style={{ color: 'var(--text-secondary)' }}>
                         {intent.coins !== undefined && <>You&rsquo;ll receive {formatCoins(intent.coins)} Date-Coin</>}
-                        {intent.pricePerCoin !== undefined && <> at {String(intent.pricePerCoin)} / coin</>}.
+                        {intent.pricePerCoin !== undefined && <> at {formatPriceMicro(Number(intent.pricePerCoin))} / coin</>}.
                       </p>
                     )}
                   </>
