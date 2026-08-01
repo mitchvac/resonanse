@@ -104,7 +104,7 @@ function CopyRow({
         <button
           type="button"
           onClick={() => onCopy(value)}
-          className="t-caption flex min-h-[32px] items-center gap-1.5 rounded-full px-2 font-bold"
+          className="t-caption flex min-h-[44px] items-center gap-1.5 rounded-full px-2 font-bold"
           style={{ color: 'var(--violet)' }}
           aria-label={`Copy ${label.toLowerCase()}`}
         >
@@ -113,8 +113,8 @@ function CopyRow({
         </button>
       </div>
       <p
-        className="t-value mt-1 font-bold break-all select-all"
-        style={{ color: 'var(--text)', letterSpacing: '0.01em' }}
+        className="t-value mt-1 break-all font-mono text-[15px] font-bold select-all"
+        style={{ color: 'var(--text)', letterSpacing: '0.01em', overflowWrap: 'anywhere' }}
       >
         {value}
       </p>

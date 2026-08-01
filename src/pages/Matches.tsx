@@ -236,7 +236,7 @@ export default function Matches() {
       {/* Scrollable column */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto pb-28"
+        className="flex-1 overflow-y-auto pb-32"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}

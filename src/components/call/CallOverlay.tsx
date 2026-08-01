@@ -171,7 +171,10 @@ export default function CallOverlay({
       />
 
       {/* Top status bar */}
-      <div className="relative z-10 flex items-center gap-2.5 px-5 pt-5">
+      <div
+        className="relative z-10 flex items-center gap-2.5 px-5"
+        style={{ paddingTop: 'max(20px, env(safe-area-inset-top, 0px))' }}
+      >
         <img src={peerPhoto} alt="" className="h-9 w-9 rounded-full object-cover ring-1 ring-white/40" />
         <div className="min-w-0 flex-1">
           <p className="t-value truncate font-bold text-white">{peerName}</p>
@@ -240,7 +243,10 @@ export default function CallOverlay({
       )}
 
       {/* Bottom controls */}
-      <div className="relative z-10 mt-auto flex items-center justify-center gap-5 px-5 pb-9">
+      <div
+        className="relative z-10 mt-auto flex items-center justify-center gap-5 px-5"
+        style={{ paddingBottom: 'max(36px, env(safe-area-inset-bottom, 0px))' }}
+      >
         <button
           type="button"
           onClick={call.toggleMic}

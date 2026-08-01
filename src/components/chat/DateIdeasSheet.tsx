@@ -86,7 +86,7 @@ export default function DateIdeasSheet({
                         type="button"
                         onClick={() => setPickedTime((p) => ({ ...p, [i]: t }))}
                         className={cn(
-                          't-caption min-h-[32px] rounded-full px-3 py-1.5',
+                          't-caption min-h-[44px] rounded-full px-3 py-1.5',
                           time === t && 'font-bold',
                         )}
                         style={{

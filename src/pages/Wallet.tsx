@@ -156,7 +156,7 @@ function SaleRow({ sale }: { sale: WalletSale }) {
           {sale.pricePerCoin !== undefined && ` · ${formatPriceMicro(Number(sale.pricePerCoin))} / coin`}
         </span>
       </span>
-      <span className="t-value font-bold" style={{ color: 'var(--text)' }}>
+      <span className="t-value shrink-0 pl-2 font-bold" style={{ color: 'var(--text)' }}>
         {bought ? '+' : '−'}
         {formatCoins(sale.coins)} DC
       </span>

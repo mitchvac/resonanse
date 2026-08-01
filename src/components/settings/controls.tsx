@@ -145,7 +145,7 @@ export function Toggle({
         e.stopPropagation();
         onChange(!checked);
       }}
-      className="relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200"
+      className="relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 before:absolute before:-inset-2 before:content-['']"
       style={{
         background: checked ? 'var(--violet)' : 'var(--field-focus)',
         opacity: disabled ? 0.5 : 1,

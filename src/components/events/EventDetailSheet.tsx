@@ -174,10 +174,11 @@ export default function EventDetailSheet({
         {/* Sticky footer */}
         {event && (
           <div
-            className="absolute inset-x-0 bottom-0 flex gap-2 px-5 pb-5 pt-6"
+            className="absolute inset-x-0 bottom-0 flex gap-2 px-5 pt-6"
             style={{
               background:
                 'linear-gradient(180deg, transparent 0%, var(--glass-solid) 45%)',
+              paddingBottom: 'max(20px, env(safe-area-inset-bottom, 0px))',
             }}
           >
             <BtnGlass className="h-[52px] flex-1 px-4" onClick={() => setPickerOpen(true)}>

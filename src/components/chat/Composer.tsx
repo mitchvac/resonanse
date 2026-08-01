@@ -101,7 +101,10 @@ export default function Composer({
   };
 
   return (
-    <div className="relative px-3 pb-3">
+    <div
+      className="relative px-3"
+      style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}
+    >
       {/* Action grid */}
       <AnimatePresence>
         {actionsOpen && (
@@ -169,7 +172,7 @@ export default function Composer({
             <button
               type="button"
               onClick={onToggleEphemeral}
-              className={cn('t-caption flex min-h-[32px] items-center gap-1.5 rounded-full px-2.5 py-1', ephemeral && 'font-bold')}
+              className={cn('t-caption relative flex min-h-[32px] items-center gap-1.5 rounded-full px-2.5 py-1 before:absolute before:-inset-2 before:content-[\'\']', ephemeral && 'font-bold')}
               style={{
                 background: 'var(--field)',
                 color: ephemeral ? 'var(--warn)' : 'var(--text-secondary)',

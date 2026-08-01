@@ -151,7 +151,7 @@ function EventInviteBubble({ message, own }: { message: ChatMessage; own: boolea
           )}
           <Link
             to="/events"
-            className="t-caption mt-2 inline-flex min-h-[32px] items-center gap-0.5 font-bold"
+            className="t-caption mt-2 inline-flex min-h-[44px] items-center gap-0.5 font-bold"
             style={{ color: 'var(--violet)' }}
           >
             View event

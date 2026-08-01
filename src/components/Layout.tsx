@@ -19,8 +19,12 @@ export default function Layout() {
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[430px] md:items-center md:py-6">
         <div className="phone-shell relative flex min-h-[100dvh] w-full flex-col overflow-hidden md:h-[min(920px,calc(100dvh-48px))] md:min-h-0">
           <div className="phone-bloom" aria-hidden="true" />
-          {/* Status bar spacer (12px) */}
-          <div className="relative z-10 h-3 shrink-0" aria-hidden="true" />
+          {/* Status bar spacer (12px + notch safe-area) */}
+          <div
+            className="relative z-10 shrink-0"
+            style={{ height: 'calc(12px + env(safe-area-inset-top, 0px))' }}
+            aria-hidden="true"
+          />
           <div className="relative z-10 flex-1 overflow-hidden">
             <Outlet />
           </div>

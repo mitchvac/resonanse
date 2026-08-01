@@ -26,7 +26,16 @@ export default function Chip({
   );
   if (onClick) {
     return (
-      <button type="button" className={cls} onClick={onClick} aria-pressed={selected}>
+      /* 32px visual pill, ≥44px invisible hit area (pseudo-element) */
+      <button
+        type="button"
+        className={cn(
+          cls,
+          "relative before:absolute before:-inset-x-1.5 before:-inset-y-2 before:content-['']",
+        )}
+        onClick={onClick}
+        aria-pressed={selected}
+      >
         {children}
       </button>
     );

@@ -483,8 +483,14 @@
   .bg-scrim { background-color: var(--scrim); }
   .shadow-violet-glow { box-shadow: var(--violet-glow); }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .safe-top { padding-top: env(safe-area-inset-top, 0px); }
   .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    /* momentum scrolling for horizontal rails/carousels on iOS */
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Glass fallbacks (§3.3) */

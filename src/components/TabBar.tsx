@@ -29,8 +29,8 @@ export default function TabBar({
   return (
     <nav
       aria-label="Primary"
-      className="absolute inset-x-3 bottom-3 z-30"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="absolute inset-x-3 z-30"
+      style={{ bottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}
     >
       <div
         className="glass h-[72px] rounded-[24px]"

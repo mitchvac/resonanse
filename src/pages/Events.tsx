@@ -550,7 +550,7 @@ export default function Events() {
                             key={star}
                             type="button"
                             aria-label={`${star} stars`}
-                            className="flex min-h-[32px] min-w-[32px] items-center justify-center"
+                            className="flex min-h-[44px] min-w-[44px] items-center justify-center"
                             initial={reduced ? false : { opacity: 0, scale: 0.6 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: reduced ? 0 : i * 0.04 }}

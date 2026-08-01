@@ -156,7 +156,7 @@ export default function IntentStep({
               type="button"
               onClick={() => setInfoOpen(true)}
               aria-label="About intent visibility"
-              className="flex h-8 w-8 items-center justify-center rounded-full transition-opacity duration-fast active:opacity-70"
+              className="flex h-8 min-h-[44px] w-8 min-w-[44px] items-center justify-center rounded-full transition-opacity duration-fast active:opacity-70"
               style={{ color: 'var(--text-secondary)' }}
             >
               <Info size={16} aria-hidden="true" />

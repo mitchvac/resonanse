@@ -143,7 +143,7 @@ function FeatureRow({
           e.stopPropagation();
           onToggle();
         }}
-        className="flex min-h-[32px] w-full items-center gap-2 py-0.5 text-left"
+        className="flex min-h-[44px] w-full items-center gap-2 py-0.5 text-left"
       >
         <Check size={14} strokeWidth={2.5} style={{ color: 'var(--ok)' }} aria-hidden="true" />
         <span className="t-caption" style={{ color: 'var(--text)' }}>
@@ -705,10 +705,11 @@ export default function Premium() {
       {/* — §5 Sticky footer — */}
       {isAuthenticated && !entitlementsQuery.isLoading && !success && (
         <div
-          className="absolute inset-x-0 bottom-0 px-5 pb-5 pt-10"
+          className="absolute inset-x-0 bottom-0 px-5 pt-10"
           style={{
             background:
               'linear-gradient(180deg, transparent 0%, var(--stage-base) 55%)',
+            paddingBottom: 'max(20px, env(safe-area-inset-bottom, 0px))',
           }}
         >
           {!isMember && (
@@ -736,10 +737,10 @@ export default function Premium() {
               Pay with crypto — XRP · RLUSD · BTC
             </BtnGlass>
           )}
-          <div className="mt-3 flex items-center justify-center gap-4">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4">
             <button
               type="button"
-              className="t-micro min-h-[32px]"
+              className="t-micro min-h-[44px]"
               style={{ color: 'var(--text-secondary)' }}
               onClick={() => {
                 void entitlementsQuery.refetch();
@@ -750,7 +751,7 @@ export default function Premium() {
             </button>
             <button
               type="button"
-              className="t-micro min-h-[32px]"
+              className="t-micro min-h-[44px]"
               style={{ color: 'var(--text-secondary)' }}
               onClick={() => showToast('Terms open at resonance.date/terms.')}
             >
@@ -758,7 +759,7 @@ export default function Premium() {
             </button>
             <Link
               to="/settings"
-              className="t-micro flex min-h-[32px] items-center"
+              className="t-micro flex min-h-[44px] items-center"
               style={{ color: 'var(--text-secondary)' }}
             >
               Cancel anytime in Settings

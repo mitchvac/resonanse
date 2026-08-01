@@ -42,7 +42,7 @@ export default function Footer() {
                   <a
                     key={i}
                     href="#"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-field transition-colors duration-fast"
+                    className="flex h-10 min-h-[44px] w-10 min-w-[44px] items-center justify-center rounded-full bg-field transition-colors duration-fast"
                     style={{ color: 'var(--text-secondary)' }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
                     onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}

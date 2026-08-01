@@ -187,7 +187,10 @@ export default function IdVerifySheet({
           aria-label="ID verification"
         >
           {/* Header */}
-          <div className="flex items-center gap-2 px-4 pt-4">
+          <div
+            className="flex items-center gap-2 px-4"
+            style={{ paddingTop: 'max(16px, env(safe-area-inset-top, 0px))' }}
+          >
             <button
               type="button"
               onClick={onClose}
@@ -204,7 +207,10 @@ export default function IdVerifySheet({
             )}
           </div>
 
-          <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-6">
+          <div
+            className="flex flex-1 flex-col overflow-y-auto px-5"
+            style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))' }}
+          >
             <AnimatePresence mode="wait">
               {/* ——— Step 1: choose the document ——— */}
               {step === 'doc' && (

@@ -233,7 +233,10 @@ export default function VideoNoteRecorder({
           aria-label="Record a video note"
         >
           {/* Header */}
-          <div className="flex items-center gap-2 px-4 pt-4">
+          <div
+            className="flex items-center gap-2 px-4"
+            style={{ paddingTop: 'max(16px, env(safe-area-inset-top, 0px))' }}
+          >
             <button
               type="button"
               onClick={onClose}
@@ -360,7 +363,10 @@ export default function VideoNoteRecorder({
           </div>
 
           {/* Honest camera-only caption */}
-          <p className={cn('t-caption px-8 pb-6 text-center text-white/55')}>
+          <p
+            className={cn('t-caption px-8 text-center text-white/55')}
+            style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))' }}
+          >
             Recorded live in-app — no uploads, no filters.
           </p>
         </motion.div>

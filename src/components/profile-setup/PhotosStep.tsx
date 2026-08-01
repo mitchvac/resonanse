@@ -232,7 +232,7 @@ export default function PhotosStep({
                 type="button"
                 onClick={() => setNudge(false)}
                 aria-label="Dismiss suggestion"
-                className="flex h-8 w-8 items-center justify-center rounded-full transition-opacity duration-fast active:opacity-70"
+                className="flex h-8 min-h-[44px] w-8 min-w-[44px] items-center justify-center rounded-full transition-opacity duration-fast active:opacity-70"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 <X size={16} aria-hidden="true" />

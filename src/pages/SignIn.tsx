@@ -166,7 +166,7 @@ export default function SignIn() {
                 role="tab"
                 aria-selected={mode === option.id}
                 onClick={() => switchMode(option.id)}
-                className="t-button h-10 flex-1 rounded-full transition-all duration-fast"
+                className="t-button h-10 min-h-[44px] flex-1 rounded-full transition-all duration-fast"
                 style={{
                   color: mode === option.id ? 'var(--text)' : 'var(--text-secondary)',
                   background:

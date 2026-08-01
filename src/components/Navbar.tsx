@@ -34,7 +34,7 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        'fixed inset-x-0 top-0 z-50 transition-all duration-med ease-glassy-out',
+        'safe-top fixed inset-x-0 top-0 z-50 transition-all duration-med ease-glassy-out',
         scrolled ? 'h-16' : 'h-[72px]',
       )}
     >
@@ -87,7 +87,7 @@ export default function Navbar() {
               <BtnGhost to="/discover" className="hidden sm:inline-flex">
                 Open app
               </BtnGhost>
-              <BtnPrimary to="/discover" className="h-10 px-5">
+              <BtnPrimary to="/discover" className="h-10 min-h-[44px] px-5">
                 {user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'Continue'}
               </BtnPrimary>
               <BtnGhost onClick={() => logout()} className="hidden md:inline-flex">
@@ -99,7 +99,7 @@ export default function Navbar() {
               <BtnGhost to="/signin" className="hidden sm:inline-flex">
                 Sign in
               </BtnGhost>
-              <BtnPrimary to="/signin" className="h-10 px-5">
+              <BtnPrimary to="/signin" className="h-10 min-h-[44px] px-5">
                 Get started
               </BtnPrimary>
             </>

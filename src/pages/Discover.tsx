@@ -228,7 +228,7 @@ export default function Discover() {
               type="button"
               aria-label="Filters"
               onClick={() => setFiltersOpen(true)}
-              className="glass flex h-10 w-10 items-center justify-center rounded-full"
+              className="glass flex h-10 min-h-[44px] w-10 min-w-[44px] items-center justify-center rounded-full"
             >
               <span className="glass-content flex items-center justify-center">
                 <SlidersHorizontal size={18} style={{ color: 'var(--text)' }} aria-hidden="true" />
@@ -238,7 +238,7 @@ export default function Discover() {
               type="button"
               aria-label="Travel mode"
               onClick={() => setTravelOpen(true)}
-              className="glass flex h-10 w-10 items-center justify-center rounded-full"
+              className="glass flex h-10 min-h-[44px] w-10 min-w-[44px] items-center justify-center rounded-full"
             >
               <span className="glass-content flex items-center justify-center">
                 <MapPin size={18} style={{ color: 'var(--text)' }} aria-hidden="true" />

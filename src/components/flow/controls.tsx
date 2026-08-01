@@ -105,7 +105,7 @@ export function FlowChip({
       initial={selected ? { scale: 0.9 } : false}
       animate={{ scale: 1 }}
       transition={{ duration: 0.24, ease: EASE_SPRING }}
-      className="t-caption inline-flex h-8 min-h-[32px] items-center gap-1.5 rounded-full px-3.5 select-none"
+      className="t-caption inline-flex h-8 min-h-[44px] items-center gap-1.5 rounded-full px-3.5 select-none"
       style={{
         background: 'var(--field)',
         color: 'var(--text)',
@@ -246,7 +246,7 @@ export function FlowToggle({
       aria-checked={on}
       aria-label={ariaLabel}
       onClick={() => onChange(!on)}
-      className="relative h-7 w-12 shrink-0 rounded-full transition-colors duration-fast"
+      className="relative h-7 w-12 shrink-0 rounded-full transition-colors duration-fast before:absolute before:-inset-2 before:content-['']"
       style={{ background: on ? 'var(--violet)' : 'var(--field-focus)' }}
     >
       <motion.span

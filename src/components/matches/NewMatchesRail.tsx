@@ -81,7 +81,7 @@ export default function NewMatchesRail({
 
   return (
     <section aria-label="New matches">
-      <div className="overflow-x-auto px-5 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="no-scrollbar overflow-x-auto px-5 pb-1">
         <div className="relative" style={{ width: railWidth }}>
           {/* Light-trail thread beneath the avatars (§1) */}
           <LightTrail

@@ -279,7 +279,7 @@ export default function Profile() {
   return (
     <div className="relative h-full">
       <ToastHost toasts={toasts} />
-      <div className="no-scrollbar h-full overflow-y-auto px-5 pb-28">
+      <div className="no-scrollbar h-full overflow-y-auto px-5 pb-32">
         {/* ── Top chrome: t-heading "You" + settings / share ─────────── */}
         <header className="flex items-center justify-between pt-4">
           <h1 className="t-heading" style={{ color: 'var(--text-ink)' }}>

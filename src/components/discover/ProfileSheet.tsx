@@ -282,7 +282,7 @@ export default function ProfileSheet({
                 key={r}
                 type="button"
                 onClick={() => setReason(r)}
-                className={cn('t-caption min-h-[32px] rounded-full px-3 py-1.5', reason === r && 'font-bold')}
+                className={cn('t-caption min-h-[44px] rounded-full px-3 py-1.5', reason === r && 'font-bold')}
                 style={{
                   background: 'var(--field)',
                   color: 'var(--text)',

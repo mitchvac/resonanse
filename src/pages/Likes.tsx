@@ -178,7 +178,7 @@ export default function Likes() {
           <button
             type="button"
             onClick={() => setSortGateOpen(true)}
-            className="t-micro flex items-center gap-1 rounded-full px-3 py-2"
+            className="t-micro flex min-h-[44px] items-center gap-1 rounded-full px-3"
             style={{ background: 'var(--field)', color: 'var(--text)' }}
             aria-label="Sort — Resonance+ feature"
           >
@@ -188,7 +188,7 @@ export default function Likes() {
           <button
             type="button"
             onClick={() => setSortOpen(true)}
-            className="glass flex h-10 w-10 items-center justify-center rounded-full"
+            className="glass flex h-10 min-h-[44px] w-10 min-w-[44px] items-center justify-center rounded-full"
             aria-label="Sort likes"
           >
             <span className="glass-content flex items-center justify-center">

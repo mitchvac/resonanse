@@ -56,7 +56,7 @@ function Toggle({
       aria-checked={on}
       aria-label={label}
       onClick={() => onChange(!on)}
-      className="flex h-7 w-12 items-center rounded-full p-[3px] transition-colors duration-med"
+      className="relative flex h-7 w-12 items-center rounded-full p-[3px] transition-colors duration-med before:absolute before:-inset-2 before:content-['']"
       style={{ background: on ? 'var(--violet)' : 'var(--field-focus)' }}
     >
       <motion.span
@@ -242,7 +242,7 @@ export default function FilterSheet({
       {children}
       <button
         type="button"
-        className="t-micro mt-2 underline"
+        className="t-micro mt-2 inline-flex min-h-[44px] items-center underline"
         style={{ color: 'var(--text-secondary)' }}
         onClick={() => toggleDealbreaker(key)}
       >

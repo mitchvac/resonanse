@@ -42,16 +42,19 @@ export default function GlassSheet({
             aria-modal="true"
             aria-labelledby={labelledBy}
             className={cn(
-              'glass fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[430px] rounded-b-none',
+              'glass fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[94dvh] w-full max-w-[430px] rounded-b-none',
               className,
             )}
-            style={{ borderRadius: '24px 24px 0 0' }}
+            style={{
+              borderRadius: '24px 24px 0 0',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            }}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.32, ease: [0.34, 1.56, 0.64, 1] }}
           >
-            <div className="glass-content">
+            <div className="glass-content max-h-[calc(94dvh-env(safe-area-inset-bottom,0px))] overflow-y-auto">
               <div className="flex justify-center pt-3 pb-1">
                 <div
                   className="h-1 w-9 rounded-full"
