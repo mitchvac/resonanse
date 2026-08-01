@@ -20,6 +20,7 @@ import BrandMark from '@/components/BrandMark';
 import AppToast from '@/components/AppToast';
 import type { ToastPayload } from '@/components/AppToast';
 import { BtnGlass, BtnGhost, BtnPrimary } from '@/components/ui/buttons';
+import CryptoCheckoutSheet from '@/components/wallet/CryptoCheckoutSheet';
 import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 import { LOGIN_PATH } from '@/const';
@@ -183,6 +184,7 @@ export default function Premium() {
   const [openExplainer, setOpenExplainer] = useState<string | null>(null);
   const [pulsePack, setPulsePack] = useState<(typeof PULSE_PACKS)[number]>(PULSE_PACKS[0]);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
+  const [cryptoOpen, setCryptoOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState<Tier | null>(null);
@@ -725,6 +727,15 @@ export default function Premium() {
               )}
             </BtnPrimary>
           )}
+          {!isMember && (
+            <BtnGlass
+              className="mt-2.5 w-full"
+              disabled={processing}
+              onClick={() => setCryptoOpen(true)}
+            >
+              Pay with crypto — XRP · RLUSD · BTC
+            </BtnGlass>
+          )}
           <div className="mt-3 flex items-center justify-center gap-4">
             <button
               type="button"
@@ -798,6 +809,17 @@ export default function Premium() {
           </div>
         </div>
       </GlassSheet>
+
+      {/* — Pay with crypto (XRP / RLUSD / BTC) — */}
+      <CryptoCheckoutSheet
+        open={cryptoOpen}
+        onClose={() => setCryptoOpen(false)}
+        purpose={selected === 'x' ? 'SUBSCRIPTION_X' : 'SUBSCRIPTION_PLUS'}
+        onConfirmed={() => {
+          setCryptoOpen(false);
+          setSuccess(selected);
+        }}
+      />
 
       {/* — Switch to Free confirm sheet — */}
       <GlassSheet
