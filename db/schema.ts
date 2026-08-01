@@ -519,3 +519,168 @@ export const callSignals = mysqlTable(
 
 export type CallSignal = typeof callSignals.$inferSelect;
 export type InsertCallSignal = typeof callSignals.$inferInsert;
+
+
+// ── Smart Custody Wallet / Date-Coin ─────────────────────────────────
+// Date-Coin is an internal utility token. Real crypto (XRP/RLUSD/BTC) is
+// NEVER custodied — it is verified watch-only on-chain. All price math uses
+// INTEGER micro-USD units (0.10 USD = 100000, the +0.005 increment = 5000).
+
+export const dcWallets = mysqlTable(
+  "dc_wallets",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    walletId: varchar("walletId", { length: 64 }).notNull(),
+    /** Smart Custody Switch — ON by default; Marketplace skips OFF wallets. */
+    switchOn: boolean("switchOn").notNull().default(true),
+    authorityGrantedAt: timestamp("authorityGrantedAt").defaultNow().notNull(),
+    /** First 100,000 wallets received the 10,000-coin airdrop. */
+    isOriginalHundredK: boolean("isOriginalHundredK").notNull().default(false),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("dc_wallets_userId_unique").on(table.userId),
+    uniqueIndex("dc_wallets_walletId_unique").on(table.walletId),
+  ],
+);
+
+export type DcWallet = typeof dcWallets.$inferSelect;
+export type InsertDcWallet = typeof dcWallets.$inferInsert;
+
+export const dcLedger = mysqlTable("dc_ledger", {
+  walletId: varchar("walletId", { length: 64 }).primaryKey(),
+  balance: int("balance").notNull().default(0),
+  updatedAt: timestamp("updatedAt")
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export type DcLedgerRow = typeof dcLedger.$inferSelect;
+export type InsertDcLedgerRow = typeof dcLedger.$inferInsert;
+
+/** System-wide up-only price — a single singleton row with id = 1. */
+export const dcPriceState = mysqlTable("dc_price_state", {
+  id: int("id").primaryKey(),
+  currentPriceMicro: int("currentPriceMicro").notNull(),
+  totalSalesCount: int("totalSalesCount").notNull().default(0),
+  lastSaleAt: timestamp("lastSaleAt"),
+});
+
+export type DcPriceStateRow = typeof dcPriceState.$inferSelect;
+export type InsertDcPriceStateRow = typeof dcPriceState.$inferInsert;
+
+export const DC_PAID_WITH = ["XRP", "RLUSD", "BTC"] as const;
+
+export const dcSales = mysqlTable(
+  "dc_sales",
+  {
+    id: serial("id").primaryKey(),
+    saleId: varchar("saleId", { length: 64 }).notNull(),
+    buyerWalletId: varchar("buyerWalletId", { length: 64 }).notNull(),
+    /** Supplier walletId, or the literal 'PLATFORM' for platform top-up sales. */
+    sellerWalletId: varchar("sellerWalletId", { length: 64 }).notNull(),
+    amount: int("amount").notNull(),
+    pricePerCoinMicro: int("pricePerCoinMicro").notNull(),
+    /** Exact fiat/crypto total paid, stored as text to avoid float drift. */
+    totalPaidText: varchar("totalPaidText", { length: 64 }).notNull(),
+    paidWith: mysqlEnum("paidWith", DC_PAID_WITH).notNull(),
+    cryptoIntentId: varchar("cryptoIntentId", { length: 64 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("dc_sales_saleId_unique").on(table.saleId),
+    index("dc_sales_buyer_idx").on(table.buyerWalletId, table.id),
+    index("dc_sales_seller_idx").on(table.sellerWalletId, table.id),
+  ],
+);
+
+export type DcSale = typeof dcSales.$inferSelect;
+export type InsertDcSale = typeof dcSales.$inferInsert;
+
+export const DC_REWARD_STATUS = ["pending", "paid"] as const;
+
+/**
+ * Supplier reward OBLIGATIONS. The platform pays XRP from its own treasury
+ * (6% bonus). Because the platform holds no keys, these are recorded as
+ * 'pending' obligations and are NEVER broadcast on-chain by the server.
+ */
+export const dcRewards = mysqlTable(
+  "dc_rewards",
+  {
+    id: serial("id").primaryKey(),
+    supplierWalletId: varchar("supplierWalletId", { length: 64 }).notNull(),
+    saleId: varchar("saleId", { length: 64 }).notNull(),
+    amountXrpText: varchar("amountXrpText", { length: 64 }).notNull(),
+    status: mysqlEnum("status", DC_REWARD_STATUS).notNull().default("pending"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [index("dc_rewards_supplier_idx").on(table.supplierWalletId)],
+);
+
+export type DcReward = typeof dcRewards.$inferSelect;
+export type InsertDcReward = typeof dcRewards.$inferInsert;
+
+/** Append-only audit trail for every wallet action. */
+export const dcAudit = mysqlTable(
+  "dc_audit",
+  {
+    id: serial("id").primaryKey(),
+    actor: varchar("actor", { length: 128 }).notNull(),
+    action: varchar("action", { length: 64 }).notNull(),
+    detail: json("detail").$type<Record<string, unknown>>(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  () => [check("detail", sql`json_valid(\`detail\`)`)],
+);
+
+export type DcAuditRow = typeof dcAudit.$inferSelect;
+export type InsertDcAuditRow = typeof dcAudit.$inferInsert;
+
+export const DC_INTENT_PURPOSE = [
+  "SUBSCRIPTION_PLUS",
+  "SUBSCRIPTION_X",
+  "TOP_UP",
+] as const;
+
+export const DC_INTENT_STATUS = [
+  "pending",
+  "confirmed",
+  "underpaid",
+  "expired",
+] as const;
+
+/** Watch-only crypto payment intents — server verifies on-chain, never trusts the client. */
+export const dcCryptoIntents = mysqlTable(
+  "dc_crypto_intents",
+  {
+    id: serial("id").primaryKey(),
+    intentId: varchar("intentId", { length: 64 }).notNull(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    purpose: mysqlEnum("purpose", DC_INTENT_PURPOSE).notNull(),
+    asset: mysqlEnum("asset", DC_PAID_WITH).notNull(),
+    address: varchar("address", { length: 128 }).notNull(),
+    /** Destination tag (XRP/RLUSD). NULL for BTC (matched by exact amount). */
+    memoOrTag: varchar("memoOrTag", { length: 64 }),
+    /** Exact on-chain amount expected, as a decimal string. */
+    expectedAmountText: varchar("expectedAmountText", { length: 64 }).notNull(),
+    quotedUsdMicro: int("quotedUsdMicro").notNull(),
+    status: mysqlEnum("status", DC_INTENT_STATUS).notNull().default("pending"),
+    txHash: varchar("txHash", { length: 128 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    expiresAt: timestamp("expiresAt").notNull(),
+    confirmedAt: timestamp("confirmedAt"),
+  },
+  (table) => [
+    uniqueIndex("dc_crypto_intents_intentId_unique").on(table.intentId),
+    index("dc_crypto_intents_user_idx").on(table.userId),
+  ],
+);
+
+export type DcCryptoIntent = typeof dcCryptoIntents.$inferSelect;
+export type InsertDcCryptoIntent = typeof dcCryptoIntents.$inferInsert;

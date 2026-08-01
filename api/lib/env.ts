@@ -16,4 +16,9 @@ export const env = {
   kimiAuthUrl: required("KIMI_AUTH_URL"),
   kimiOpenUrl: required("KIMI_OPEN_URL"),
   ownerUnionId: process.env.OWNER_UNION_ID ?? "",
+  // Smart Custody Wallet — merchant deposit addresses (watch-only; we hold no keys).
+  merchantXrpAddress: process.env.MERCHANT_XRP_ADDRESS ?? "",
+  merchantBtcAddress: process.env.MERCHANT_BTC_ADDRESS ?? "",
+  // Owner gate for the treasury admin view.
+  adminEmail: process.env.ADMIN_EMAIL ?? "",
 };
