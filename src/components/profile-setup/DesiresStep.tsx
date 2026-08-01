@@ -114,7 +114,9 @@ export default function DesiresStep({
                 <FlowChip
                   label={g.label}
                   selected={draft.goal === g.value}
-                  onToggle={() => update({ goal: draft.goal === g.value ? '' : g.value })}
+                  onToggle={() =>
+                    update({ goal: draft.goal === g.value ? '' : g.value, goalTouched: true })
+                  }
                 />
               </Block>
             ))}

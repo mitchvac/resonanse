@@ -18,6 +18,8 @@ import {
   LogOut,
   Plus,
   BadgeCheck,
+  ExternalLink,
+  PauseCircle,
 } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import GlassSheet from '@/components/GlassSheet';
@@ -50,6 +52,57 @@ type ThemeChoice = 'light' | 'dark' | 'system';
 function resolveTheme(choice: ThemeChoice): 'light' | 'dark' {
   if (choice !== 'system') return choice;
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared localStorage contracts — the Discover page reads these too.  */
+/* ------------------------------------------------------------------ */
+type DiscoveryPrefs = { minAge: number; maxAge: number; maxDistance: number; showMe: string[] };
+const DISCOVERY_PREFS_KEY = 'resonance-discovery-prefs';
+const DEFAULT_DISCOVERY: DiscoveryPrefs = {
+  minAge: 24,
+  maxAge: 34,
+  maxDistance: 25,
+  showMe: ['Women', 'Nonbinary'],
+};
+
+function readDiscoveryPrefs(): DiscoveryPrefs {
+  try {
+    const raw = localStorage.getItem(DISCOVERY_PREFS_KEY);
+    if (raw) {
+      const p = JSON.parse(raw) as Partial<DiscoveryPrefs>;
+      return {
+        minAge: typeof p.minAge === 'number' ? p.minAge : DEFAULT_DISCOVERY.minAge,
+        maxAge: typeof p.maxAge === 'number' ? p.maxAge : DEFAULT_DISCOVERY.maxAge,
+        maxDistance:
+          typeof p.maxDistance === 'number' ? p.maxDistance : DEFAULT_DISCOVERY.maxDistance,
+        showMe: Array.isArray(p.showMe) ? p.showMe.filter((s) => typeof s === 'string') : DEFAULT_DISCOVERY.showMe,
+      };
+    }
+  } catch {
+    /* private mode */
+  }
+  return DEFAULT_DISCOVERY;
+}
+
+type QuietHours = { enabled: boolean; from: string; to: string };
+const QUIET_HOURS_KEY = 'resonance-quiet-hours';
+
+function readQuietHours(): QuietHours {
+  try {
+    const raw = localStorage.getItem(QUIET_HOURS_KEY);
+    if (raw) {
+      const p = JSON.parse(raw) as Partial<QuietHours>;
+      return {
+        enabled: p.enabled === true,
+        from: typeof p.from === 'string' ? p.from : '22:00',
+        to: typeof p.to === 'string' ? p.to : '08:00',
+      };
+    }
+  } catch {
+    /* private mode */
+  }
+  return { enabled: false, from: '22:00', to: '08:00' };
 }
 
 function readThemeChoice(): ThemeChoice {
@@ -160,11 +213,20 @@ export default function Settings() {
       window.matchMedia('(prefers-reduced-transparency: reduce)').matches,
   );
 
-  /* ── §2 Discovery (local prefs) ─────────────────────────────────── */
+  /* ── §2 Discovery (persisted prefs — Discover reads the same key) ── */
   const [locationOn, setLocationOn] = useLocalToggle('resonance-pref-location', true);
-  const [maxDistance, setMaxDistance] = useState(25);
-  const [ageRange, setAgeRange] = useState<[number, number]>([24, 34]);
-  const [showMe, setShowMe] = useState<string[]>(['Women', 'Nonbinary']);
+  const [discovery, setDiscoveryState] = useState<DiscoveryPrefs>(readDiscoveryPrefs);
+  const setDiscovery = useCallback((patch: Partial<DiscoveryPrefs>) => {
+    setDiscoveryState((prev) => {
+      const next = { ...prev, ...patch };
+      try {
+        localStorage.setItem(DISCOVERY_PREFS_KEY, JSON.stringify(next));
+      } catch {
+        /* private mode */
+      }
+      return next;
+    });
+  }, []);
   const [womenFirst, setWomenFirst] = useLocalToggle('resonance-pref-women-first', false);
 
   /* ── §3 Notifications (local prefs) ─────────────────────────────── */
@@ -176,8 +238,19 @@ export default function Settings() {
   const [notifEvents, setNotifEvents] = useLocalToggle('resonance-notif-events', false);
   const [notifDates, setNotifDates] = useLocalToggle('resonance-notif-dates', true);
   const [quietOpen, setQuietOpen] = useState(false);
-  const [quietFrom, setQuietFrom] = useState('22:00');
-  const [quietTo, setQuietTo] = useState('08:00');
+  const [quiet, setQuietState] = useState<QuietHours>(readQuietHours);
+  const setQuiet = (patch: Partial<QuietHours>) => setQuietState((q) => ({ ...q, ...patch }));
+  const saveQuietHours = () => {
+    const next = { ...quiet, enabled: true };
+    setQuietState(next);
+    try {
+      localStorage.setItem(QUIET_HOURS_KEY, JSON.stringify(next));
+    } catch {
+      /* private mode */
+    }
+    setQuietOpen(false);
+    push(`Quiet hours set — ${next.from} to ${next.to}.`);
+  };
 
   /* ── §4 Privacy & safety ────────────────────────────────────────── */
   const [anonSheetOpen, setAnonSheetOpen] = useState(false);
@@ -185,13 +258,81 @@ export default function Settings() {
   const [ephemeral, setEphemeral] = useLocalToggle('resonance-ephemeral', false);
   const [deleteStep, setDeleteStep] = useState<0 | 1 | 2>(0);
   const [deleted, setDeleted] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [safetyOpen, setSafetyOpen] = useState(false);
+  const [legalSheet, setLegalSheet] = useState<'privacy' | 'help' | null>(null);
 
   const updateSettings = trpc.profile.updateSettings.useMutation({
     onSuccess: () => {
       void utils.profile.me.invalidate();
     },
   });
+  const deleteAccount = trpc.safety.deleteAccount.useMutation({
+    onSuccess: () => setDeleted(true),
+    onError: () => push("Couldn't delete your account — check your connection and try again."),
+  });
+  const resetMatching = trpc.safety.resetMatching.useMutation({
+    onSuccess: () => {
+      setResetOpen(false);
+      push('Your queue history was reset.');
+    },
+    onError: () => push("Couldn't reset your queue history — try again."),
+  });
   const anonymityOn = profile?.anonymityMode === true;
+  const paused = profile?.pausedAt != null;
+
+  /* Keep the ephemeral toggle's instant-UI mirror in sync with the server
+     value on first load (LS wins once the user has toggled locally). */
+  useEffect(() => {
+    if (profile?.ephemeralDefault === undefined) return;
+    try {
+      if (localStorage.getItem('resonance-ephemeral') === null) {
+        setEphemeral(profile.ephemeralDefault);
+      }
+    } catch {
+      /* private mode */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.ephemeralDefault]);
+
+  const setEphemeralDefault = (v: boolean) => {
+    setEphemeral(v); // instant UI + LS mirror
+    updateSettings.mutate({ ephemeralDefault: v });
+    push(v ? 'New chats will vanish after 24 hours.' : 'New chats are permanent again.');
+  };
+
+  const setPaused = (pause: boolean) => {
+    updateSettings.mutate(
+      { paused: pause },
+      {
+        onError: () =>
+          push(pause ? "Couldn't pause your account — try again." : "Couldn't resume — try again."),
+      },
+    );
+    if (!pause) push('Welcome back — you’re visible in queues again.');
+  };
+
+  const downloadMyData = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const data = await utils.safety.exportData.fetch();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'resonance-data.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      push('Your data export downloaded as resonance-data.json.');
+    } catch {
+      push("Couldn't export your data — check your connection and try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const setAnonymity = (on: boolean) => {
     updateSettings.mutate({ anonymityMode: on });
@@ -202,8 +343,8 @@ export default function Settings() {
     );
   };
 
-  /* Hidden words (demo seeds when the profile has none yet) */
-  const hiddenWords = profile?.hiddenWords?.length ? profile.hiddenWords : ['hey', 'u up'];
+  /* Hidden words — only what the real profile holds (no demo seeds) */
+  const hiddenWords = profile?.hiddenWords ?? [];
   const [newWord, setNewWord] = useState('');
   const saveHiddenWords = (words: string[]) => {
     updateSettings.mutate({ hiddenWords: words });
@@ -231,9 +372,11 @@ export default function Settings() {
     entitlement?.tier === 'x' ? 'Resonance X' : entitlement?.tier === 'plus' ? 'Resonance+' : 'Free';
 
   const toggleShowMe = (opt: string) => {
-    setShowMe((prev) =>
-      prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt],
-    );
+    setDiscovery({
+      showMe: discovery.showMe.includes(opt)
+        ? discovery.showMe.filter((o) => o !== opt)
+        : [...discovery.showMe, opt],
+    });
   };
 
   /* ================================================================ */
@@ -244,7 +387,7 @@ export default function Settings() {
     if (!w || hiddenWords.includes(w)) return;
     saveHiddenWords([...hiddenWords, w]);
     setNewWord('');
-    push(`“${w}” hidden — matching messages go to your hidden folder.`);
+    push('Messages with these words will be flagged in your chats.');
   };
 
   if (view === 'hidden-words') {
@@ -505,8 +648,8 @@ export default function Settings() {
                 <RangeSlider
                   min={1}
                   max={100}
-                  value={maxDistance}
-                  onChange={setMaxDistance}
+                  value={discovery.maxDistance}
+                  onChange={(v) => setDiscovery({ maxDistance: v })}
                   ariaLabel="Maximum distance in kilometers"
                   format={(v) => `${v} km`}
                 />
@@ -516,8 +659,8 @@ export default function Settings() {
                 <DualRangeSlider
                   min={18}
                   max={60}
-                  value={ageRange}
-                  onChange={setAgeRange}
+                  value={[discovery.minAge, discovery.maxAge]}
+                  onChange={([minAge, maxAge]) => setDiscovery({ minAge, maxAge })}
                   ariaLabel="Age range"
                 />
               </div>
@@ -526,7 +669,7 @@ export default function Settings() {
                 {['Women', 'Men', 'Nonbinary'].map((opt) => (
                   <Chip
                     key={opt}
-                    selected={showMe.includes(opt)}
+                    selected={discovery.showMe.includes(opt)}
                     onClick={() => toggleShowMe(opt)}
                   >
                     {opt}
@@ -558,7 +701,7 @@ export default function Settings() {
                 title="Dealbreakers"
                 caption="Hard filters for your queue."
                 chevron
-                onClick={() => navigate('/discover')}
+                onClick={() => navigate('/discover?filters=1')}
               />
             </Section>
 
@@ -598,7 +741,11 @@ export default function Settings() {
               ))}
               <SettingRow
                 title="Quiet hours"
-                caption={`${quietFrom} – ${quietTo} · only date reminders come through.`}
+                caption={
+                  quiet.enabled
+                    ? `${quiet.from} – ${quiet.to} · only date reminders come through.`
+                    : 'Off — schedule a window where only date reminders come through.'
+                }
                 chevron
                 onClick={() => setQuietOpen(true)}
               />
@@ -680,10 +827,7 @@ export default function Settings() {
                 right={
                   <Toggle
                     checked={ephemeral}
-                    onChange={(v) => {
-                      setEphemeral(v);
-                      push(v ? 'New chats will vanish after 24 hours.' : 'New chats are permanent again.');
-                    }}
+                    onChange={setEphemeralDefault}
                     ariaLabel="Ephemeral default"
                   />
                 }
@@ -697,9 +841,13 @@ export default function Settings() {
               <SettingRow
                 icon={<Download size={16} aria-hidden="true" />}
                 title="Download my data"
-                caption="GDPR/CCPA export, emailed as an archive."
+                caption={
+                  exporting
+                    ? 'Preparing your export…'
+                    : 'GDPR/CCPA export — downloads instantly as JSON.'
+                }
                 chevron
-                onClick={() => push('Export requested — we’ll email your archive.')}
+                onClick={() => void downloadMyData()}
               />
               <SettingRow
                 icon={<Trash2 size={16} aria-hidden="true" />}
@@ -709,7 +857,7 @@ export default function Settings() {
                 chevron
                 onClick={() => setDeleteStep(1)}
               />
-              <SettingRow title="Privacy policy" chevron onClick={() => push('Opening privacy policy.')} />
+              <SettingRow title="Privacy policy" chevron onClick={() => setLegalSheet('privacy')} />
               <SettingRow title="Cookie preferences" chevron onClick={() => push('Opening cookie preferences.')} />
             </Section>
 
@@ -763,14 +911,14 @@ export default function Settings() {
                 }
               />
               <SettingRow title="Restore purchases" chevron onClick={() => push('Checking for purchases…')} />
-              <SettingRow title="Help center" chevron onClick={() => push('Opening help center.')} />
+              <SettingRow title="Help center" chevron onClick={() => setLegalSheet('help')} />
               <SettingRow title="Community guidelines" chevron onClick={() => push('Opening community guidelines.')} />
               <SettingRow
                 icon={<ShieldCheck size={16} style={{ color: 'var(--ok)' }} aria-hidden="true" />}
                 title="Safety resources"
                 caption="Hotlines and expert help, whenever you need them."
                 chevron
-                onClick={() => push('Opening safety resources.')}
+                onClick={() => setSafetyOpen(true)}
               />
               <SettingRow
                 icon={<LogOut size={16} aria-hidden="true" />}
@@ -822,13 +970,33 @@ export default function Settings() {
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
             Only date reminders come through during quiet hours.
           </p>
+          {quiet.enabled && (
+            <div className="mt-4 flex items-center justify-between rounded-[16px] px-4 py-3" style={{ background: 'var(--field)' }}>
+              <span className="t-body" style={{ color: 'var(--text)' }}>
+                Quiet hours on
+              </span>
+              <Toggle
+                checked={quiet.enabled}
+                onChange={(v) => {
+                  const next = { ...quiet, enabled: v };
+                  setQuietState(next);
+                  try {
+                    localStorage.setItem(QUIET_HOURS_KEY, JSON.stringify(next));
+                  } catch {
+                    /* private mode */
+                  }
+                }}
+                ariaLabel="Quiet hours enabled"
+              />
+            </div>
+          )}
           <div className="mt-5 grid grid-cols-2 gap-3">
             <label className="t-caption" style={{ color: 'var(--text-secondary)' }}>
               From
               <input
                 type="time"
-                value={quietFrom}
-                onChange={(e) => setQuietFrom(e.target.value)}
+                value={quiet.from}
+                onChange={(e) => setQuiet({ from: e.target.value })}
                 className="t-value mt-1 h-12 w-full rounded-[16px] px-4 outline-none"
                 style={{ background: 'var(--field)', color: 'var(--text)' }}
               />
@@ -837,14 +1005,14 @@ export default function Settings() {
               To
               <input
                 type="time"
-                value={quietTo}
-                onChange={(e) => setQuietTo(e.target.value)}
+                value={quiet.to}
+                onChange={(e) => setQuiet({ to: e.target.value })}
                 className="t-value mt-1 h-12 w-full rounded-[16px] px-4 outline-none"
                 style={{ background: 'var(--field)', color: 'var(--text)' }}
               />
             </label>
           </div>
-          <BtnPrimary onClick={() => setQuietOpen(false)} className="mt-6 w-full">
+          <BtnPrimary onClick={saveQuietHours} className="mt-6 w-full">
             Save quiet hours
           </BtnPrimary>
         </div>
@@ -863,10 +1031,7 @@ export default function Settings() {
             <HoldToConfirm
               label="Hold to reset"
               holdingLabel="Release when filled…"
-              onConfirm={() => {
-                setResetOpen(false);
-                push('Matching history reset. Your queue will relearn from scratch.');
-              }}
+              onConfirm={() => resetMatching.mutate()}
             />
             <BtnGhost onClick={() => setResetOpen(false)} className="w-full">
               Keep my history
@@ -883,29 +1048,52 @@ export default function Settings() {
       >
         <div className="px-6 pb-8 pt-2">
           {deleteStep === 1 ? (
-            <>
-              <h3 id="delete-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
-                Before you go
-              </h3>
-              <div className="t-body mt-3 flex flex-col gap-2" style={{ color: 'var(--text-secondary)' }}>
-                <p>Deleting removes your profile, matches, messages, and Pulses. This can’t be undone.</p>
-                <p>If you just need a break, pausing hides you without losing anything.</p>
-              </div>
-              <div className="mt-6 flex flex-col gap-2">
-                <BtnGlass
-                  onClick={() => {
-                    setDeleteStep(0);
-                    push('Account paused. Take all the time you need.');
-                  }}
-                  className="w-full"
-                >
-                  Pause instead
-                </BtnGlass>
-                <BtnGhost onClick={() => setDeleteStep(2)} className="w-full" ariaLabel="Continue to delete account">
-                  <span style={{ color: 'var(--danger)' }}>Continue to delete</span>
-                </BtnGhost>
-              </div>
-            </>
+            paused ? (
+              <>
+                <h3 id="delete-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
+                  Account paused
+                </h3>
+                <div className="t-body mt-3 flex flex-col gap-2" style={{ color: 'var(--text-secondary)' }}>
+                  <p>You won’t appear in anyone’s queue.</p>
+                  <p>Your profile, matches, and messages are exactly where you left them.</p>
+                </div>
+                <div className="mt-6 flex flex-col gap-2">
+                  <BtnPrimary
+                    onClick={() => {
+                      setPaused(false);
+                      setDeleteStep(0);
+                    }}
+                    className="w-full"
+                  >
+                    Resume my account
+                  </BtnPrimary>
+                  <BtnGhost onClick={() => setDeleteStep(2)} className="w-full" ariaLabel="Continue to delete account">
+                    <span style={{ color: 'var(--danger)' }}>Continue to delete</span>
+                  </BtnGhost>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 id="delete-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
+                  Before you go
+                </h3>
+                <div className="t-body mt-3 flex flex-col gap-2" style={{ color: 'var(--text-secondary)' }}>
+                  <p>Deleting removes your profile, matches, messages, and Pulses. This can’t be undone.</p>
+                  <p>If you just need a break, pausing hides you without losing anything.</p>
+                </div>
+                <div className="mt-6 flex flex-col gap-2">
+                  <BtnGlass
+                    onClick={() => setPaused(true)}
+                    className="w-full"
+                  >
+                    <PauseCircle size={16} aria-hidden="true" /> Pause instead
+                  </BtnGlass>
+                  <BtnGhost onClick={() => setDeleteStep(2)} className="w-full" ariaLabel="Continue to delete account">
+                    <span style={{ color: 'var(--danger)' }}>Continue to delete</span>
+                  </BtnGhost>
+                </div>
+              </>
+            )
           ) : (
             <>
               <h3 id="delete-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
@@ -929,7 +1117,7 @@ export default function Settings() {
                     <HoldToConfirm
                       label="Hold to delete account"
                       holdingLabel="Deleting…"
-                      onConfirm={() => setDeleted(true)}
+                      onConfirm={() => deleteAccount.mutate()}
                     />
                     <BtnGhost onClick={() => setDeleteStep(0)} className="w-full">
                       Cancel
@@ -939,6 +1127,71 @@ export default function Settings() {
               )}
             </>
           )}
+        </div>
+      </GlassSheet>
+
+      {/* ── Safety resources — real external hotlines ─────────────── */}
+      <GlassSheet open={safetyOpen} onClose={() => setSafetyOpen(false)} labelledBy="safety-title">
+        <div className="px-6 pb-8 pt-2">
+          <h3 id="safety-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
+            Safety resources
+          </h3>
+          <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+            Free, confidential, 24/7. You don’t have to handle anything alone.
+          </p>
+          <div className="mt-5 flex flex-col gap-2">
+            {[
+              {
+                href: 'https://rainn.org',
+                title: 'RAINN',
+                caption: 'National Sexual Assault Hotline — 1-800-656-4673',
+              },
+              {
+                href: 'https://www.crisistextline.org',
+                title: 'Crisis Text Line',
+                caption: 'Text HOME to 741741 — trained counselors, any crisis',
+              },
+            ].map((r) => (
+              <a
+                key={r.href}
+                href={r.href}
+                target="_blank"
+                rel="noreferrer"
+                className="flex min-h-[56px] items-center gap-3 rounded-2xl px-4 transition-opacity duration-fast active:opacity-70"
+                style={{ background: 'var(--field)' }}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="t-button block" style={{ color: 'var(--text)' }}>
+                    {r.title}
+                  </span>
+                  <span className="t-caption block" style={{ color: 'var(--text-secondary)' }}>
+                    {r.caption}
+                  </span>
+                </span>
+                <ExternalLink size={16} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} aria-hidden="true" />
+              </a>
+            ))}
+          </div>
+          <p className="t-caption mt-4" style={{ color: 'var(--text-secondary)' }}>
+            In immediate danger? Call your local emergency number first.
+          </p>
+        </div>
+      </GlassSheet>
+
+      {/* ── Legal info — honest “coming soon” until the docs ship ──── */}
+      <GlassSheet open={legalSheet !== null} onClose={() => setLegalSheet(null)} labelledBy="legal-title">
+        <div className="px-6 pb-8 pt-2">
+          <h3 id="legal-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
+            {legalSheet === 'privacy' ? 'Privacy policy' : 'Help center'}
+          </h3>
+          <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+            {legalSheet === 'privacy'
+              ? 'Our full privacy policy is being finalized and will live here soon. The short version: we never sell your data, consent-gated tags stay private, and “Download my data” above gives you everything we hold about you, any time.'
+              : 'A searchable help center is coming soon. Until then, “Download my data” and the safety tools above cover the most common requests — and safety resources are always one tap away.'}
+          </p>
+          <BtnPrimary onClick={() => setLegalSheet(null)} className="mt-6 w-full">
+            Got it
+          </BtnPrimary>
         </div>
       </GlassSheet>
     </div>

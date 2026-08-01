@@ -38,6 +38,9 @@ export default function ReflectionsStep({
   draft: ProfileSetupDraft;
   onStart: () => void;
 }) {
+  /* "Maybe later" dismisses the teaser card for this session */
+  const [dismissed, setDismissed] = useState(false);
+
   return (
     <div className="px-5 pt-6 pb-8">
       <Block>
@@ -47,25 +50,35 @@ export default function ReflectionsStep({
             <h1 className="t-title-sm mt-2" style={{ color: 'var(--text)' }}>
               Reflections make your queue sharper
             </h1>
-            <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-              A short self-discovery questionnaire. Answers feed matching — never shown
-              publicly.
-            </p>
-            {draft.reflectionsDone ? (
-              <p
-                className="t-caption mt-4 flex items-center gap-2 font-bold"
-                style={{ color: 'var(--ok)' }}
-              >
-                <Check size={16} strokeWidth={2.5} aria-hidden="true" />
-                Reflections complete — your queue just got sharper.
+            {dismissed && !draft.reflectionsDone ? (
+              <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
+                No pressure — Reflections live on your profile whenever you're ready.
               </p>
             ) : (
-              <div className="mt-4 flex items-center gap-3">
-                <BtnGlass onClick={onStart} className="h-11 px-5">
-                  Start Reflections
-                </BtnGlass>
-                <BtnGhost className="t-caption">Maybe later</BtnGhost>
-              </div>
+              <>
+                <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  A short self-discovery questionnaire. Answers feed matching — never shown
+                  publicly.
+                </p>
+                {draft.reflectionsDone ? (
+                  <p
+                    className="t-caption mt-4 flex items-center gap-2 font-bold"
+                    style={{ color: 'var(--ok)' }}
+                  >
+                    <Check size={16} strokeWidth={2.5} aria-hidden="true" />
+                    Reflections complete — your queue just got sharper.
+                  </p>
+                ) : (
+                  <div className="mt-4 flex items-center gap-3">
+                    <BtnGlass onClick={onStart} className="h-11 px-5">
+                      Start Reflections
+                    </BtnGlass>
+                    <BtnGhost className="t-caption" onClick={() => setDismissed(true)}>
+                      Maybe later
+                    </BtnGhost>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </GlassCard>
@@ -86,8 +99,9 @@ export function ReflectionsFlow({
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
 
+  /* answers are stored 1–5 (backend contract), SCALE indexes are 0–4 */
   const answer = (value: number) => {
-    const next = [...answers, value];
+    const next = [...answers, value + 1];
     if (index + 1 >= STATEMENTS.length) {
       onComplete(next);
       return;
@@ -158,7 +172,7 @@ export function ReflectionsFlow({
                   <button
                     type="button"
                     role="radio"
-                    aria-checked={answers[index] === value}
+                    aria-checked={answers[index] === value + 1}
                     aria-label={label}
                     onClick={() => answer(value)}
                     className="h-11 w-11 rounded-full transition-transform duration-fast active:scale-90"

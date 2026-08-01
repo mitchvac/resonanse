@@ -3,6 +3,22 @@
  * localStorage per profile-create.md "States & edge cases" (draft autosave).
  */
 
+import { loadOnboardingDraft } from '@/components/onboarding/draft';
+
+const GOAL_VALUES = ['serious', 'casual', 'explore', 'enm', 'friendship'] as const;
+
+type GoalValue = (typeof GOAL_VALUES)[number];
+
+/** The intent chosen during onboarding, when it's a valid relationship goal. */
+function loadOnboardingGoal(): GoalValue | null {
+  try {
+    const intent = loadOnboardingDraft().intent;
+    return (GOAL_VALUES as readonly string[]).includes(intent) ? (intent as GoalValue) : null;
+  } catch {
+    return null;
+  }
+}
+
 export type PromptEntry = { question: string; answer: string };
 
 /** Stable slot ids keep drag-reorder keys unique even with multiple empty tiles */
@@ -19,6 +35,9 @@ export type ProfileSetupDraft = {
   photos: PhotoSlot[];
   prompts: PromptEntry[];
   goal: '' | 'serious' | 'casual' | 'explore' | 'enm' | 'friendship';
+  /** true once the user explicitly picked a goal here — protects it from
+      being re-seeded by the onboarding intent / backend profile */
+  goalTouched: boolean;
   status: string;
   lifestyle: string[];
   values: string[];
@@ -62,6 +81,7 @@ export const emptyProfileSetupDraft: ProfileSetupDraft = {
     },
   ],
   goal: 'explore',
+  goalTouched: false,
   status: 'Single',
   lifestyle: ['Night owl', 'Pet person', 'Traveler'],
   values: ['Curiosity', 'Directness'],
@@ -98,6 +118,21 @@ export function loadProfileSetupDraft(): ProfileSetupDraft {
     }
     if (!Array.isArray(merged.constellation) || merged.constellation.length !== 5) {
       merged.constellation = emptyProfileSetupDraft.constellation;
+    }
+    /* Migrate legacy 0–4 reflection answers to the 1–5 backend contract */
+    if (
+      Array.isArray(merged.reflectionsAnswers) &&
+      merged.reflectionsAnswers.some((v) => typeof v !== 'number' || v < 1 || v > 5)
+    ) {
+      merged.reflectionsAnswers = merged.reflectionsAnswers
+        .filter((v) => typeof v === 'number')
+        .map((v) => Math.min(5, Math.max(1, v + 1)));
+    }
+    if (!merged.goalTouched) {
+      /* Seed the goal from the onboarding intent instead of clobbering it
+         with the 'explore' default. */
+      const onboarding = loadOnboardingGoal();
+      if (onboarding) merged.goal = onboarding;
     }
     return merged;
   } catch {

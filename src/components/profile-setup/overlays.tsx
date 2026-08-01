@@ -1,9 +1,8 @@
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { CircleAlert, X } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import GlassSheet from '@/components/GlassSheet';
-import { BtnGhost } from '@/components/ui/buttons';
+import { BtnGhost, BtnPrimary } from '@/components/ui/buttons';
 import { VerifiedBadge } from '@/components/flow/feedback';
 import type { ProfileSetupDraft } from './draft';
 
@@ -142,60 +141,115 @@ export function PreviewOverlay({
   );
 }
 
-/* ————— Publish sequence ————— */
-export function PublishOverlay({ onDone }: { onDone: () => void }) {
-  useEffect(() => {
-    const t = window.setTimeout(onDone, 1800);
-    return () => window.clearTimeout(t);
-  }, [onDone]);
-
+/* ————— Publish sequence —————
+   Honest states: 'saving' shows the fan-out while the mutations run; 'error'
+   offers Retry / Continue anyway; 'demo' tells signed-out users their draft
+   lives on this device. No fake timers — the parent drives the state. */
+export function PublishOverlay({
+  state,
+  onRetry,
+  onContinue,
+}: {
+  state: 'saving' | 'error' | 'demo';
+  onRetry: () => void;
+  onContinue: () => void;
+}) {
   return (
     <motion.div
-      className="absolute inset-0 z-50 flex flex-col items-center justify-center"
+      className="absolute inset-0 z-50 flex flex-col items-center justify-center px-8"
       style={{ background: 'var(--scrim)' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      role="status"
-      aria-label="Publishing your profile"
+      role={state === 'saving' ? 'status' : 'alertdialog'}
+      aria-label={
+        state === 'saving'
+          ? 'Publishing your profile'
+          : state === 'error'
+            ? 'Some answers could not be saved'
+            : 'Demo mode'
+      }
     >
-      {/* cards fan out, then stack (420ms) */}
-      <div className="relative h-56 w-44">
-        {[-1, 0, 1].map((slot) => (
-          <motion.div
-            key={slot}
-            className="glass absolute inset-0 rounded-[20px]"
-            initial={{ opacity: 0, x: slot * 48, rotate: slot * 9, y: Math.abs(slot) * 6 }}
-            animate={{ opacity: 1, x: slot * 8, rotate: slot * 2.5, y: Math.abs(slot) * 4 }}
-            transition={{ duration: 0.42, ease: EASE_SPRING, delay: slot === 0 ? 0 : 0.05 }}
+      {state === 'saving' ? (
+        <>
+          {/* cards fan out, then stack (420ms) */}
+          <div className="relative h-56 w-44">
+            {[-1, 0, 1].map((slot) => (
+              <motion.div
+                key={slot}
+                className="glass absolute inset-0 rounded-[20px]"
+                initial={{ opacity: 0, x: slot * 48, rotate: slot * 9, y: Math.abs(slot) * 6 }}
+                animate={{ opacity: 1, x: slot * 8, rotate: slot * 2.5, y: Math.abs(slot) * 4 }}
+                transition={{ duration: 0.42, ease: EASE_SPRING, delay: slot === 0 ? 0 : 0.05 }}
+              >
+                <span className="glass-content flex h-full items-end p-4">
+                  <span className="t-micro" style={{ color: 'var(--text)' }}>
+                    {slot === 0 ? 'PHOTOS' : slot < 0 ? 'PROMPTS' : 'INTENT'}
+                  </span>
+                </span>
+              </motion.div>
+            ))}
+            {/* VerifiedBadge stamps */}
+            <motion.span
+              className="absolute -right-3 -top-3 z-10"
+              initial={{ scale: 0, rotate: -18 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.55, duration: 0.4, ease: EASE_SPRING }}
+            >
+              <VerifiedBadge size={36} />
+            </motion.span>
+          </div>
+          <motion.p
+            className="t-caption mt-6"
+            style={{ color: 'var(--text)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
           >
-            <span className="glass-content flex h-full items-end p-4">
-              <span className="t-micro" style={{ color: 'var(--text)' }}>
-                {slot === 0 ? 'PHOTOS' : slot < 0 ? 'PROMPTS' : 'INTENT'}
-              </span>
-            </span>
-          </motion.div>
-        ))}
-        {/* VerifiedBadge stamps */}
-        <motion.span
-          className="absolute -right-3 -top-3 z-10"
-          initial={{ scale: 0, rotate: -18 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ delay: 0.55, duration: 0.4, ease: EASE_SPRING }}
-        >
-          <VerifiedBadge size={36} />
-        </motion.span>
-      </div>
-      <motion.p
-        className="t-caption mt-6"
-        style={{ color: 'var(--text)' }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.3 }}
-      >
-        Publishing your profile…
-      </motion.p>
+            Publishing your profile…
+          </motion.p>
+        </>
+      ) : (
+        <GlassCard edge="none" className="w-full max-w-[320px] p-6">
+          <div className="flex flex-col items-center text-center">
+            {state === 'error' ? (
+              <>
+                <CircleAlert size={28} style={{ color: 'var(--danger)' }} aria-hidden="true" />
+                <p className="t-title-sm mt-3" style={{ color: 'var(--text)' }}>
+                  Some answers couldn't be saved
+                </p>
+                <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Check your connection. Your draft is safe on this device either way.
+                </p>
+                <div className="mt-5 flex w-full flex-col gap-2">
+                  <BtnPrimary onClick={onRetry} className="w-full">
+                    Retry
+                  </BtnPrimary>
+                  <BtnGhost onClick={onContinue} className="w-full">
+                    Continue anyway
+                  </BtnGhost>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="t-title-sm" style={{ color: 'var(--text)' }}>
+                  You're in demo mode
+                </p>
+                <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Sign in to publish for real — for now your profile draft is saved on this
+                  device and you can keep exploring.
+                </p>
+                <div className="mt-5 flex w-full flex-col gap-2">
+                  <BtnPrimary onClick={onContinue} className="w-full">
+                    Continue
+                  </BtnPrimary>
+                </div>
+              </>
+            )}
+          </div>
+        </GlassCard>
+      )}
     </motion.div>
   );
 }

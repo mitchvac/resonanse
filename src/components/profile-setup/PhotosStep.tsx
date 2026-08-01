@@ -1,9 +1,43 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { Camera, GripVertical, ImagePlus, Plus, Sparkles, X } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
 import { Block, StaggerGroup } from '@/components/flow/controls';
 import type { PhotoSlot, ProfileSetupDraft } from './draft';
+
+/** Downscale an image file to a JPEG data URL: max 1600px long edge,
+    quality 0.82, re-compressing until it fits ≈600KB. */
+async function fileToPhotoDataUrl(file: File): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error('Could not read that image.'));
+      el.src = url;
+    });
+    const longEdge = Math.max(img.naturalWidth, img.naturalHeight) || 1;
+    const scale = Math.min(1, 1600 / longEdge);
+    const w = Math.max(1, Math.round(img.naturalWidth * scale));
+    const h = Math.max(1, Math.round(img.naturalHeight * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas unavailable.');
+    ctx.drawImage(img, 0, 0, w, h);
+    let quality = 0.82;
+    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+    // base64 inflates ~4/3 — 600KB of bytes ≈ 800k chars
+    while (dataUrl.length > 800_000 && quality > 0.4) {
+      quality = Math.round((quality - 0.12) * 100) / 100;
+      dataUrl = canvas.toDataURL('image/jpeg', quality);
+    }
+    return dataUrl;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 /**
  * PhotosStep — profile-create.md §1
@@ -27,6 +61,12 @@ export default function PhotosStep({
   const [addSheet, setAddSheet] = useState<number | null>(null);
   const [editSheet, setEditSheet] = useState<number | null>(null);
   const [nudge, setNudge] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
+  /* which slot the next picked file lands in */
+  const fileTarget = useRef<number>(0);
+  const libraryInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
 
   const setPhotos = (photos: PhotoSlot[]) => update({ photos });
 
@@ -36,23 +76,49 @@ export default function PhotosStep({
     return DEMO_POOL[Math.floor(Math.random() * DEMO_POOL.length)];
   };
 
-  const addPhoto = (slot: number) => {
+  const setSlotPhoto = (slot: number, photo: string) => {
     const next = [...draft.photos];
-    next[slot] = { ...next[slot], photo: pickDemoPhoto(next.map((s) => s.photo)) };
+    next[slot] = { ...next[slot], photo };
     setPhotos(next);
-    setAddSheet(null);
     setNudge(true);
   };
 
-  const replacePhoto = (slot: number) => {
-    const next = [...draft.photos];
-    next[slot] = {
-      ...next[slot],
-      photo: pickDemoPhoto(next.filter((_, i) => i !== slot).map((s) => s.photo)),
-    };
-    setPhotos(next);
+  const pickFile = (slot: number, source: 'library' | 'camera') => {
+    fileTarget.current = slot;
+    setUploadError(null);
+    setAddSheet(null);
     setEditSheet(null);
-    setNudge(true);
+    const input = source === 'camera' ? cameraInput.current : libraryInput.current;
+    if (input) {
+      input.value = '';
+      input.click();
+    }
+  };
+
+  const handleFile = async (file: File | null | undefined) => {
+    if (!file) return;
+    setProcessing(true);
+    try {
+      const dataUrl = await fileToPhotoDataUrl(file);
+      setSlotPhoto(fileTarget.current, dataUrl);
+    } catch {
+      setUploadError("Couldn't read that photo — try a different one.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const addSamplePhoto = (slot: number) => {
+    setSlotPhoto(slot, pickDemoPhoto(draft.photos.map((s) => s.photo)));
+    setAddSheet(null);
+  };
+
+  const replaceWithSample = (slot: number) => {
+    setSlotPhoto(
+      slot,
+      pickDemoPhoto(draft.photos.filter((_, i) => i !== slot).map((s) => s.photo)),
+    );
+    setEditSheet(null);
   };
 
   const setAsMain = (slot: number) => {
@@ -64,9 +130,15 @@ export default function PhotosStep({
     setEditSheet(null);
   };
 
+  /* Compact on remove: filled tiles shift down so slot 0 is always MAIN */
   const removePhoto = (slot: number) => {
-    const next = [...draft.photos];
-    next[slot] = { ...next[slot], photo: null };
+    const kept = draft.photos.filter((s, i) => i !== slot && s.photo !== null);
+    const next: PhotoSlot[] = [...kept];
+    let n = 0;
+    while (next.length < 6) {
+      next.push({ id: `sx${Date.now().toString(36)}${n}`, photo: null });
+      n += 1;
+    }
     setPhotos(next);
     setEditSheet(null);
   };
@@ -170,6 +242,42 @@ export default function PhotosStep({
         )}
       </AnimatePresence>
 
+      {/* hidden pickers — Library (any image) + Camera (device capture) */}
+      <input
+        ref={libraryInput}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(e) => void handleFile(e.target.files?.[0])}
+      />
+      <input
+        ref={cameraInput}
+        type="file"
+        accept="image/*"
+        capture="user"
+        className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(e) => void handleFile(e.target.files?.[0])}
+      />
+
+      {processing && (
+        <p
+          className="t-caption mt-4 text-center"
+          style={{ color: 'var(--text-secondary)' }}
+          role="status"
+        >
+          Preparing your photo…
+        </p>
+      )}
+      {uploadError && (
+        <p className="t-caption mt-2 text-center" style={{ color: 'var(--danger)' }} role="alert">
+          {uploadError}
+        </p>
+      )}
+
       {/* Add photo action sheet */}
       <GlassSheet open={addSheet !== null} onClose={() => setAddSheet(null)} labelledBy="add-photo-title">
         <div className="px-6 pb-8 pt-2">
@@ -177,14 +285,16 @@ export default function PhotosStep({
             Add a photo
           </h2>
           <div className="mt-4 flex flex-col gap-2">
-            {[
-              { icon: Camera, label: 'Camera', hint: 'Take one now' },
-              { icon: ImagePlus, label: 'Library', hint: 'Pick from your photos' },
-            ].map((opt) => (
+            {(
+              [
+                { icon: Camera, label: 'Camera', hint: 'Take one now', source: 'camera' },
+                { icon: ImagePlus, label: 'Library', hint: 'Pick from your photos', source: 'library' },
+              ] as const
+            ).map((opt) => (
               <button
                 key={opt.label}
                 type="button"
-                onClick={() => addSheet !== null && addPhoto(addSheet)}
+                onClick={() => addSheet !== null && pickFile(addSheet, opt.source)}
                 className="flex min-h-[52px] items-center gap-3 rounded-2xl px-4 text-left transition-colors duration-fast"
                 style={{ background: 'var(--field)' }}
               >
@@ -199,6 +309,22 @@ export default function PhotosStep({
                 </span>
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => addSheet !== null && addSamplePhoto(addSheet)}
+              className="flex min-h-[52px] items-center gap-3 rounded-2xl px-4 text-left transition-colors duration-fast"
+              style={{ background: 'var(--field)' }}
+            >
+              <Sparkles size={20} style={{ color: 'var(--text)' }} aria-hidden="true" />
+              <span>
+                <span className="t-button block" style={{ color: 'var(--text)' }}>
+                  Sample photos
+                </span>
+                <span className="t-caption block" style={{ color: 'var(--text-secondary)' }}>
+                  Explore with demo pictures
+                </span>
+              </span>
+            </button>
           </div>
         </div>
       </GlassSheet>
@@ -211,7 +337,8 @@ export default function PhotosStep({
           </h2>
           <div className="mt-4 flex flex-col gap-2">
             {[
-              { label: 'Replace', action: () => editSheet !== null && replacePhoto(editSheet) },
+              { label: 'Replace', action: () => editSheet !== null && pickFile(editSheet, 'library') },
+              { label: 'Replace with sample', action: () => editSheet !== null && replaceWithSample(editSheet) },
               { label: 'Set as main', action: () => editSheet !== null && setAsMain(editSheet) },
               { label: 'Remove', action: () => editSheet !== null && removePhoto(editSheet), danger: true },
             ].map((opt) => (

@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import FlowChrome from '@/components/flow/FlowChrome';
+import { FlowToast } from '@/components/flow/feedback';
 import { BtnGhost } from '@/components/ui/buttons';
+import { CircleAlert } from 'lucide-react';
 import WelcomeStep from '@/components/onboarding/WelcomeStep';
 import AboutYouStep from '@/components/onboarding/AboutYouStep';
 import IntentStep from '@/components/onboarding/IntentStep';
@@ -46,7 +48,16 @@ export default function Onboarding() {
     typeof window === 'undefined' ? emptyOnboardingDraft : loadOnboardingDraft(),
   );
   const [dir, setDir] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
   const step = Math.min(draft.step, STEP_COUNT);
+
+  const saveError = useCallback(() => {
+    setToast({
+      id: Date.now(),
+      message: "Couldn't save — check your connection and try again.",
+    });
+  }, []);
 
   const update = useCallback((patch: Partial<OnboardingDraft>) => {
     setDraft((d) => {
@@ -102,8 +113,10 @@ export default function Onboarding() {
     draft.firstName.trim().length > 0 &&
     age !== null &&
     age >= 18 &&
+    age <= 120 &&
     draft.gender.length > 0 &&
     (draft.gender.includes('Self-describe') ? draft.customGender.trim().length > 0 : true) &&
+    (draft.pronouns === 'custom' ? draft.customPronouns.trim().length > 0 : true) &&
     draft.showMe.length > 0;
   const intentValid = draft.intent !== '';
 
@@ -114,27 +127,40 @@ export default function Onboarding() {
       .join(', ');
     const pronouns = draft.pronouns === 'custom' ? draft.customPronouns.trim() : draft.pronouns;
     if (isAuthenticated && age !== null) {
+      setSaving(true);
       try {
         await upsert.mutateAsync({
           displayName: draft.firstName.trim(),
           age,
           gender: genderLabel || undefined,
           pronouns: pronouns || undefined,
+          showMe: draft.showMe,
         });
       } catch {
-        /* offline/demo — local draft keeps the data */
+        setSaving(false);
+        saveError();
+        return; // don't advance — the draft stays put for a retry
       }
+      setSaving(false);
     }
     goTo(2);
   };
 
   const saveIntent = async () => {
     if (isAuthenticated && draft.intent) {
+      setSaving(true);
       try {
-        await upsert.mutateAsync({ relationshipGoal: draft.intent });
+        await upsert.mutateAsync({
+          relationshipGoal: draft.intent,
+          openTo: draft.openTo,
+          showIntent: draft.showIntent,
+        });
       } catch {
-        /* local draft keeps the data */
+        setSaving(false);
+        saveError();
+        return; // don't advance
       }
+      setSaving(false);
     }
     goTo(3);
   };
@@ -145,6 +171,7 @@ export default function Onboarding() {
       try {
         await verify.mutateAsync();
       } catch {
+        saveError();
         return false;
       }
     }
@@ -154,7 +181,7 @@ export default function Onboarding() {
       return next;
     });
     return true;
-  }, [isAuthenticated, verify]);
+  }, [isAuthenticated, verify, saveError]);
 
   const saveAndExit = () => {
     saveOnboardingDraft(draft);
@@ -171,9 +198,17 @@ export default function Onboarding() {
   const cta = (() => {
     switch (step) {
       case 1:
-        return { label: 'Continue', enabled: basicsValid, action: () => void saveBasics() };
+        return {
+          label: saving ? 'Saving…' : 'Continue',
+          enabled: basicsValid && !saving,
+          action: () => void saveBasics(),
+        };
       case 2:
-        return { label: 'Continue', enabled: intentValid, action: () => void saveIntent() };
+        return {
+          label: saving ? 'Saving…' : 'Continue',
+          enabled: intentValid && !saving,
+          action: () => void saveIntent(),
+        };
       case 3:
         return { label: 'Continue', enabled: draft.verified, action: () => goTo(4) };
       case 4:
@@ -255,6 +290,16 @@ export default function Onboarding() {
           </motion.button>
         </div>
       )}
+
+      {/* save error toast (§8.13) */}
+      <FlowToast
+        toast={
+          toast
+            ? { ...toast, icon: <CircleAlert size={14} style={{ color: 'var(--danger)' }} /> }
+            : null
+        }
+        onDismiss={() => setToast(null)}
+      />
 
       {/* unauthenticated hint on gated steps */}
       {!authLoading && !isAuthenticated && step >= 1 && step <= 4 && (

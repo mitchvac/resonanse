@@ -91,7 +91,7 @@ export default function ProfileSetup() {
   const [dir, setDir] = useState(1);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [reflectionsOpen, setReflectionsOpen] = useState(false);
-  const [publishing, setPublishing] = useState(false);
+  const [publishState, setPublishState] = useState<'saving' | 'error' | 'demo' | null>(null);
   const [missingOpen, setMissingOpen] = useState(false);
   const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
 
@@ -133,35 +133,62 @@ export default function ProfileSetup() {
     [draft.prompts],
   );
 
+  /* Seed the goal from the backend profile when the user hasn't picked one
+     here yet (onboarding intent is seeded at draft load). */
+  const profileGoal = meQuery.data?.profile?.relationshipGoal;
+  useEffect(() => {
+    if (!profileGoal || draft.goalTouched) return;
+    if (draft.goal === profileGoal) return;
+    update({ goal: profileGoal as ProfileSetupDraft['goal'] });
+  }, [profileGoal, draft.goalTouched, draft.goal, update]);
+
+  /* Throws on failure — callers decide whether to advance (per-step continue
+     tolerates offline; publish surfaces an honest error state). */
   const saveStep = useCallback(
     async (which: number): Promise<void> => {
       if (!isAuthenticated) return;
-      try {
-        if (which === 1) {
-          await upsert.mutateAsync({ photos: filledPhotos });
-        } else if (which === 2) {
-          await upsert.mutateAsync({ prompts: answeredPrompts.slice(0, 5) });
-        } else if (which === 3) {
-          await upsert.mutateAsync({
-            relationshipGoal: draft.goal || undefined,
-            relationshipStatus: draft.status || undefined,
-            desires: [...draft.lifestyle, ...draft.values, ...draft.kink],
-            familyPlans: draft.family || null,
-          });
-        } else if (which === 4) {
-          await upsert.mutateAsync({
-            voiceNoteUrl: draft.voiceRecorded ? 'resonance://voice-notes/demo' : null,
-          });
+      if (which === 1) {
+        await upsert.mutateAsync({ photos: filledPhotos });
+      } else if (which === 2) {
+        await upsert.mutateAsync({ prompts: answeredPrompts.slice(0, 5) });
+      } else if (which === 3) {
+        await upsert.mutateAsync({
+          relationshipGoal: draft.goal || undefined,
+          relationshipStatus: draft.status || undefined,
+          // Lifestyle + values are public tags; consent-gated kink tags stay
+          // private (never flattened into public `desires`).
+          desires: [...draft.lifestyle, ...draft.values],
+          privateDesires: draft.kink,
+          familyPlans: draft.family || null,
+        });
+      } else if (which === 4) {
+        await upsert.mutateAsync({
+          voiceNoteUrl: draft.voiceRecorded ? 'resonance://voice-notes/demo' : null,
+        });
+      } else if (which === 5) {
+        await upsert.mutateAsync({
+          constellation: draft.constellation
+            .filter((s) => s.status !== 'empty')
+            .map((s) => ({
+              handle: s.handle,
+              name: s.handle.replace(/^@/, ''),
+              photo: s.photo,
+              status: s.status,
+            })),
+        });
+      } else if (which === 6) {
+        if (draft.reflectionsAnswers.length > 0) {
+          await upsert.mutateAsync({ reflections: draft.reflectionsAnswers.slice(0, 10) });
         }
-      } catch {
-        /* offline/demo — local draft keeps the data */
       }
     },
     [isAuthenticated, upsert, filledPhotos, answeredPrompts, draft],
   );
 
   const continueFrom = (which: number) => {
-    void saveStep(which);
+    saveStep(which).catch(() =>
+      setToast({ id: Date.now(), message: "Couldn't save — your draft is safe on this device." }),
+    );
     goTo(which + 1);
   };
 
@@ -179,16 +206,44 @@ export default function ProfileSetup() {
     return items;
   }, [filledPhotos, answeredPrompts]);
 
+  const runSaves = useCallback(async (): Promise<boolean> => {
+    const results = await Promise.allSettled([
+      saveStep(1),
+      saveStep(2),
+      saveStep(3),
+      saveStep(4),
+      saveStep(5),
+      saveStep(6),
+    ]);
+    return results.every((r) => r.status === 'fulfilled');
+  }, [saveStep]);
+
   const publish = async () => {
     if (missing.length > 0) {
       setMissingOpen(true);
       return;
     }
-    await saveStep(1);
-    await saveStep(2);
-    await saveStep(3);
-    await saveStep(4);
-    setPublishing(true);
+    if (!isAuthenticated) {
+      setPublishState('demo');
+      return;
+    }
+    setPublishState('saving');
+    const ok = await runSaves();
+    if (ok) {
+      finishPublish();
+    } else {
+      setPublishState('error');
+    }
+  };
+
+  const retryPublish = async () => {
+    setPublishState('saving');
+    const ok = await runSaves();
+    if (ok) {
+      finishPublish();
+    } else {
+      setPublishState('error');
+    }
   };
 
   const finishPublish = useCallback(() => {
@@ -315,7 +370,14 @@ export default function ProfileSetup() {
             }}
           />
         )}
-        {publishing && <PublishOverlay key="publish" onDone={finishPublish} />}
+        {publishState && (
+          <PublishOverlay
+            key="publish"
+            state={publishState}
+            onRetry={() => void retryPublish()}
+            onContinue={finishPublish}
+          />
+        )}
       </AnimatePresence>
       <MissingSheet open={missingOpen} missing={missing} onClose={() => setMissingOpen(false)} />
     </div>

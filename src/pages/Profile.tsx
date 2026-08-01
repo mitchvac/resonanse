@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
@@ -24,7 +24,7 @@ import TabBar from '@/components/TabBar';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import CountUp from '@/components/CountUp';
 import { BtnGlass, BtnPrimary, BtnGhost } from '@/components/ui/buttons';
-import { LockChip, Chip } from '@/components/settings/controls';
+import { LockChip, Chip, ToastHost, useToasts } from '@/components/settings/controls';
 import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -164,9 +164,19 @@ export default function Profile() {
   const navigate = useNavigate();
   const reduced = useReducedMotion();
   const { user } = useAuth();
+  const utils = trpc.useUtils();
   const { data, isLoading } = trpc.profile.me.useQuery();
   const profile = data?.profile ?? null;
   const entitlement = data?.entitlement ?? null;
+  const { toasts, push } = useToasts();
+  const likesQuery = trpc.likes.received.useQuery();
+  const matchesQuery = trpc.matches.list.useQuery();
+  const upsertProfile = trpc.profile.upsert.useMutation({
+    onSuccess: () => void utils.profile.me.invalidate(),
+  });
+  const updateSettings = trpc.profile.updateSettings.useMutation({
+    onSuccess: () => void utils.profile.me.invalidate(),
+  });
 
   const [goalOpen, setGoalOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -194,10 +204,61 @@ export default function Profile() {
   const tierLabel =
     entitlement?.tier === 'x' ? 'Resonance X' : entitlement?.tier === 'plus' ? 'Resonance+' : 'Free';
 
-  // Demo outcome stats (no backend endpoint — profile.md fixed values)
-  const queueViews = 142;
-  const likesReceived = 17;
-  const datesThisWeek = 1;
+  /* Share — copy the profile link to the clipboard */
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/profile`;
+    try {
+      await navigator.clipboard.writeText(url);
+      push('Profile link copied.');
+    } catch {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        push('Profile link copied.');
+      } catch {
+        push("Couldn't copy the link — copy the address bar instead.");
+      }
+    }
+  };
+
+  /* Make-main — persist the reordered photos array */
+  const makeMain = (idx: number) => {
+    const real = profile?.photos?.filter(Boolean) ?? [];
+    if (real.length >= 4) {
+      const reordered = [real[idx], ...real.filter((_, i) => i !== idx)];
+      setMainPhotoIdx(0);
+      upsertProfile.mutate({ photos: reordered });
+    } else {
+      setMainPhotoIdx(idx);
+    }
+  };
+
+  /* Weekly goal — server value wins once loaded */
+  useEffect(() => {
+    const g = profile?.weeklyGoal;
+    if (typeof g === 'number' && g >= 1 && g <= 3) setWeeklyGoal(g);
+  }, [profile?.weeklyGoal]);
+
+  const saveWeeklyGoal = (goal: number) => {
+    updateSettings.mutate({ weeklyGoal: goal });
+    setGoalOpen(false);
+    push('Weekly goal saved.');
+  };
+
+  // Honest outcome stats — real likes, matches, and We Met check-ins
+  const likesReceived = (likesQuery.data?.likes.length ?? 0) + (likesQuery.data?.pulses.length ?? 0);
+  const matchEntries = matchesQuery.data?.matches ?? [];
+  const matchCount = matchEntries.length;
+  const datesCount = matchEntries.filter(
+    (m) => m.match.weMet === 'met' || m.match.weMet === 'dated',
+  ).length;
+  const constellationCount = profile?.constellation?.length ?? 0;
 
   // Profile strength — completeness heuristic over real fields, floored at spec demo value
   const strength = useMemo(() => {
@@ -217,6 +278,7 @@ export default function Profile() {
 
   return (
     <div className="relative h-full">
+      <ToastHost toasts={toasts} />
       <div className="no-scrollbar h-full overflow-y-auto px-5 pb-28">
         {/* ── Top chrome: t-heading "You" + settings / share ─────────── */}
         <header className="flex items-center justify-between pt-4">
@@ -235,6 +297,7 @@ export default function Profile() {
             </button>
             <button
               type="button"
+              onClick={() => void shareProfile()}
               aria-label="Share your profile"
               className="flex h-11 w-11 items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
@@ -356,17 +419,20 @@ export default function Profile() {
             <h3 className="t-eyebrow mb-3 mt-8">This week</h3>
             <div className="grid grid-cols-3 gap-3">
               <StatCard
-                micro="QUEUE VIEWS"
-                value={<CountUp value={queueViews} />}
+                micro="MATCHES"
+                value={<CountUp value={matchCount} />}
+                onClick={() => navigate('/matches')}
                 delay={0}
               />
               <StatCard
                 micro="LIKES RECEIVED"
                 value={<CountUp value={likesReceived} />}
                 sub={
-                  <span className="inline-flex items-center gap-0.5" style={{ color: 'var(--ok)' }}>
-                    <TrendingUp size={12} aria-hidden="true" /> +5 this week
-                  </span>
+                  likesReceived > 0 ? (
+                    <span className="inline-flex items-center gap-0.5" style={{ color: 'var(--ok)' }}>
+                      <TrendingUp size={12} aria-hidden="true" /> In your Likes tab
+                    </span>
+                  ) : undefined
                 }
                 onClick={() => navigate('/likes')}
                 delay={0.08}
@@ -375,7 +441,7 @@ export default function Profile() {
                 micro="DATES"
                 value={
                   <span className="inline-flex items-baseline gap-1">
-                    <CountUp value={datesThisWeek} />
+                    <CountUp value={datesCount} />
                     <span className="t-caption" style={{ color: 'var(--text-secondary)' }}>
                       /{weeklyGoal} goal
                     </span>
@@ -391,7 +457,7 @@ export default function Profile() {
                       <span
                         className="block h-full rounded-full"
                         style={{
-                          width: `${Math.min(100, (datesThisWeek / weeklyGoal) * 100)}%`,
+                          width: `${Math.min(100, (datesCount / weeklyGoal) * 100)}%`,
                           background: 'var(--violet)',
                         }}
                       />
@@ -493,7 +559,7 @@ export default function Profile() {
                       Photo 3 (hiking) outperforms at 2.4× — consider making it main.
                     </p>
                     <BtnGhost
-                      onClick={() => setMainPhotoIdx(bestIdx)}
+                      onClick={() => makeMain(bestIdx)}
                       className="shrink-0 px-2 text-violet"
                     >
                       Make main
@@ -601,7 +667,16 @@ export default function Profile() {
                 }
                 delay={0.08}
               />
-              <QuickRow label="Constellation" value="1 linked partner" delay={0.12} />
+              <QuickRow
+                label="Constellation"
+                value={
+                  constellationCount > 0
+                    ? `${constellationCount} linked partner${constellationCount === 1 ? '' : 's'}`
+                    : 'Link a partner'
+                }
+                onClick={() => navigate('/profile-setup')}
+                delay={0.12}
+              />
               <QuickRow
                 label="Notification preferences"
                 onClick={() => navigate('/settings')}
@@ -655,7 +730,7 @@ export default function Profile() {
           <p className="t-caption mt-2 text-center" style={{ color: 'var(--text-secondary)' }}>
             {weeklyGoal} date{weeklyGoal > 1 ? 's' : ''} per week
           </p>
-          <BtnPrimary onClick={() => setGoalOpen(false)} className="mt-6 w-full">
+          <BtnPrimary onClick={() => saveWeeklyGoal(weeklyGoal)} className="mt-6 w-full">
             Save goal
           </BtnPrimary>
         </div>

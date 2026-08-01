@@ -32,11 +32,14 @@ export default function AboutYouStep({
   const selfDescribe = draft.gender.includes('Self-describe');
   const customPronouns = draft.pronouns === 'custom';
 
-  /* 18+ gate — checked when the birthday becomes complete */
+  /* Age gate (18–120) — checked when the birthday becomes complete */
   useEffect(() => {
     const age = ageFromBirthday(draft.birthday);
-    if (age !== null && age < 18) setAgeGateOpen(true);
+    if (age !== null && (age < 18 || age > 120)) setAgeGateOpen(true);
   }, [draft.birthday]);
+
+  const gateAge = ageFromBirthday(draft.birthday);
+  const gateTooOld = gateAge !== null && gateAge > 120;
 
   useEffect(() => {
     if (selfDescribe) customGenderRef.current?.focus();
@@ -195,10 +198,12 @@ export default function AboutYouStep({
       >
         <div className="px-6 pb-8 pt-2 text-center">
           <h2 id="age-gate-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
-            Resonance is for adults 18+.
+            {gateTooOld ? 'That birthday looks off.' : 'Resonance is for adults 18+.'}
           </h2>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Based on the birthday you entered, you&rsquo;re not old enough to join yet.
+            {gateTooOld
+              ? 'Double-check the year — it comes out to an age we can’t verify.'
+              : 'Based on the birthday you entered, you’re not old enough to join yet.'}
           </p>
           <div className="mt-5 flex justify-center">
             <BtnGhost
