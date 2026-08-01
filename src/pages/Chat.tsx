@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
+  ChevronRight,
   BadgeCheck,
   Check,
+  EyeOff,
   Video,
   Shield,
-  ShieldAlert,
   X,
 } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
@@ -27,7 +28,6 @@ import type { CallEndReason, CallRole } from '@/components/call/useVideoCall';
 import { Toast, useToast } from '@/components/chat/Toast';
 import type { ChatMessage } from '@/components/chat/types';
 import {
-  clockTime,
   dayLabel,
   firstNameOf,
   sameDay,
@@ -57,6 +57,109 @@ function DayDivider({ label }: { label: string }) {
         {label}
       </span>
     </div>
+  );
+}
+
+/** Hidden-word message — peer text containing one of the viewer's muted
+    words arrives with meta.flaggedHidden. Collapsed slim --field row with
+    tap-to-reveal (chat.md hidden-words control). */
+function HiddenWordMessage({
+  message,
+  own,
+  tick,
+  ephemeral,
+  index,
+}: {
+  message: ChatMessage;
+  own: boolean;
+  tick?: 'sent' | 'delivered' | 'read';
+  ephemeral: boolean;
+  index: number;
+}) {
+  const [revealed, setRevealed] = useState(false);
+  if (revealed) {
+    return (
+      <MessageBubble message={message} own={own} tick={tick} ephemeral={ephemeral} index={index} />
+    );
+  }
+  return (
+    <motion.div
+      className={cn('flex w-full', own ? 'justify-end' : 'justify-start')}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <button
+        type="button"
+        onClick={() => setRevealed(true)}
+        className="t-caption flex items-center gap-1.5 rounded-full px-3.5 py-1.5"
+        style={{ background: 'var(--field)', color: 'var(--text-secondary)' }}
+        aria-label="Hidden message — tap to reveal"
+      >
+        <EyeOff size={12} aria-hidden="true" />
+        Hidden — contains a word you muted
+        <span className="font-bold underline" style={{ color: 'var(--text)' }}>
+          Reveal
+        </span>
+      </button>
+    </motion.div>
+  );
+}
+
+/** Event invite bubble — kind 'event_invite' (events.invite): compact event
+    card with photo thumb, title, formatted start, and a link to /events. */
+function EventInviteBubble({ message, own }: { message: ChatMessage; own: boolean }) {
+  const meta = (message.meta ?? {}) as {
+    title?: string;
+    photo?: string | null;
+    startsAt?: string | Date;
+  };
+  const start = meta.startsAt ? new Date(meta.startsAt) : null;
+  return (
+    <motion.div
+      className={cn('flex w-full', own ? 'justify-end' : 'justify-start')}
+      initial={{ opacity: 0, y: 12, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div
+        className="w-[75%] max-w-[300px] overflow-hidden rounded-[20px]"
+        style={{
+          background: 'var(--glass-a)',
+          border: 'var(--glass-quiet-border)',
+          boxShadow: 'var(--glass-hi), var(--glass-lo)',
+        }}
+      >
+        {meta.photo && (
+          <img src={meta.photo} alt="" className="h-24 w-full object-cover" loading="lazy" />
+        )}
+        <div className="p-3.5">
+          <p className="t-eyebrow">Event invite</p>
+          <p className="t-value mt-1 font-bold" style={{ color: 'var(--text)' }}>
+            {meta.title ?? message.content}
+          </p>
+          {start && (
+            <p className="t-caption mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+              {start.toLocaleDateString(undefined, {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+              })}
+              {' · '}
+              {start.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+            </p>
+          )}
+          <Link
+            to="/events"
+            className="t-caption mt-2 inline-flex min-h-[32px] items-center gap-0.5 font-bold"
+            style={{ color: 'var(--violet)' }}
+          >
+            View event
+            <ChevronRight size={13} aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -142,12 +245,9 @@ export default function Chat() {
   const [callSession, setCallSession] = useState<{ sessionId: number; role: CallRole } | null>(null);
   const [justVideoVerified, setJustVideoVerified] = useState(false);
   const [noteRecorderOpen, setNoteRecorderOpen] = useState(false);
-  const [showWeMet, setShowWeMet] = useState(false);
-  const [acceptedTime, setAcceptedTime] = useState<string | undefined>();
   const [safetyBarDismissed, setSafetyBarDismissed] = useState(true);
 
   const streamRef = useRef<HTMLDivElement>(null);
-  const localId = useRef(-1);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const later = (fn: () => void, ms: number) => {
     timers.current.push(setTimeout(fn, ms));
@@ -186,17 +286,46 @@ export default function Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatQuery.data]);
 
+  /* We Met trigger — shown once a date idea was accepted in this thread,
+     until the match records a We Met outcome. Persistent across reloads. */
+  const acceptedDate = messages.find(
+    (m) => m.kind === 'date_idea' && (m.meta as DateMeta | null)?.status === 'accepted',
+  );
+  const weMetRecorded = (match?.weMet ?? matchEntry?.match.weMet ?? 'none') !== 'none';
+  const showWeMetCard = !!acceptedDate && (match?.id ?? matchEntry?.match.id ?? 0) > 0 && !weMetRecorded;
+
   /* Auto-scroll the stream */
   useEffect(() => {
     const el = streamRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages.length, peerTyping, showWeMet]);
+  }, [messages.length, peerTyping, showWeMetCard]);
 
   const sendMut = trpc.chat.send.useMutation();
   const proposeMut = trpc.chat.proposeDate.useMutation();
   const ephemeralMut = trpc.chat.setEphemeral.useMutation();
+  const respondDateMut = trpc.chat.respondDate.useMutation();
+  const systemEventMut = trpc.chat.sendSystemEvent.useMutation();
 
   const closed = !!chatQuery.error;
+
+  /* Screenshot proxy (chat.md §5): the web can't detect real screenshots —
+     a tab going hidden in vanish mode is the standard signal. Server
+     persists the system bubble so both sides see it. */
+  useEffect(() => {
+    if (!ephemeral || closed || conversationId <= 0) return;
+    const onVisibility = () => {
+      if (document.visibilityState !== 'hidden') return;
+      systemEventMut.mutate(
+        { conversationId, event: 'screenshot_warning' },
+        {
+          onSuccess: ({ message }) => setMessages((m) => [...m, message]),
+        },
+      );
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ephemeral, closed, conversationId]);
 
   /* ---- Send (§7) — outgoing slides in, seed replies after typing dots ---- */
   const handleSend = () => {
@@ -226,7 +355,7 @@ export default function Chat() {
     );
   };
 
-  /* ---- Date ideas (§4) ---- */
+  /* ---- Date ideas (§4) — accept/decline persists via chat.respondDate ---- */
   const markDateStatus = (messageId: number, status: 'accepted' | 'declined', time?: string) => {
     setMessages((ms) =>
       ms.map((m) =>
@@ -235,11 +364,17 @@ export default function Chat() {
           : m,
       ),
     );
+    respondDateMut.mutate(
+      { messageId, status },
+      {
+        onSuccess: ({ message }) => {
+          setMessages((ms) => ms.map((m) => (m.id === messageId ? { ...m, meta: message.meta } : m)));
+        },
+        onError: () => showToast("Couldn't save that — try again."),
+      },
+    );
     if (status === 'accepted') {
-      setAcceptedTime(time);
-      showToast(`Date planned${time ? ` · ${time}` : ''} — added to your calendar`);
-      /* 24h post-date both get the We Met card — the demo compresses the wait */
-      later(() => setShowWeMet(true), 3200);
+      showToast(`Date planned — ${peerName} accepted`);
     } else {
       showToast('Declined — no pressure.');
     }
@@ -274,22 +409,6 @@ export default function Chat() {
     ephemeralMut.mutate({ conversationId, ephemeral: next });
     if (next) {
       showToast('Messages disappear 24h after being read.');
-      /* Screenshot-detection demo: the peer screenshots vanish-mode chat */
-      later(() => {
-        setMessages((m) => [
-          ...m,
-          {
-            id: localId.current--,
-            conversationId,
-            senderId: 0,
-            kind: 'system',
-            content: `${peerName} took a screenshot · ${clockTime(new Date())}`,
-            meta: null,
-            createdAt: new Date(),
-          } as unknown as ChatMessage,
-        ]);
-        showToast('Screenshot detected', <ShieldAlert size={13} style={{ color: 'var(--danger)' }} />);
-      }, 6000);
     }
   };
 
@@ -589,6 +708,16 @@ export default function Chat() {
                       own={own}
                       index={Math.max(0, messages.length - i - 1)}
                     />
+                  ) : m.kind === 'event_invite' ? (
+                    <EventInviteBubble message={m} own={own} />
+                  ) : (m.meta as { flaggedHidden?: boolean } | null)?.flaggedHidden ? (
+                    <HiddenWordMessage
+                      message={m}
+                      own={own}
+                      tick={tickFor(m, i)}
+                      ephemeral={ephemeral}
+                      index={Math.max(0, messages.length - i - 1)}
+                    />
                   ) : (
                     <MessageBubble
                       message={m}
@@ -605,15 +734,15 @@ export default function Chat() {
             <AnimatePresence>{peerTyping && <TypingBubble />}</AnimatePresence>
 
             {/* §6 We Met card */}
-            {showWeMet && matchId > 0 && match?.weMet === 'none' && (
+            {showWeMetCard && (
               <WeMetCard
                 matchId={matchId}
                 peerName={peer?.displayName}
-                dateLabel={acceptedTime?.split(' ')[0] ?? 'the date'}
+                dateLabel={((acceptedDate.meta as DateMeta)?.time ?? 'the date').split(' ')[0]}
                 onToast={showToast}
                 onDone={() => {
-                  setShowWeMet(false);
                   void utils.matches.list.invalidate();
+                  void utils.chat.messages.invalidate();
                 }}
               />
             )}

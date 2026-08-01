@@ -43,6 +43,7 @@ export default function EventDetailSheet({
   const matchesQuery = trpc.matches.list.useQuery(undefined, {
     enabled: pickerOpen,
   });
+  const invite = trpc.events.invite.useMutation();
 
   const start = event ? eventDate(event) : null;
   const agenda = start
@@ -222,11 +223,23 @@ export default function EventDetailSheet({
                 <button
                   key={entry.match.id}
                   type="button"
-                  className="flex min-h-[56px] items-center gap-3 rounded-2xl px-3 py-2 text-left"
+                  disabled={invite.isPending}
+                  className="flex min-h-[56px] items-center gap-3 rounded-2xl px-3 py-2 text-left disabled:opacity-60"
                   style={{ background: 'var(--field)' }}
                   onClick={() => {
-                    setPickerOpen(false);
-                    onToast(`Sent to ${name} — the event card is in your thread.`);
+                    if (!event) return;
+                    invite.mutate(
+                      { eventId: event.id, matchId: entry.match.id },
+                      {
+                        onSuccess: () => {
+                          setPickerOpen(false);
+                          onToast(`Sent to ${name} — the event card is in your thread.`);
+                        },
+                        onError: () => {
+                          onToast("Couldn't send the invite — try again.");
+                        },
+                      },
+                    );
                   }}
                 >
                   {photo ? (

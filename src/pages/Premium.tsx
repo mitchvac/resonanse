@@ -183,6 +183,7 @@ export default function Premium() {
   const [openExplainer, setOpenExplainer] = useState<string | null>(null);
   const [pulsePack, setPulsePack] = useState<(typeof PULSE_PACKS)[number]>(PULSE_PACKS[0]);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState<Tier | null>(null);
   const [toast, setToast] = useState<ToastPayload | null>(null);
@@ -229,14 +230,23 @@ export default function Premium() {
     onError: () => showToast('Store hiccup — nothing was charged. Try again.'),
   });
 
-  const buyBoost = () => {
-    setProcessing(true);
-    setTimeout(() => {
-      setProcessing(false);
+  const buyBoost = trpc.premium.buyBoost.useMutation({
+    onSuccess: () => {
       setConfirm(null);
+      utils.premium.entitlements.invalidate();
       showToast('Boost armed — 30 minutes at the front of nearby queues.');
-    }, 900);
-  };
+    },
+    onError: () => showToast('Store hiccup — nothing was charged. Try again.'),
+  });
+
+  const cancel = trpc.premium.cancel.useMutation({
+    onSuccess: () => {
+      setCancelOpen(false);
+      utils.premium.entitlements.invalidate();
+      showToast("You're back on Free — no further charges.");
+    },
+    onError: () => showToast("Couldn't cancel right now — try again."),
+  });
 
   const headline = 'Better outcomes. Not more swipes.';
   const isMember = currentTier !== 'free';
@@ -381,6 +391,11 @@ export default function Premium() {
                     Switch to Resonance+
                   </BtnGhost>
                 )}
+              </div>
+              <div className="mt-2">
+                <BtnGhost className="w-full" onClick={() => setCancelOpen(true)}>
+                  Switch to Free
+                </BtnGhost>
               </div>
             </GlassCard>
           </motion.section>
@@ -715,7 +730,10 @@ export default function Premium() {
               type="button"
               className="t-micro min-h-[32px]"
               style={{ color: 'var(--text-secondary)' }}
-              onClick={() => showToast('Purchases restored.')}
+              onClick={() => {
+                void entitlementsQuery.refetch();
+                showToast('Synced with your account.');
+              }}
             >
               Restore purchase
             </button>
@@ -761,20 +779,53 @@ export default function Premium() {
             </span>
             <BtnPrimary
               className="h-11 px-6"
-              disabled={processing || buyPulses.isPending}
+              disabled={processing || buyPulses.isPending || buyBoost.isPending}
               onClick={() => {
                 if (!confirm) return;
                 if (confirm.kind === 'pulses') {
                   buyPulses.mutate({ count: confirm.count });
                 } else {
-                  buyBoost();
+                  buyBoost.mutate({ count: 1 });
                 }
               }}
             >
-              {processing || buyPulses.isPending ? (
+              {processing || buyPulses.isPending || buyBoost.isPending ? (
                 <Loader2 size={16} className="animate-spin" aria-hidden="true" />
               ) : (
                 'Buy'
+              )}
+            </BtnPrimary>
+          </div>
+        </div>
+      </GlassSheet>
+
+      {/* — Switch to Free confirm sheet — */}
+      <GlassSheet
+        open={cancelOpen}
+        onClose={() => !cancel.isPending && setCancelOpen(false)}
+        labelledBy="cancel-title"
+      >
+        <div className="px-5 pb-8">
+          <h2 id="cancel-title" className="t-title-sm mt-2">
+            Switch to Free?
+          </h2>
+          <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
+            You'll keep {currentTier === 'x' ? 'Resonance X' : 'Resonance+'} until the end of
+            the paid period — then Free stays good: daily queue, every filter, events.
+          </p>
+          <div className="mt-5 flex gap-2">
+            <BtnGlass className="flex-1" onClick={() => setCancelOpen(false)}>
+              Keep my plan
+            </BtnGlass>
+            <BtnPrimary
+              className="flex-1"
+              disabled={cancel.isPending}
+              onClick={() => cancel.mutate()}
+            >
+              {cancel.isPending ? (
+                <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+              ) : (
+                'Switch to Free'
               )}
             </BtnPrimary>
           </div>

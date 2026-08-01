@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Sparkles } from 'lucide-react';
 import { trpc } from '@/providers/trpc';
@@ -20,8 +21,10 @@ export default function StartersTray({
   open: boolean;
   onPick: (text: string) => void;
 }) {
+  /* Refresh rotates the suggestion pool server-side via `variant`. */
+  const [variant, setVariant] = useState(0);
   const starters = trpc.chat.starters.useQuery(
-    { conversationId },
+    { conversationId, variant },
     { enabled: open, refetchOnWindowFocus: false },
   );
 
@@ -40,7 +43,7 @@ export default function StartersTray({
               <p className="t-eyebrow">Resonance AI · grounded in {peerName}'s profile</p>
               <button
                 type="button"
-                onClick={() => starters.refetch()}
+                onClick={() => setVariant((v) => (v + 1) % 21)}
                 className="flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
                 style={{ color: 'var(--text-secondary)' }}
                 aria-label="Cycle more starters"

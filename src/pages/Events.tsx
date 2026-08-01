@@ -166,6 +166,24 @@ export default function Events() {
     onSettled: () => utils.events.list.invalidate(),
   });
 
+  const feedbackMutation = trpc.events.feedback.useMutation({
+    onSuccess: () => showToast('Logged toward your weekly goal.'),
+    onError: () => showToast("Couldn't save that — try again."),
+  });
+
+  const submitFeedback = useCallback(
+    (event: EventItem) => {
+      const rating = ratings[event.id];
+      if (!rating || feedbackMutation.isPending) return;
+      feedbackMutation.mutate({
+        eventId: event.id,
+        rating,
+        metAnyone: metAnyone[event.id],
+      });
+    },
+    [ratings, metAnyone, feedbackMutation],
+  );
+
   const toggleRsvp = useCallback(
     (event: EventItem) => {
       if (event.myRsvp === 'going') {
@@ -225,7 +243,7 @@ export default function Events() {
                 isTraveller ? 'Change city (Travel mode)' : undefined
               }
             >
-              {(city ?? 'LISBON').toUpperCase()} · THIS WEEK
+              {city ? city.toUpperCase() : 'ALL CITIES'} · THIS WEEK
             </button>
           </div>
           <button
@@ -536,10 +554,7 @@ export default function Events() {
                             initial={reduced ? false : { opacity: 0, scale: 0.6 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: reduced ? 0 : i * 0.04 }}
-                            onClick={() => {
-                              setRatings((r) => ({ ...r, [e.id]: star }));
-                              showToast('Logged toward your weekly goal.');
-                            }}
+                            onClick={() => setRatings((r) => ({ ...r, [e.id]: star }))}
                           >
                             <Star
                               size={18}
@@ -570,6 +585,15 @@ export default function Events() {
                           }
                         >
                           Met anyone?
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!ratings[e.id] || feedbackMutation.isPending}
+                          className="t-caption ml-auto rounded-full px-3 py-1.5 font-bold text-white disabled:opacity-50"
+                          style={{ background: 'var(--violet)' }}
+                          onClick={() => submitFeedback(e)}
+                        >
+                          {feedbackMutation.isPending ? 'Saving…' : 'Submit'}
                         </button>
                       </div>
                     </div>
@@ -659,8 +683,9 @@ export default function Events() {
             See what's on in another city this week.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            {CITIES.map((c) => {
-              const selected = (city ?? 'Lisbon') === c;
+            {['All cities', ...CITIES].map((c) => {
+              const value = c === 'All cities' ? null : c;
+              const selected = city === value;
               return (
                 <button
                   key={c}
@@ -675,7 +700,7 @@ export default function Events() {
                     boxShadow: selected ? '0 0 0 1.5px var(--violet)' : undefined,
                   }}
                   onClick={() => {
-                    setCity(c === 'Lisbon' ? null : c);
+                    setCity(value);
                     setCitySheetOpen(false);
                   }}
                 >

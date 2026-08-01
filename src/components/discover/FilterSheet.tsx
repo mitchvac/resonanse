@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
@@ -20,6 +20,23 @@ import { cn } from '@/lib/utils';
 const INTENT_OPTIONS = ['Serious', 'Casual', 'Explore', 'Friendship', 'ENM'];
 const RELTYPE_OPTIONS = ['Monogamous', 'Non-monogamous', 'Open to both'];
 const FAMILY_OPTIONS = ['Want kids', 'Open', 'No kids', 'Have kids'];
+
+/** Filters applied to discover.queue — owned by Discover.tsx. */
+export type DiscoverFilters = {
+  intents: string[];
+  dealbreakerIntents: string[];
+  minAge: number;
+  maxAge: number;
+  verifiedOnly: boolean;
+};
+
+export const DEFAULT_FILTERS: DiscoverFilters = {
+  intents: [],
+  dealbreakerIntents: [],
+  minAge: 24,
+  maxAge: 36,
+  verifiedOnly: false,
+};
 
 type GroupKey = 'intent' | 'age' | 'distance' | 'relationship' | 'family' | 'verified';
 
@@ -136,22 +153,39 @@ function Group({
 
 export default function FilterSheet({
   open,
+  initial,
+  onApply,
   onClose,
   onLockedTap,
 }: {
   open: boolean;
+  initial: DiscoverFilters;
+  onApply: (filters: DiscoverFilters) => void;
   onClose: () => void;
   onLockedTap: () => void;
 }) {
-  const [intents, setIntents] = useState<string[]>([]);
-  const [ageMin, setAgeMin] = useState(24);
-  const [ageMax, setAgeMax] = useState(36);
+  const [intents, setIntents] = useState<string[]>(initial.intents);
+  const [ageMin, setAgeMin] = useState(initial.minAge);
+  const [ageMax, setAgeMax] = useState(initial.maxAge);
   const [distance, setDistance] = useState(25);
   const [cityOnly, setCityOnly] = useState(false);
   const [relType, setRelType] = useState<string[]>([]);
   const [family, setFamily] = useState<string[]>([]);
-  const [verifiedOnly, setVerifiedOnly] = useState(true);
-  const [dealbreakers, setDealbreakers] = useState<Set<GroupKey>>(new Set());
+  const [verifiedOnly, setVerifiedOnly] = useState(initial.verifiedOnly);
+  const [dealbreakers, setDealbreakers] = useState<Set<GroupKey>>(
+    () => new Set<GroupKey>(initial.dealbreakerIntents.length ? ['intent'] : []),
+  );
+
+  /* Re-sync the working draft from the applied filters each time the sheet opens */
+  useEffect(() => {
+    if (!open) return;
+    setIntents(initial.intents);
+    setAgeMin(initial.minAge);
+    setAgeMax(initial.maxAge);
+    setVerifiedOnly(initial.verifiedOnly);
+    setDealbreakers(new Set<GroupKey>(initial.dealbreakerIntents.length ? ['intent'] : []));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const toggleIn = (list: string[], set: (v: string[]) => void, v: string) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -169,25 +203,33 @@ export default function FilterSheet({
     relType.length +
     family.length +
     (cityOnly ? 1 : 0) +
-    (verifiedOnly ? 0 : 1) +
+    (verifiedOnly ? 1 : 0) +
     dealbreakers.size;
-
-  // deterministic demo count — "live" updates as filters change
-  const peopleCount = useMemo(
-    () => Math.max(2, 24 - activeCount * 3),
-    [activeCount],
-  );
 
   const reset = () => {
     setIntents([]);
-    setAgeMin(24);
-    setAgeMax(36);
+    setAgeMin(DEFAULT_FILTERS.minAge);
+    setAgeMax(DEFAULT_FILTERS.maxAge);
     setDistance(25);
     setCityOnly(false);
     setRelType([]);
     setFamily([]);
-    setVerifiedOnly(true);
+    setVerifiedOnly(DEFAULT_FILTERS.verifiedOnly);
     setDealbreakers(new Set());
+  };
+
+  /* Apply → parent refetches discover.queue with these filters; the real
+     count lands in the queue header (no fabricated preview count). */
+  const apply = () => {
+    const intentDealbreaker = dealbreakers.has('intent');
+    onApply({
+      intents: intentDealbreaker ? [] : intents,
+      dealbreakerIntents: intentDealbreaker ? intents : [],
+      minAge: ageMin,
+      maxAge: ageMax,
+      verifiedOnly,
+    });
+    onClose();
   };
 
   const toggleGroup = (key: GroupKey, title: string, children: ReactNode, delay: number) => (
@@ -351,16 +393,7 @@ export default function FilterSheet({
 
         <div className="mt-5 flex items-center justify-between gap-3">
           <BtnGhost onClick={reset}>Reset</BtnGhost>
-          <BtnPrimary onClick={onClose}>
-            <motion.span
-              key={peopleCount}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.16 }}
-            >
-              Show {peopleCount} people
-            </motion.span>
-          </BtnPrimary>
+          <BtnPrimary onClick={apply}>Show people</BtnPrimary>
         </div>
       </div>
     </GlassSheet>

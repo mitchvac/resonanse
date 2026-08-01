@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Archive, BellOff, Bell, Check, Flag, MapPin, Timer } from 'lucide-react';
+import { Archive, ArchiveRestore, BellOff, Bell, Check, Flag, MapPin, Timer } from 'lucide-react';
 import type { MatchEntry } from '@/components/chat/types';
 import { relTime } from '@/components/chat/types';
 import { cn } from '@/lib/utils';
@@ -69,6 +69,7 @@ export default function ConversationRow({
   typing,
   unread,
   muted = false,
+  archived = false,
   index,
   onOpen,
   onArchive,
@@ -82,6 +83,7 @@ export default function ConversationRow({
   typing?: boolean;
   unread?: number;
   muted?: boolean;
+  archived?: boolean;
   index: number;
   onOpen: () => void;
   onArchive: () => void;
@@ -115,7 +117,9 @@ export default function ConversationRow({
       {/* Quick actions revealed behind (slide in 200ms) */}
       <div className="absolute inset-y-0 right-0 flex items-center gap-2 pr-3" aria-hidden={!open}>
         {[
-          { icon: Archive, label: 'Archive chat', fn: onArchive },
+          archived
+            ? { icon: ArchiveRestore, label: 'Unarchive chat', fn: onArchive }
+            : { icon: Archive, label: 'Archive chat', fn: onArchive },
           { icon: muted ? Bell : BellOff, label: muted ? 'Unmute chat' : 'Mute chat', fn: onMute },
           { icon: Flag, label: 'Report', fn: onReport },
         ].map((a) => (
@@ -181,6 +185,14 @@ export default function ConversationRow({
         <span className="min-w-0 flex-1">
           <span className="t-value flex items-center gap-1 truncate font-bold" style={{ color: 'var(--text)' }}>
             <span className="truncate">{name}</span>
+            {muted && (
+              <BellOff
+                size={12}
+                className="shrink-0"
+                style={{ color: 'var(--text-secondary)' }}
+                aria-label="Notifications muted"
+              />
+            )}
             {entry.match.videoVerifiedAt && (
               <span
                 className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full"

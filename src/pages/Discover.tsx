@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { MapPin, SlidersHorizontal, X } from 'lucide-react';
 import { trpc } from '@/providers/trpc';
@@ -14,7 +15,10 @@ import SwipeDeck from '@/components/discover/SwipeDeck';
 import NearbyFeed from '@/components/discover/NearbyFeed';
 import ProfileSheet from '@/components/discover/ProfileSheet';
 import CommentComposer from '@/components/discover/CommentComposer';
-import FilterSheet from '@/components/discover/FilterSheet';
+import FilterSheet, {
+  DEFAULT_FILTERS,
+  type DiscoverFilters,
+} from '@/components/discover/FilterSheet';
 import MatchMoment from '@/components/discover/MatchMoment';
 import GateCard from '@/components/discover/GateCard';
 import SegmentedControl from '@/components/discover/SegmentedControl';
@@ -32,6 +36,27 @@ import type { QueueEntry, SwipeAction } from '@/components/discover/types';
 const MODES = ['Queue', 'Swipe', 'Nearby'] as const;
 type Mode = (typeof MODES)[number];
 
+const PREFS_KEY = 'resonance-discovery-prefs';
+
+/** Discovery prefs written by Settings — { minAge, maxAge, maxDistance, showMe }.
+    Only the age range maps onto discover.queue inputs today. */
+function loadFilterDefaults(): DiscoverFilters {
+  try {
+    const raw = window.localStorage.getItem(PREFS_KEY);
+    if (raw) {
+      const prefs = JSON.parse(raw) as { minAge?: unknown; maxAge?: unknown };
+      const minAge = typeof prefs.minAge === 'number' ? prefs.minAge : NaN;
+      const maxAge = typeof prefs.maxAge === 'number' ? prefs.maxAge : NaN;
+      if (Number.isFinite(minAge) && Number.isFinite(maxAge) && minAge <= maxAge) {
+        return { ...DEFAULT_FILTERS, minAge, maxAge };
+      }
+    }
+  } catch {
+    /* malformed prefs — fall through to defaults */
+  }
+  return DEFAULT_FILTERS;
+}
+
 function countdownToNoon(): string {
   const now = new Date();
   const noon = new Date(now);
@@ -46,7 +71,27 @@ function countdownToNoon(): string {
 export default function Discover() {
   const reduced = useReducedMotion();
   const utils = trpc.useUtils();
-  const queueQuery = trpc.discover.queue.useQuery();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [filters, setFilters] = useState<DiscoverFilters>(loadFilterDefaults);
+  const [travelCity, setTravelCity] = useState<string | null>(null);
+
+  /* Filters + travel city are part of the query input — changing them
+     refetches discover.queue automatically. */
+  const queueInput = useMemo(
+    () => ({
+      intents: filters.intents.length ? filters.intents : undefined,
+      dealbreakerIntents: filters.dealbreakerIntents.length
+        ? filters.dealbreakerIntents
+        : undefined,
+      minAge: filters.minAge,
+      maxAge: filters.maxAge,
+      verifiedOnly: filters.verifiedOnly || undefined,
+      city: travelCity ?? undefined,
+    }),
+    [filters, travelCity],
+  );
+  const queueQuery = trpc.discover.queue.useQuery(queueInput);
   const remainingQuery = trpc.likes.remaining.useQuery();
   const receivedQuery = trpc.likes.received.useQuery();
   const entitlementsQuery = trpc.premium.entitlements.useQuery();
@@ -56,13 +101,22 @@ export default function Discover() {
   const [swipedIds, setSwipedIds] = useState<Set<number>>(new Set());
   const [match, setMatch] = useState<{ entry: QueueEntry; matchId: number | null } | null>(null);
   const [outOfLikes, setOutOfLikes] = useState(false);
+  const [outOfPulses, setOutOfPulses] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
   const [sheetEntry, setSheetEntry] = useState<QueueEntry | null>(null);
   const [composer, setComposer] = useState<{ entry: QueueEntry; question: string | null } | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [travelOpen, setTravelOpen] = useState(false);
-  const [travelCity, setTravelCity] = useState<string | null>(null);
   const [lockedFilterGate, setLockedFilterGate] = useState(false);
+
+  /* Deep link from Settings: /discover?filters=1 opens the FilterSheet */
+  useEffect(() => {
+    if (searchParams.get('filters') === '1') {
+      setFiltersOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const railRef = useRef<HTMLDivElement>(null);
   const railScrollingRef = useRef(false);
@@ -97,32 +151,36 @@ export default function Discover() {
 
   const swipeMutation = trpc.discover.swipe.useMutation({
     onSuccess: async (result, input) => {
+      /* Only consume the card once the swipe is persisted — on error the
+         card stays put so the user can retry. */
+      setSwipedIds((prev) => new Set(prev).add(input.toProfileId));
+      if (mode === 'Queue') setQueueIndex((i) => i + 1);
       await utils.likes.remaining.invalidate();
       if (result.matched) {
         const entry = entries.find((e) => e.profile.id === input.toProfileId);
         if (entry) setMatch({ entry, matchId: result.matchId });
       }
     },
-    onError: (error) => {
-      if (error.data?.code === 'FORBIDDEN') setOutOfLikes(true);
+    onError: (error, input) => {
+      if (error.data?.code !== 'FORBIDDEN') return;
+      if (input.action === 'pulse') setOutOfPulses(true);
+      else setOutOfLikes(true);
     },
   });
 
   const doSwipe = (entry: QueueEntry, action: SwipeAction, comment?: string, targetRef?: string) => {
-    const already = swipedIds.has(entry.profile.id);
-    if (!already) {
-      swipeMutation.mutate({
-        toProfileId: entry.profile.id,
-        action,
-        comment,
-        targetType: targetRef ? 'prompt' : 'profile',
-        targetRef,
-      });
-      setSwipedIds((prev) => new Set(prev).add(entry.profile.id));
+    if (swipedIds.has(entry.profile.id)) return;
+    if (action === 'pulse' && pulsesLeft === 0) {
+      setOutOfPulses(true);
+      return;
     }
-    if (mode === 'Queue') {
-      setQueueIndex((i) => i + 1);
-    }
+    swipeMutation.mutate({
+      toProfileId: entry.profile.id,
+      action,
+      comment,
+      targetType: targetRef ? 'prompt' : 'profile',
+      targetRef,
+    });
   };
 
   // keep the rail snapped to the active card
@@ -137,7 +195,7 @@ export default function Discover() {
   // keyboard: ← pass, → like, ↑ pulse, Enter open (design.md §9)
   useEffect(() => {
     const anySheetOpen =
-      sheetEntry || composer || filtersOpen || travelOpen || outOfLikes || match || lockedFilterGate;
+      sheetEntry || composer || filtersOpen || travelOpen || outOfLikes || outOfPulses || match || lockedFilterGate;
     if (anySheetOpen || (mode !== 'Queue' && mode !== 'Swipe')) return;
     const onKey = (e: KeyboardEvent) => {
       const entry = mode === 'Queue' ? activeEntry : swipeEntries[0];
@@ -154,7 +212,7 @@ export default function Discover() {
   const distance = (entry: QueueEntry) => `${2 + ((entry.profile.id * 5) % 18)} km`;
 
   const sheetOpen = Boolean(
-    sheetEntry || composer || filtersOpen || travelOpen || outOfLikes || lockedFilterGate,
+    sheetEntry || composer || filtersOpen || travelOpen || outOfLikes || outOfPulses || lockedFilterGate,
   );
 
   return (
@@ -201,6 +259,8 @@ export default function Discover() {
       <div className="no-scrollbar flex-1 overflow-y-auto px-5 pb-32 pt-4">
         {queueQuery.isLoading ? (
           <DiscoverSkeleton />
+        ) : queueQuery.isError ? (
+          <LoadError onRetry={() => void queueQuery.refetch()} />
         ) : entries.length === 0 ? (
           <EmptyQueue countdown={countdownToNoon()} onTrySwipe={() => setMode('Swipe')} />
         ) : mode === 'Queue' ? (
@@ -259,7 +319,7 @@ export default function Discover() {
           animate={{ opacity: 1, y: 0 }}
         >
           <span className="glass-content t-caption flex items-center gap-2" style={{ color: 'var(--text)' }}>
-            Browsing {travelCity} · 6 days left
+            Browsing {travelCity} · Travel mode
             <button
               type="button"
               className="underline"
@@ -310,6 +370,8 @@ export default function Discover() {
 
       <FilterSheet
         open={filtersOpen}
+        initial={filters}
+        onApply={setFilters}
         onClose={() => setFiltersOpen(false)}
         onLockedTap={() => {
           setFiltersOpen(false);
@@ -372,6 +434,30 @@ export default function Discover() {
               }}
             >
               Back to Queue
+            </button>
+          </div>
+        </div>
+      </GlassSheet>
+
+      {/* Out-of-pulses gate (pulse FORBIDDEN from the server) */}
+      <GlassSheet open={outOfPulses} onClose={() => setOutOfPulses(false)} labelledBy="out-of-pulses">
+        <div className="px-6 pb-8 pt-2">
+          <h3 id="out-of-pulses" className="sr-only">
+            You're out of Pulses
+          </h3>
+          <GateCard
+            title="You're out of Pulses"
+            caption="A Pulse pins you at the top of their Likes with a note — grab a pack and keep the signal strong."
+            ctaLabel="Get Pulses"
+          />
+          <div className="mt-3 flex justify-center">
+            <button
+              type="button"
+              className="t-button px-3 py-2 transition-opacity duration-fast active:opacity-70"
+              style={{ color: 'var(--text)' }}
+              onClick={() => setOutOfPulses(false)}
+            >
+              Not now
             </button>
           </div>
         </div>
@@ -609,6 +695,23 @@ function EmptyQueue({
       <span className="t-micro mt-4" style={{ color: 'var(--text-secondary)' }}>
         NEW QUEUE IN {countdown}
       </span>
+    </div>
+  );
+}
+
+function LoadError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex flex-col items-center px-6 py-14 text-center">
+      <BrandMark size={56} />
+      <h2 className="t-title-sm mt-5" style={{ color: 'var(--text-ink)' }}>
+        Couldn't load your queue.
+      </h2>
+      <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+        Check your connection and try again.
+      </p>
+      <BtnGlass className="mt-6" onClick={onRetry}>
+        Retry
+      </BtnGlass>
     </div>
   );
 }

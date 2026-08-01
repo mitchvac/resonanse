@@ -72,7 +72,7 @@ export default function ActionDock({
           aria-label={
             pulsesLeft != null ? `Send Pulse (${pulsesLeft} left)` : 'Send Pulse'
           }
-          disabled={disabled}
+          disabled={disabled || pulsesLeft === 0}
           onClick={onPulse}
           className="glass relative flex h-12 w-12 items-center justify-center rounded-full disabled:opacity-50"
           {...press}

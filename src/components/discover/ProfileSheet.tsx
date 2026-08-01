@@ -3,10 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Flag, Heart, Share2, Sparkle, X } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
 import GlassCard from '@/components/GlassCard';
+import AppToast from '@/components/AppToast';
+import type { ToastPayload } from '@/components/AppToast';
 import VerifiedBadge from '@/components/discover/VerifiedBadge';
 import Chip from '@/components/discover/Chip';
 import CompatibilityArc from '@/components/discover/CompatibilityArc';
+import { trpc } from '@/providers/trpc';
+import { cn } from '@/lib/utils';
 import type { QueueProfile } from '@/components/discover/types';
+
+const REPORT_REASONS = ['Spam', 'Abuse', 'Fake', 'Under 18', 'Other'];
 
 /**
  * ProfileSheet — discover.md §3
@@ -38,9 +44,54 @@ export default function ProfileSheet({
   onClose: () => void;
 }) {
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [safetyOpen, setSafetyOpen] = useState(false);
+  const [reason, setReason] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastPayload | null>(null);
+  const utils = trpc.useUtils();
+  const report = trpc.safety.report.useMutation();
+  const block = trpc.safety.block.useMutation();
   const photos = profile?.photos?.length ? profile.photos : ['/avatar-01.jpg'];
 
   if (!profile) return <GlassSheet open={open} onClose={onClose}>{null}</GlassSheet>;
+
+  const showToast = (message: string) => setToast({ id: Date.now(), message });
+
+  const shareProfile = () => {
+    const link = `${window.location.origin}/discover?profile=${profile.id}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).catch(() => undefined);
+    }
+    showToast('Profile link copied.');
+  };
+
+  const submitReport = () => {
+    if (!reason) return;
+    report.mutate(
+      { targetUserId: profile.userId, reason },
+      {
+        onSuccess: () => {
+          setSafetyOpen(false);
+          setReason(null);
+          showToast('Report sent — our team will review.');
+        },
+      },
+    );
+  };
+
+  const doBlock = () => {
+    block.mutate(
+      { targetUserId: profile.userId },
+      {
+        onSuccess: () => {
+          setSafetyOpen(false);
+          setReason(null);
+          void utils.discover.queue.invalidate();
+          showToast(`${profile.displayName.split(' ')[0]} blocked. They won't be notified.`);
+          onClose();
+        },
+      },
+    );
+  };
 
   const lifestyle = Object.values(profile.lifestyle ?? {}).filter(Boolean) as string[];
   const chips = [
@@ -50,6 +101,7 @@ export default function ProfileSheet({
   ].filter(Boolean) as string[];
 
   return (
+    <>
     <GlassSheet open={open} onClose={onClose} labelledBy="profile-sheet-name">
       <div className="flex max-h-[85dvh] flex-col">
         <div className="flex-1 overflow-y-auto px-5 pb-4">
@@ -157,6 +209,7 @@ export default function ProfileSheet({
           <div className="mt-5 flex items-center justify-center gap-6 pb-2">
             <button
               type="button"
+              onClick={shareProfile}
               className="t-caption flex items-center gap-1.5"
               style={{ color: 'var(--text-secondary)' }}
               aria-label="Share profile"
@@ -165,6 +218,7 @@ export default function ProfileSheet({
             </button>
             <button
               type="button"
+              onClick={() => setSafetyOpen(true)}
               className="t-caption flex items-center gap-1.5"
               style={{ color: 'var(--danger)' }}
               aria-label="Report or block"
@@ -210,5 +264,67 @@ export default function ProfileSheet({
         </div>
       </div>
     </GlassSheet>
+
+    {/* Report / block — reason chips pattern from chat SafetySheet */}
+    <GlassSheet open={safetyOpen} onClose={() => setSafetyOpen(false)} labelledBy="profile-safety-title">
+      <div className="max-h-[74dvh] overflow-y-auto px-5 pb-6 pt-1">
+        <h2 id="profile-safety-title" className="t-title" style={{ color: 'var(--text)' }}>
+          Report or block
+        </h2>
+        <section className="mt-4">
+          <p className="t-caption flex items-center gap-1.5 font-bold" style={{ color: 'var(--text)' }}>
+            <Flag size={13} style={{ color: 'var(--danger)' }} aria-hidden="true" />
+            Report {profile.displayName.split(' ')[0]}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Report reason">
+            {REPORT_REASONS.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setReason(r)}
+                className={cn('t-caption min-h-[32px] rounded-full px-3 py-1.5', reason === r && 'font-bold')}
+                style={{
+                  background: 'var(--field)',
+                  color: 'var(--text)',
+                  boxShadow: reason === r ? 'inset 0 0 0 1.5px var(--violet)' : 'none',
+                }}
+                aria-pressed={reason === r}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={submitReport}
+            disabled={!reason || report.isPending}
+            className="t-button mt-3 h-11 min-h-[44px] w-full rounded-full disabled:opacity-50"
+            style={{ color: 'var(--danger)', boxShadow: 'inset 0 0 0 1px var(--danger)' }}
+          >
+            {report.isPending ? 'Sending…' : 'Send report'}
+          </button>
+        </section>
+        <section className="mt-5 border-t pt-4" style={{ borderColor: 'var(--ring-stroke)' }}>
+          <p className="t-caption font-bold" style={{ color: 'var(--text)' }}>
+            Block {profile.displayName.split(' ')[0]}
+          </p>
+          <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
+            Quiet and immediate. They won't be notified.
+          </p>
+          <button
+            type="button"
+            onClick={doBlock}
+            disabled={block.isPending}
+            className="t-button mt-2 h-11 min-h-[44px] w-full rounded-full disabled:opacity-50"
+            style={{ color: 'var(--danger)', boxShadow: 'inset 0 0 0 1px var(--danger)' }}
+          >
+            {block.isPending ? 'Blocking…' : 'Block'}
+          </button>
+        </section>
+      </div>
+    </GlassSheet>
+
+    <AppToast toast={toast} onDismiss={() => setToast(null)} />
+    </>
   );
 }

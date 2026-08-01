@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X } from 'lucide-react';
+import { Archive, Search, X } from 'lucide-react';
 import BrandMark from '@/components/BrandMark';
 import GlassCard from '@/components/GlassCard';
 import TabBar from '@/components/TabBar';
@@ -10,6 +10,7 @@ import NewMatchesRail from '@/components/matches/NewMatchesRail';
 import ConversationRow, {
   type OutcomeChipKind,
 } from '@/components/matches/ConversationRow';
+import SafetySheet from '@/components/chat/SafetySheet';
 import { useToast, Toast } from '@/components/chat/Toast';
 import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,21 +36,39 @@ export default function Matches() {
   const { toast, showToast } = useToast();
   const utils = trpc.useUtils();
 
-  const listQuery = trpc.matches.list.useQuery(undefined, {
-    refetchOnWindowFocus: false,
-    retry: false,
-  });
+  const [showArchived, setShowArchived] = useState(false);
+
+  const listQuery = trpc.matches.list.useQuery(
+    { includeArchived: showArchived },
+    {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  );
   const entries = useMemo(() => listQuery.data?.matches ?? [], [listQuery.data]);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [archived, setArchived] = useState<number[]>([]);
-  const [muted, setMuted] = useState<number[]>([]);
+  const [reportEntry, setReportEntry] = useState<MatchEntry | null>(null);
   const [pullY, setPullY] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const touchStart = useRef<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const report = trpc.safety.report.useMutation();
+
+  const setArchivedMut = trpc.matches.setArchived.useMutation({
+    onSuccess: (_d, vars) => {
+      showToast(vars.archived ? 'Chat archived.' : 'Chat unarchived.');
+      void utils.matches.list.invalidate();
+    },
+    onError: () => showToast("Couldn't update the chat."),
+  });
+  const setMutedMut = trpc.matches.setMuted.useMutation({
+    onSuccess: (_d, vars) => {
+      showToast(vars.muted ? 'Chat muted.' : 'Notifications on.');
+      void utils.matches.list.invalidate();
+    },
+    onError: () => showToast("Couldn't update the chat."),
+  });
 
   /* §1 New matches rail: no conversation yet, inside the 48h window */
   const newMatches = useMemo(
@@ -58,9 +77,9 @@ export default function Matches() {
         (e) =>
           !e.lastMessage &&
           Date.now() - new Date(e.match.createdAt).getTime() < WINDOW_MS &&
-          !archived.includes(e.match.id),
+          !e.archivedAt,
       ),
-    [entries, archived],
+    [entries],
   );
 
   /* §2 Active conversations */
@@ -69,10 +88,16 @@ export default function Matches() {
     return entries.filter(
       (e) =>
         e.lastMessage &&
-        !archived.includes(e.match.id) &&
+        !e.archivedAt &&
         (!q || (e.otherProfile?.displayName ?? '').toLowerCase().includes(q)),
     );
-  }, [entries, archived, query]);
+  }, [entries, query]);
+
+  /* Archived conversations — only fetched/listed in the Archived view */
+  const archivedConversations = useMemo(
+    () => entries.filter((e) => e.archivedAt && e.lastMessage),
+    [entries],
+  );
 
   const hasUnread = useMemo(
     () =>
@@ -181,6 +206,20 @@ export default function Matches() {
         </AnimatePresence>
         <button
           type="button"
+          onClick={() => setShowArchived((v) => !v)}
+          className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full"
+          style={{
+            background: 'var(--field)',
+            color: 'var(--text)',
+            boxShadow: showArchived ? 'inset 0 0 0 1.5px var(--violet)' : 'none',
+          }}
+          aria-label={showArchived ? 'Hide archived chats' : 'Show archived chats'}
+          aria-pressed={showArchived}
+        >
+          <Archive size={18} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
           onClick={() => {
             setSearchOpen((o) => !o);
             if (searchOpen) setQuery('');
@@ -243,42 +282,66 @@ export default function Matches() {
             {/* §2 Active conversations */}
             {conversations.length > 0 && (
               <section aria-label="Conversations" className="flex flex-col gap-2 px-5">
-                {conversations.map((entry, i) => {
-                  const peerId = otherUserIdOf(entry);
-                  return (
-                    <ConversationRow
-                      key={entry.match.id}
-                      entry={entry}
-                      index={i}
-                      myUserId={myUserId}
-                      active={(entry.otherProfile?.id ?? 1) % 2 === 0}
-                      chip={chipFor(entry)}
-                      muted={muted.includes(entry.match.id)}
-                      onOpen={() => openChat(entry)}
-                      onArchive={() => {
-                        setArchived((a) => [...a, entry.match.id]);
-                        showToast('Chat archived.');
-                      }}
-                      onMute={() => {
-                        setMuted((m) =>
-                          m.includes(entry.match.id)
-                            ? m.filter((id) => id !== entry.match.id)
-                            : [...m, entry.match.id],
-                        );
-                        showToast(
-                          muted.includes(entry.match.id) ? 'Notifications on.' : 'Chat muted.',
-                        );
-                      }}
-                      onReport={() => {
-                        if (!peerId) return;
-                        report.mutate(
-                          { targetUserId: peerId, reason: 'Other' },
-                          { onSuccess: () => showToast('Report sent — our team will review.') },
-                        );
-                      }}
-                    />
-                  );
-                })}
+                {conversations.map((entry, i) => (
+                  <ConversationRow
+                    key={entry.match.id}
+                    entry={entry}
+                    index={i}
+                    myUserId={myUserId}
+                    active={(entry.otherProfile?.id ?? 1) % 2 === 0}
+                    chip={chipFor(entry)}
+                    muted={!!entry.mutedAt}
+                    onOpen={() => openChat(entry)}
+                    onArchive={() => {
+                      if (entry.conversationId) {
+                        setArchivedMut.mutate({ conversationId: entry.conversationId, archived: true });
+                      }
+                    }}
+                    onMute={() => {
+                      if (entry.conversationId) {
+                        setMutedMut.mutate({
+                          conversationId: entry.conversationId,
+                          muted: !entry.mutedAt,
+                        });
+                      }
+                    }}
+                    onReport={() => setReportEntry(entry)}
+                  />
+                ))}
+              </section>
+            )}
+
+            {/* Archived view — fetched via includeArchived, rows offer Unarchive */}
+            {showArchived && archivedConversations.length > 0 && (
+              <section aria-label="Archived conversations" className="flex flex-col gap-2 px-5">
+                <p className="t-eyebrow">Archived</p>
+                {archivedConversations.map((entry, i) => (
+                  <ConversationRow
+                    key={entry.match.id}
+                    entry={entry}
+                    index={i}
+                    myUserId={myUserId}
+                    active={false}
+                    chip={chipFor(entry)}
+                    muted={!!entry.mutedAt}
+                    archived
+                    onOpen={() => openChat(entry)}
+                    onArchive={() => {
+                      if (entry.conversationId) {
+                        setArchivedMut.mutate({ conversationId: entry.conversationId, archived: false });
+                      }
+                    }}
+                    onMute={() => {
+                      if (entry.conversationId) {
+                        setMutedMut.mutate({
+                          conversationId: entry.conversationId,
+                          muted: !entry.mutedAt,
+                        });
+                      }
+                    }}
+                    onReport={() => setReportEntry(entry)}
+                  />
+                ))}
               </section>
             )}
 
@@ -341,6 +404,15 @@ export default function Matches() {
           </motion.div>
         )}
       </div>
+
+      {/* Swipe-report — reason chips + block, same pattern as chat safety */}
+      <SafetySheet
+        open={!!reportEntry}
+        onClose={() => setReportEntry(null)}
+        peerUserId={reportEntry ? otherUserIdOf(reportEntry) : null}
+        peerName={reportEntry?.otherProfile?.displayName}
+        onToast={showToast}
+      />
 
       <TabBar hasUnreadChat={hasUnread} />
     </div>
