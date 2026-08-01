@@ -118,6 +118,24 @@ export const profiles = mysqlTable(
     anonymityMode: boolean("anonymityMode").notNull().default(false),
     hiddenWords: json("hiddenWords").$type<string[]>(),
     isSeed: boolean("isSeed").notNull().default(false),
+    // Discovery preferences
+    showMe: json("showMe").$type<string[]>(),
+    openTo: json("openTo").$type<string[]>(),
+    showIntent: boolean("showIntent").notNull().default(true),
+    /** Consent-gated/kink tags — NEVER exposed in public profile views. */
+    privateDesires: json("privateDesires").$type<string[]>(),
+    /** Non-monogamy constellation — private, never public. */
+    constellation:
+      json("constellation").$type<
+        Array<{ handle: string; name: string; photo: string; status: string }>
+      >(),
+    /** Private reflection ratings (1–5) — never public. */
+    reflections: json("reflections").$type<number[]>(),
+    weeklyGoal: int("weeklyGoal").notNull().default(1),
+    pausedAt: timestamp("pausedAt"),
+    ephemeralDefault: boolean("ephemeralDefault").notNull().default(false),
+    /** Idempotency marker for one-time lazy like-seeding. */
+    likesSeededAt: timestamp("likesSeededAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt")
       .defaultNow()
@@ -132,6 +150,11 @@ export const profiles = mysqlTable(
     check("lifestyle", sql`json_valid(\`lifestyle\`)`),
     check("photos", sql`json_valid(\`photos\`)`),
     check("hiddenWords", sql`json_valid(\`hiddenWords\`)`),
+    check("showMe", sql`json_valid(\`showMe\`)`),
+    check("openTo", sql`json_valid(\`openTo\`)`),
+    check("privateDesires", sql`json_valid(\`privateDesires\`)`),
+    check("constellation", sql`json_valid(\`constellation\`)`),
+    check("reflections", sql`json_valid(\`reflections\`)`),
   ],
 );
 
@@ -154,6 +177,8 @@ export const likes = mysqlTable(
       .notNull()
       .default("profile"),
     targetRef: varchar("targetRef", { length: 255 }),
+    /** Set when the recipient passes on the liker — hides the like quietly. */
+    dismissedAt: timestamp("dismissedAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [
@@ -218,6 +243,8 @@ export const conversations = mysqlTable(
       .notNull()
       .references(() => matches.id),
     ephemeral: boolean("ephemeral").notNull().default(false),
+    archivedAt: timestamp("archivedAt"),
+    mutedAt: timestamp("mutedAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [uniqueIndex("conversations_match_unique").on(table.matchId)],
@@ -254,11 +281,14 @@ export const messages = mysqlTable(
       "date_idea",
       "system",
       "video_note",
+      "event_invite",
     ])
       .notNull()
       .default("text"),
     content: text("content").notNull(),
     meta: json("meta").$type<DateIdeaMeta | Record<string, unknown>>(),
+    /** Ephemeral conversations stamp this — rows expire 24h after send. */
+    expiresAt: timestamp("expiresAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [
@@ -396,7 +426,7 @@ export const feedback = mysqlTable(
     matchId: bigint("matchId", { mode: "number", unsigned: true }).references(
       () => matches.id,
     ),
-    kind: mysqlEnum("kind", ["we_met", "match_quality", "date_feedback"])
+    kind: mysqlEnum("kind", ["we_met", "match_quality", "date_feedback", "event"])
       .notNull(),
     rating: int("rating"),
     note: text("note"),

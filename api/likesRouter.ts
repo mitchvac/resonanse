@@ -2,16 +2,32 @@ import { createRouter, authedQuery } from "./middleware";
 import {
   compatibilityScore,
   countLikesToday,
+  countMatchesForUser,
   likesReceivedForProfile,
+  seedIncomingLikes,
 } from "./queries/discovery";
 import { ensureEntitlement, findProfileByUserId } from "./queries/profiles";
 
 export const likesRouter = createRouter({
   received: authedQuery.query(async ({ ctx }) => {
     const entitlement = await ensureEntitlement(ctx.user.id);
-    const myProfile = await findProfileByUserId(ctx.user.id);
+    let myProfile = await findProfileByUserId(ctx.user.id);
     if (!myProfile) {
       return { blurred: true, likes: [], pulses: [] };
+    }
+
+    // One-time lazy seed: a brand-new caller with zero likes and zero matches
+    // gets 5 incoming likes + 2 pulses from seed profiles. Idempotent via the
+    // profiles.likesSeededAt marker column.
+    if (!myProfile.likesSeededAt) {
+      const [existing, matchCount] = await Promise.all([
+        likesReceivedForProfile(myProfile.id),
+        countMatchesForUser(ctx.user.id),
+      ]);
+      if (existing.length === 0 && matchCount === 0) {
+        await seedIncomingLikes(ctx.user.id, myProfile.id);
+        myProfile = (await findProfileByUserId(ctx.user.id)) ?? myProfile;
+      }
     }
 
     const blurred = entitlement.tier === "free";
@@ -26,7 +42,11 @@ export const likesRouter = createRouter({
       createdAt: like.createdAt,
       blurred,
       compatibility: compatibilityScore(like.fromUserId, myProfile.id),
-      liker: like.likerProfile,
+      // Paywall integrity: free tier never sees liker photos or bio.
+      liker:
+        blurred && like.likerProfile
+          ? { ...like.likerProfile, photos: [], bio: null }
+          : like.likerProfile,
     }));
 
     return {

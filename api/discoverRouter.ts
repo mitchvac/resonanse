@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createRouter, authedQuery } from "./middleware";
 import {
   countLikesToday,
+  dismissIncomingLikesFrom,
   findExistingLike,
   getDiscoveryQueue,
   getOrCreateMatch,
@@ -14,12 +15,24 @@ import {
   ensureEntitlement,
   ensureProfile,
   findProfileById,
+  findProfileByUserId,
 } from "./queries/profiles";
 import { decrementPulses } from "./queries/entitlements";
 import { isBlockedBetween } from "./queries/safety";
 
+const queueInput = z
+  .object({
+    intents: z.array(z.string()).max(5).optional(),
+    dealbreakerIntents: z.array(z.string()).max(5).optional(),
+    minAge: z.number().int().min(18).max(120).optional(),
+    maxAge: z.number().int().min(18).max(120).optional(),
+    verifiedOnly: z.boolean().optional(),
+    city: z.string().max(120).optional(),
+  })
+  .optional();
+
 export const discoverRouter = createRouter({
-  queue: authedQuery.query(async ({ ctx }) => {
+  queue: authedQuery.input(queueInput).query(async ({ ctx, input }) => {
     const profile = await ensureProfile(ctx.user.id, {
       displayName: ctx.user.name ?? "New member",
     });
@@ -27,6 +40,7 @@ export const discoverRouter = createRouter({
       ctx.user.id,
       profile.relationshipGoal ?? null,
       8,
+      input ?? {},
     );
     return {
       entries,
@@ -62,6 +76,11 @@ export const discoverRouter = createRouter({
 
       if (input.action === "pass") {
         await recordPass(userId, input.toProfileId);
+        // Pass quietly: dismiss any like they previously sent the caller.
+        const myProfile = await findProfileByUserId(userId);
+        if (myProfile) {
+          await dismissIncomingLikesFrom(target.userId, myProfile.id);
+        }
         return { matched: false as const, matchId: null };
       }
 

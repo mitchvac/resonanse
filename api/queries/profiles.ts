@@ -144,7 +144,13 @@ export async function markIdVerified(
 
 export async function updateProfileSettings(
   userId: number,
-  settings: { anonymityMode?: boolean; hiddenWords?: string[] },
+  settings: {
+    anonymityMode?: boolean;
+    hiddenWords?: string[];
+    weeklyGoal?: number;
+    ephemeralDefault?: boolean;
+    pausedAt?: Date | null;
+  },
 ): Promise<Profile> {
   await getDb()
     .update(profiles)

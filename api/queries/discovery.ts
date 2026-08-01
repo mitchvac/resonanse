@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, notInArray } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, lte, notInArray, or } from "drizzle-orm";
 import {
   blocks,
   conversations,
@@ -25,10 +25,20 @@ export function seedReciprocates(fromUserId: number, toProfileId: number): boole
 
 export type QueueEntry = { profile: Profile; compatibility: number };
 
+export type DiscoveryFilters = {
+  intents?: string[];
+  dealbreakerIntents?: string[];
+  minAge?: number;
+  maxAge?: number;
+  verifiedOnly?: boolean;
+  city?: string;
+};
+
 export async function getDiscoveryQueue(
   userId: number,
   myGoal: string | null,
   limit = 8,
+  filters: DiscoveryFilters = {},
 ): Promise<QueueEntry[]> {
   const db = getDb();
 
@@ -39,19 +49,58 @@ export async function getDiscoveryQueue(
     db.select({ id: blocks.blockerId }).from(blocks).where(eq(blocks.blockedId, userId)),
   ]);
 
+  const likedProfileIds = likedRows.map((r) => r.id);
   const excludedProfileIds = [
-    ...new Set([...likedRows.map((r) => r.id), ...passedRows.map((r) => r.id)]),
+    ...new Set([...likedProfileIds, ...passedRows.map((r) => r.id)]),
   ];
   const excludedUserIds = [
     ...new Set([...blockedRows.map((r) => r.id), ...blockedByRows.map((r) => r.id), userId]),
   ];
 
-  const conditions = [eq(profiles.isSeed, true)];
+  const conditions = [eq(profiles.isSeed, true), isNull(profiles.pausedAt)];
   if (excludedUserIds.length > 0) {
     conditions.push(notInArray(profiles.userId, excludedUserIds));
   }
   if (excludedProfileIds.length > 0) {
     conditions.push(notInArray(profiles.id, excludedProfileIds));
+  }
+  // Anonymity-mode profiles stay hidden unless the caller already liked them.
+  if (likedProfileIds.length > 0) {
+    conditions.push(
+      or(eq(profiles.anonymityMode, false), inArray(profiles.id, likedProfileIds))!,
+    );
+  } else {
+    conditions.push(eq(profiles.anonymityMode, false));
+  }
+
+  // Optional filters.
+  if (filters.intents && filters.intents.length > 0) {
+    conditions.push(
+      inArray(
+        profiles.relationshipGoal,
+        filters.intents as (typeof profiles.relationshipGoal.enumValues)[number][],
+      ),
+    );
+  }
+  if (filters.dealbreakerIntents && filters.dealbreakerIntents.length > 0) {
+    conditions.push(
+      notInArray(
+        profiles.relationshipGoal,
+        filters.dealbreakerIntents as (typeof profiles.relationshipGoal.enumValues)[number][],
+      ),
+    );
+  }
+  if (filters.minAge !== undefined) {
+    conditions.push(gte(profiles.age, filters.minAge));
+  }
+  if (filters.maxAge !== undefined) {
+    conditions.push(lte(profiles.age, filters.maxAge));
+  }
+  if (filters.verifiedOnly) {
+    conditions.push(eq(profiles.verified, true));
+  }
+  if (filters.city) {
+    conditions.push(eq(profiles.city, filters.city));
   }
 
   const candidates = await db
@@ -99,8 +148,28 @@ export async function recordPass(
     .onDuplicateKeyUpdate({ set: { toProfileId } });
 }
 
+/**
+ * "Pass quietly": when the caller passes on a profile, dismiss any like that
+ * profile's user previously sent to the caller so it leaves their Likes You.
+ */
+export async function dismissIncomingLikesFrom(
+  likerUserId: number,
+  toProfileId: number,
+): Promise<void> {
+  await getDb()
+    .update(likes)
+    .set({ dismissedAt: new Date() })
+    .where(
+      and(
+        eq(likes.fromUserId, likerUserId),
+        eq(likes.toProfileId, toProfileId),
+        isNull(likes.dismissedAt),
+      ),
+    );
+}
+
 export async function recordLike(
-  data: Omit<Like, "id" | "createdAt">,
+  data: Omit<Like, "id" | "createdAt" | "dismissedAt">,
 ): Promise<void> {
   await getDb()
     .insert(likes)
@@ -165,9 +234,18 @@ export async function getOrCreateMatch(
     .limit(1);
   let conversation = convRows.at(0);
   if (!conversation) {
+    // Honor ephemeralDefault: if EITHER matched user defaults to ephemeral,
+    // the new conversation starts ephemeral.
+    const [profileA, profileB] = await Promise.all([
+      db.select({ ephemeralDefault: profiles.ephemeralDefault }).from(profiles).where(eq(profiles.userId, a)).limit(1),
+      db.select({ ephemeralDefault: profiles.ephemeralDefault }).from(profiles).where(eq(profiles.userId, b)).limit(1),
+    ]);
+    const ephemeral = Boolean(
+      profileA.at(0)?.ephemeralDefault || profileB.at(0)?.ephemeralDefault,
+    );
     await db
       .insert(conversations)
-      .values({ matchId: match.id })
+      .values({ matchId: match.id, ephemeral })
       .onDuplicateKeyUpdate({ set: { matchId: match.id } });
     const rows = await db
       .select()
@@ -189,8 +267,95 @@ export async function likesReceivedForProfile(
     .select({ like: likes, likerProfile: profiles })
     .from(likes)
     .leftJoin(profiles, eq(likes.fromUserId, profiles.userId))
-    .where(eq(likes.toProfileId, toProfileId))
+    .where(and(eq(likes.toProfileId, toProfileId), isNull(likes.dismissedAt)))
     .orderBy(desc(likes.kind), desc(likes.createdAt)); // 'pulse' > 'like' → pinned first
 
   return rows.map((r) => ({ ...r.like, likerProfile: r.likerProfile }));
+}
+
+export async function countMatchesForUser(userId: number): Promise<number> {
+  const rows = await getDb()
+    .select({ id: matches.id })
+    .from(matches)
+    .where(or(eq(matches.userAId, userId), eq(matches.userBId, userId)));
+  return rows.length;
+}
+
+/**
+ * One-time lazy seed: give a brand-new caller 5 incoming likes + 2 pulses
+ * from distinct seed profiles (excluding blocked/passed) so Likes You
+ * isn't empty on first visit. Idempotent via profiles.likesSeededAt.
+ */
+export async function seedIncomingLikes(
+  userId: number,
+  myProfileId: number,
+): Promise<void> {
+  const db = getDb();
+
+  const [blockedRows, blockedByRows, passedRows] = await Promise.all([
+    db.select({ id: blocks.blockedId }).from(blocks).where(eq(blocks.blockerId, userId)),
+    db.select({ id: blocks.blockerId }).from(blocks).where(eq(blocks.blockedId, userId)),
+    db.select({ id: passes.toProfileId }).from(passes).where(eq(passes.fromUserId, userId)),
+  ]);
+  const excludedUserIds = [
+    ...new Set([...blockedRows.map((r) => r.id), ...blockedByRows.map((r) => r.id), userId]),
+  ];
+  const excludedProfileIds = passedRows.map((r) => r.id);
+
+  const conditions = [eq(profiles.isSeed, true), notInArray(profiles.userId, excludedUserIds)];
+  if (excludedProfileIds.length > 0) {
+    conditions.push(notInArray(profiles.id, excludedProfileIds));
+  }
+  const seedProfiles = await db
+    .select()
+    .from(profiles)
+    .where(and(...conditions))
+    .orderBy(asc(profiles.createdAt), asc(profiles.id))
+    .limit(7);
+
+  const now = new Date();
+  const rows = seedProfiles.map((profile, i) => {
+    const isPulse = i >= 5;
+    // Two of the likes target a specific prompt/photo with a comment.
+    if (i === 0 && (profile.prompts?.length ?? 0) > 0) {
+      return {
+        fromUserId: profile.userId,
+        toProfileId: myProfileId,
+        kind: "like" as const,
+        targetType: "prompt" as const,
+        targetRef: profile.prompts![0].question.slice(0, 255),
+        comment: "This answer stopped me mid-scroll. Tell me more?",
+      };
+    }
+    if (i === 1 && (profile.photos?.length ?? 0) > 0) {
+      return {
+        fromUserId: profile.userId,
+        toProfileId: myProfileId,
+        kind: "like" as const,
+        targetType: "photo" as const,
+        targetRef: "0",
+        comment: "You have the best smile in this one.",
+      };
+    }
+    return {
+      fromUserId: profile.userId,
+      toProfileId: myProfileId,
+      kind: isPulse ? ("pulse" as const) : ("like" as const),
+      targetType: "profile" as const,
+      targetRef: null,
+      comment: null,
+    };
+  });
+
+  for (const row of rows) {
+    await db
+      .insert(likes)
+      .values({ ...row, createdAt: now })
+      .onDuplicateKeyUpdate({ set: { toProfileId: myProfileId } });
+  }
+
+  await db
+    .update(profiles)
+    .set({ likesSeededAt: now })
+    .where(eq(profiles.id, myProfileId));
 }

@@ -1,16 +1,45 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import type { Profile } from "@db/schema";
+import type { Conversation, Message, Profile } from "@db/schema";
 import { createRouter, authedQuery } from "./middleware";
 import {
   countMessages,
+  findMessageById,
   findVideoNoteById,
   getConversationContext,
   insertMessage,
   insertVideoNote,
   listMessages,
+  mergeMessageMeta,
   setConversationEphemeral,
 } from "./queries/chat";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Ephemeral conversations stamp messages to expire 24h after send. */
+function expiryFor(conversation: Conversation): Date | undefined {
+  return conversation.ephemeral ? new Date(Date.now() + DAY_MS) : undefined;
+}
+
+/**
+ * Response-only hidden-words flagging: messages from the peer containing any
+ * of the caller's hidden words get `meta.flaggedHidden = true`. DB untouched.
+ */
+function flagHiddenWords(
+  msgs: Message[],
+  viewerId: number,
+  hiddenWords: string[] | null,
+): Message[] {
+  if (!hiddenWords || hiddenWords.length === 0) return msgs;
+  const needles = hiddenWords.map((w) => w.toLowerCase()).filter(Boolean);
+  if (needles.length === 0) return msgs;
+  return msgs.map((message) => {
+    if (message.senderId === viewerId) return message;
+    const content = message.content.toLowerCase();
+    if (!needles.some((w) => content.includes(w))) return message;
+    return { ...message, meta: { ...(message.meta ?? {}), flaggedHidden: true } };
+  });
+}
 
 /** Build a contextual canned reply from a seed user. */
 function seedReply(
@@ -60,7 +89,11 @@ export const chatRouter = createRouter({
           message: "Conversation not found",
         });
       }
-      const messages = await listMessages(input.conversationId, 50);
+      const messages = flagHiddenWords(
+        await listMessages(input.conversationId, 50),
+        ctx.user.id,
+        context.myProfile?.hiddenWords ?? null,
+      );
       return {
         conversation: context.conversation,
         match: context.match,
@@ -93,6 +126,7 @@ export const chatRouter = createRouter({
         senderId: ctx.user.id,
         kind: "text",
         content: input.content,
+        expiresAt: expiryFor(context.conversation),
       });
 
       // Seed users reply in the same call so the demo thread feels alive.
@@ -104,6 +138,7 @@ export const chatRouter = createRouter({
           senderId: context.peerId,
           kind: "text",
           content: seedReply(context.peerProfile, input.content, total),
+          expiresAt: expiryFor(context.conversation),
         });
       }
 
@@ -111,7 +146,12 @@ export const chatRouter = createRouter({
     }),
 
   starters: authedQuery
-    .input(z.object({ conversationId: z.number().int().positive() }))
+    .input(
+      z.object({
+        conversationId: z.number().int().positive(),
+        variant: z.number().int().min(0).max(20).default(0),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const context = await getConversationContext(
         input.conversationId,
@@ -130,7 +170,9 @@ export const chatRouter = createRouter({
       const desire = peer?.desires?.[0];
       const city = peer?.city;
 
-      const starters = [
+      // A larger deterministic pool — `variant` rotates which 3 are served,
+      // so the refresh button cycles fresh suggestions.
+      const pool = [
         prompt
           ? `Ask ${name} about their "${prompt.question}" answer — "${prompt.answer.slice(0, 60)}"`
           : `Ask ${name} what a perfect Sunday looks like for them`,
@@ -142,9 +184,18 @@ export const chatRouter = createRouter({
         city
           ? `Suggest a first meet in ${city} tied to their profile — keep it specific and easy to say yes to`
           : `Offer two concrete times for a first drink this week`,
+        `Ask ${name} what they're currently obsessed with — a show, a song, a rabbit hole`,
+        `Play two truths and a lie — you go first with something unexpected`,
+        `Ask ${name} what their friends would say their best quality is`,
+        `Trade unpopular opinions — keep it playful, not political`,
+        `Ask ${name} what a "green flag" on a first date looks like for them`,
+        `Suggest a tiny challenge: each of you picks the other's first-date drink`,
       ];
 
-      return { starters: starters.slice(0, 3) };
+      const start = ((input.variant * 3) % pool.length + pool.length) % pool.length;
+      const starters = [0, 1, 2].map((i) => pool[(start + i) % pool.length]);
+
+      return { starters };
     }),
 
   dateIdeas: authedQuery
@@ -228,6 +279,67 @@ export const chatRouter = createRouter({
           time: input.time,
           status: "proposed",
         },
+        expiresAt: expiryFor(context.conversation),
+      });
+      return { message };
+    }),
+
+  respondDate: authedQuery
+    .input(
+      z.object({
+        messageId: z.number().int().positive(),
+        status: z.enum(["accepted", "declined"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const target = await findMessageById(input.messageId);
+      if (!target || target.kind !== "date_idea") {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Date idea not found",
+        });
+      }
+      const context = await getConversationContext(
+        target.conversationId,
+        ctx.user.id,
+      );
+      if (!context) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Date idea not found",
+        });
+      }
+      const message = await mergeMessageMeta(input.messageId, {
+        status: input.status,
+      });
+      return { message };
+    }),
+
+  sendSystemEvent: authedQuery
+    .input(
+      z.object({
+        conversationId: z.number().int().positive(),
+        event: z.enum(["screenshot_warning"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const context = await getConversationContext(
+        input.conversationId,
+        ctx.user.id,
+      );
+      if (!context) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conversation not found",
+        });
+      }
+      const message = await insertMessage({
+        conversationId: input.conversationId,
+        senderId: ctx.user.id,
+        kind: "system",
+        content: "A screenshot may have been taken — stay kind.",
+        meta: { event: input.event },
+        expiresAt: expiryFor(context.conversation),
       });
       return { message };
     }),
@@ -270,6 +382,7 @@ export const chatRouter = createRouter({
         kind: "video_note",
         content: "",
         meta: { noteId: note.id, durationSec: note.durationSec },
+        expiresAt: expiryFor(context.conversation),
       });
 
       return { message };

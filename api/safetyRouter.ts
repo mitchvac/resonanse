@@ -4,7 +4,10 @@ import { createRouter, authedQuery } from "./middleware";
 import {
   blockUser,
   createReport,
+  deleteAccountData,
+  exportUserData,
   listBlocked,
+  resetMatchingData,
   unblockUser,
 } from "./queries/safety";
 
@@ -51,5 +54,19 @@ export const safetyRouter = createRouter({
   blocked: authedQuery.query(async ({ ctx }) => {
     const blocked = await listBlocked(ctx.user.id);
     return { blocked };
+  }),
+
+  deleteAccount: authedQuery.mutation(async ({ ctx }) => {
+    await deleteAccountData(ctx.user.id);
+    return { ok: true as const };
+  }),
+
+  exportData: authedQuery.query(async ({ ctx }) => {
+    return exportUserData(ctx.user.id);
+  }),
+
+  resetMatching: authedQuery.mutation(async ({ ctx }) => {
+    await resetMatchingData(ctx.user.id);
+    return { ok: true as const };
   }),
 });

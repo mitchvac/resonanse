@@ -1,4 +1,4 @@
-import { desc, eq, or } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, lt, or } from "drizzle-orm";
 import {
   conversations,
   matches,
@@ -35,6 +35,17 @@ export async function findMatchById(matchId: number): Promise<Match | undefined>
   return rows.at(0);
 }
 
+export async function findConversationByMatchId(
+  matchId: number,
+): Promise<Conversation | undefined> {
+  const rows = await getDb()
+    .select()
+    .from(conversations)
+    .where(eq(conversations.matchId, matchId))
+    .limit(1);
+  return rows.at(0);
+}
+
 export function matchIncludesUser(match: Match, userId: number): boolean {
   return match.userAId === userId || match.userBId === userId;
 }
@@ -47,13 +58,63 @@ export async function listMessages(
   conversationId: number,
   limit = 50,
 ): Promise<Message[]> {
-  const rows = await getDb()
+  const db = getDb();
+  const now = new Date();
+  // Lazily purge expired ephemeral messages (fire-and-forget).
+  void db
+    .delete(messages)
+    .where(
+      and(eq(messages.conversationId, conversationId), lt(messages.expiresAt, now)),
+    )
+    .catch(() => {});
+  const rows = await db
     .select()
     .from(messages)
-    .where(eq(messages.conversationId, conversationId))
+    .where(
+      and(
+        eq(messages.conversationId, conversationId),
+        or(isNull(messages.expiresAt), gt(messages.expiresAt, now)),
+      ),
+    )
     .orderBy(desc(messages.id))
     .limit(limit);
   return rows.reverse(); // chronological order
+}
+
+/** Merge a patch into a message's meta JSON and return the updated row. */
+export async function mergeMessageMeta(
+  messageId: number,
+  patch: Record<string, unknown>,
+): Promise<Message> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.id, messageId))
+    .limit(1);
+  const existing = rows.at(0);
+  if (!existing) throw new Error("Message not found");
+  const meta = { ...(existing.meta ?? {}), ...patch };
+  await db.update(messages).set({ meta }).where(eq(messages.id, messageId));
+  const updated = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.id, messageId))
+    .limit(1);
+  const message = updated.at(0);
+  if (!message) throw new Error("Message not found");
+  return message;
+}
+
+export async function findMessageById(
+  messageId: number,
+): Promise<Message | undefined> {
+  const rows = await getDb()
+    .select()
+    .from(messages)
+    .where(eq(messages.id, messageId))
+    .limit(1);
+  return rows.at(0);
 }
 
 export async function insertMessage(data: Omit<InsertMessage, "id">): Promise<Message> {
@@ -118,15 +179,54 @@ export async function setConversationEphemeral(
   return conversation;
 }
 
+async function setConversationFlag(
+  conversationId: number,
+  column: "archivedAt" | "mutedAt",
+  on: boolean,
+): Promise<Conversation> {
+  const db = getDb();
+  await db
+    .update(conversations)
+    .set({ [column]: on ? new Date() : null })
+    .where(eq(conversations.id, conversationId));
+  const rows = await db
+    .select()
+    .from(conversations)
+    .where(eq(conversations.id, conversationId))
+    .limit(1);
+  const conversation = rows.at(0);
+  if (!conversation) throw new Error("Conversation not found");
+  return conversation;
+}
+
+export function setConversationArchived(
+  conversationId: number,
+  archived: boolean,
+): Promise<Conversation> {
+  return setConversationFlag(conversationId, "archivedAt", archived);
+}
+
+export function setConversationMuted(
+  conversationId: number,
+  muted: boolean,
+): Promise<Conversation> {
+  return setConversationFlag(conversationId, "mutedAt", muted);
+}
+
 export type MatchListEntry = {
   match: Match;
   conversationId: number | null;
   ephemeral: boolean;
+  archivedAt: Date | null;
+  mutedAt: Date | null;
   otherProfile: Profile | null;
   lastMessage: Message | null;
 };
 
-export async function listMatchesForUser(userId: number): Promise<MatchListEntry[]> {
+export async function listMatchesForUser(
+  userId: number,
+  opts: { includeArchived?: boolean } = {},
+): Promise<MatchListEntry[]> {
   const db = getDb();
   const matchRows = await db
     .select()
@@ -144,6 +244,7 @@ export async function listMatchesForUser(userId: number): Promise<MatchListEntry
       .where(eq(conversations.matchId, match.id))
       .limit(1);
     const conversation = convRows.at(0);
+    if (conversation?.archivedAt && !opts.includeArchived) continue;
 
     const profileRows = await db
       .select()
@@ -166,6 +267,8 @@ export async function listMatchesForUser(userId: number): Promise<MatchListEntry
       match,
       conversationId: conversation?.id ?? null,
       ephemeral: conversation?.ephemeral ?? false,
+      archivedAt: conversation?.archivedAt ?? null,
+      mutedAt: conversation?.mutedAt ?? null,
       otherProfile: profileRows.at(0) ?? null,
       lastMessage,
     });

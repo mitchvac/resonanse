@@ -13,6 +13,17 @@ export type EventWithRsvp = Event & {
   myRsvp: EventRsvp["status"] | null;
 };
 
+export async function findEventById(
+  eventId: number,
+): Promise<Event | undefined> {
+  const rows = await getDb()
+    .select()
+    .from(events)
+    .where(eq(events.id, eventId))
+    .limit(1);
+  return rows.at(0);
+}
+
 export async function listEventsWithRsvps(userId: number): Promise<EventWithRsvp[]> {
   const db = getDb();
   const allEvents = await db

@@ -6,27 +6,84 @@ import { createRouter, authedQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import {
   findMatchById,
+  getConversationContext,
   listMatchesForUser,
   matchIncludesUser,
+  setConversationArchived,
+  setConversationMuted,
 } from "./queries/chat";
 import { isBlockedBetween } from "./queries/safety";
 
 export const matchesRouter = createRouter({
-  list: authedQuery.query(async ({ ctx }) => {
-    const entries = await listMatchesForUser(ctx.user.id);
-    // Blocked users never appear.
-    const visible = [];
-    for (const entry of entries) {
-      const otherId =
-        entry.match.userAId === ctx.user.id
-          ? entry.match.userBId
-          : entry.match.userAId;
-      if (!(await isBlockedBetween(ctx.user.id, otherId))) {
-        visible.push(entry);
+  list: authedQuery
+    .input(z.object({ includeArchived: z.boolean().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const entries = await listMatchesForUser(ctx.user.id, {
+        includeArchived: input?.includeArchived ?? false,
+      });
+      // Blocked users never appear.
+      const visible = [];
+      for (const entry of entries) {
+        const otherId =
+          entry.match.userAId === ctx.user.id
+            ? entry.match.userBId
+            : entry.match.userAId;
+        if (!(await isBlockedBetween(ctx.user.id, otherId))) {
+          visible.push(entry);
+        }
       }
-    }
-    return { matches: visible };
-  }),
+      return { matches: visible };
+    }),
+
+  setArchived: authedQuery
+    .input(
+      z.object({
+        conversationId: z.number().int().positive(),
+        archived: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const context = await getConversationContext(
+        input.conversationId,
+        ctx.user.id,
+      );
+      if (!context) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conversation not found",
+        });
+      }
+      const conversation = await setConversationArchived(
+        input.conversationId,
+        input.archived,
+      );
+      return { conversation };
+    }),
+
+  setMuted: authedQuery
+    .input(
+      z.object({
+        conversationId: z.number().int().positive(),
+        muted: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const context = await getConversationContext(
+        input.conversationId,
+        ctx.user.id,
+      );
+      if (!context) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conversation not found",
+        });
+      }
+      const conversation = await setConversationMuted(
+        input.conversationId,
+        input.muted,
+      );
+      return { conversation };
+    }),
 
   weMet: authedQuery
     .input(

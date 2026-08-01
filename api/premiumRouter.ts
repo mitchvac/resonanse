@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { createRouter, authedQuery } from "./middleware";
 import {
+  addBoosts,
   addPulses,
+  cancelSubscription,
   ensureEntitlement,
   setTier,
 } from "./queries/entitlements";
@@ -25,4 +27,16 @@ export const premiumRouter = createRouter({
       const entitlement = await addPulses(ctx.user.id, input.count);
       return { entitlement };
     }),
+
+  buyBoost: authedQuery
+    .input(z.object({ count: z.number().int().min(1).max(10) }))
+    .mutation(async ({ ctx, input }) => {
+      const entitlements = await addBoosts(ctx.user.id, input.count);
+      return { entitlements };
+    }),
+
+  cancel: authedQuery.mutation(async ({ ctx }) => {
+    const entitlements = await cancelSubscription(ctx.user.id);
+    return { entitlements };
+  }),
 });

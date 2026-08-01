@@ -26,6 +26,13 @@ const lifestyleSchema = z.object({
   zodiac: z.string().optional(),
 });
 
+const constellationMemberSchema = z.object({
+  handle: z.string().max(120),
+  name: z.string().max(120),
+  photo: z.string().max(512),
+  status: z.string().max(60),
+});
+
 const profileInput = z.object({
   displayName: z.string().min(1).max(80).optional(),
   age: z.number().int().min(18).max(120).optional(),
@@ -44,12 +51,29 @@ const profileInput = z.object({
   education: z.string().max(120).nullable().optional(),
   politics: z.string().max(60).nullable().optional(),
   familyPlans: z.string().max(60).nullable().optional(),
+  showMe: z.array(z.string()).max(4).optional(),
+  openTo: z.array(z.string()).max(4).optional(),
+  showIntent: z.boolean().optional(),
+  privateDesires: z.array(z.string()).max(12).optional(),
+  constellation: z.array(constellationMemberSchema).max(5).optional(),
+  reflections: z.array(z.number().int().min(1).max(5)).max(10).optional(),
+  weeklyGoal: z.number().int().min(1).max(3).optional(),
+  ephemeralDefault: z.boolean().optional(),
 });
 
 /** Strip viewer-private fields for other users' eyes. */
 function publicProfileView(profile: Profile) {
   // idVerifiedAt stays: it's a public trust badge. idDocType never leaves the server.
-  const { hiddenWords, anonymityMode, idDocType, ...rest } = profile;
+  // privateDesires/constellation/reflections are ALWAYS private.
+  const {
+    hiddenWords,
+    anonymityMode,
+    idDocType,
+    privateDesires,
+    constellation,
+    reflections,
+    ...rest
+  } = profile;
   // Anonymity mode hides desires from non-matches in the demo build.
   return { ...rest, desires: anonymityMode ? null : profile.desires };
 }
@@ -107,10 +131,17 @@ export const profileRouter = createRouter({
       z.object({
         anonymityMode: z.boolean().optional(),
         hiddenWords: z.array(z.string().min(1)).optional(),
+        weeklyGoal: z.number().int().min(1).max(3).optional(),
+        ephemeralDefault: z.boolean().optional(),
+        paused: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const profile = await updateProfileSettings(ctx.user.id, input);
+      const { paused, ...rest } = input;
+      const profile = await updateProfileSettings(ctx.user.id, {
+        ...rest,
+        ...(paused === undefined ? {} : { pausedAt: paused ? new Date() : null }),
+      });
       return { profile };
     }),
 });
