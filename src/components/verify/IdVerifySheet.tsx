@@ -5,7 +5,7 @@ import { trpc } from '@/providers/trpc';
 import { BtnPrimary } from '@/components/ui/buttons';
 import { DarkSurfaceBtn } from '@/components/call/CallOverlay';
 import { VerifiedBadge } from '@/components/flow/feedback';
-import { CAMERA_ERROR } from '@/components/call/useVideoCall';
+import { cameraErrorMessage } from '@/lib/cameraCheck';
 
 /**
  * IdVerifySheet — government ID verification (privacy-first).
@@ -499,7 +499,7 @@ export default function IdVerifySheet({
                   <AlertTriangle size={30} style={{ color: '#FFC95C' }} aria-hidden="true" />
                   <p className="t-body max-w-[280px] text-white/85">
                     {step === 'camera-error'
-                      ? CAMERA_ERROR
+                      ? cameraErrorMessage()
                       : "We couldn't finish the ID check — please try again."}
                   </p>
                   <div className="flex items-center gap-3">

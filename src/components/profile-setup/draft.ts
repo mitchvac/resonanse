@@ -21,8 +21,10 @@ function loadOnboardingGoal(): GoalValue | null {
 
 export type PromptEntry = { question: string; answer: string };
 
-/** Stable slot ids keep drag-reorder keys unique even with multiple empty tiles */
-export type PhotoSlot = { id: string; photo: string | null };
+/** Stable slot ids keep drag-reorder keys unique even with multiple empty tiles.
+    `saved` marks slots already persisted to the backend this session — their
+    data URLs are stripped from localStorage (rehydrated from profile.me). */
+export type PhotoSlot = { id: string; photo: string | null; saved?: boolean };
 
 export type ConstellationSlot =
   | { status: 'confirmed'; photo: string; handle: string }
@@ -33,6 +35,9 @@ export type ProfileSetupDraft = {
   step: number;
   /** 6 photo slots; photo null = empty tile */
   photos: PhotoSlot[];
+  /** true once the user changes photos this session — protects unsaved picks
+      from being re-seeded by the backend profile. Session-only: never saved. */
+  photosTouched: boolean;
   prompts: PromptEntry[];
   goal: '' | 'serious' | 'casual' | 'explore' | 'enm' | 'friendship';
   /** true once the user explicitly picked a goal here — protects it from
@@ -46,6 +51,9 @@ export type ProfileSetupDraft = {
   family: string;
   voiceRecorded: boolean;
   voiceSeconds: number;
+  /** recorded voice note as a data URL — session memory only, stripped from
+      localStorage (size) once persisted to the backend */
+  voiceNoteData: string | null;
   constellation: ConstellationSlot[];
   reflectionsDone: boolean;
   reflectionsAnswers: number[];
@@ -53,16 +61,31 @@ export type ProfileSetupDraft = {
 
 export const PROFILE_DRAFT_KEY = 'resonance-profile-draft';
 
+const emptyPhotoSlots: PhotoSlot[] = [
+  { id: 's1', photo: null },
+  { id: 's2', photo: null },
+  { id: 's3', photo: null },
+  { id: 's4', photo: null },
+  { id: 's5', photo: null },
+  { id: 's6', photo: null },
+];
+
+/** Stock photos for the signed-out demo mode ONLY — never for real profiles. */
+export const DEMO_PHOTO_PATHS = ['/self-01.jpg', '/self-02.jpg', '/self-03.jpg', '/self-04.jpg'];
+
+export function demoPhotoSlots(): PhotoSlot[] {
+  return emptyPhotoSlots.map((slot, i) => ({
+    ...slot,
+    photo: DEMO_PHOTO_PATHS[i] ?? null,
+  }));
+}
+
 export const emptyProfileSetupDraft: ProfileSetupDraft = {
   step: 1,
-  photos: [
-    { id: 's1', photo: '/self-01.jpg' },
-    { id: 's2', photo: '/self-02.jpg' },
-    { id: 's3', photo: '/self-03.jpg' },
-    { id: 's4', photo: '/self-04.jpg' },
-    { id: 's5', photo: null },
-    { id: 's6', photo: null },
-  ],
+  /* Signed-in builders start EMPTY (add-photo tiles) — the backend profile is
+     the source of truth and seeds these slots once profile.me loads. */
+  photos: emptyPhotoSlots.map((s) => ({ ...s })),
+  photosTouched: false,
   prompts: [
     {
       question: 'The way to my heart is…',
@@ -90,6 +113,7 @@ export const emptyProfileSetupDraft: ProfileSetupDraft = {
   family: '',
   voiceRecorded: false,
   voiceSeconds: 0,
+  voiceNoteData: null,
   constellation: [
     { status: 'confirmed', photo: '/avatar-10.jpg', handle: '@ren' },
     { status: 'pending', photo: '/avatar-07.jpg', handle: '@sol' },
@@ -107,14 +131,24 @@ export function loadProfileSetupDraft(): ProfileSetupDraft {
     if (!raw) return emptyProfileSetupDraft;
     const parsed = JSON.parse(raw) as Partial<ProfileSetupDraft>;
     const merged = { ...emptyProfileSetupDraft, ...parsed };
+    /* session-only flag — a reload means "no unsaved picks this session" */
+    merged.photosTouched = false;
     if (!Array.isArray(merged.photos) || merged.photos.length !== 6) {
-      merged.photos = emptyProfileSetupDraft.photos;
+      merged.photos = emptyProfileSetupDraft.photos.map((s) => ({ ...s }));
     } else if (typeof merged.photos[0] === 'string' || merged.photos[0] === null) {
       /* migrate legacy string[] drafts to stable slot objects */
       merged.photos = (merged.photos as unknown as (string | null)[]).map((photo, i) => ({
         id: `s${i + 1}`,
         photo,
       }));
+    } else {
+      /* strip any stock demo photos from a legacy signed-in draft — real
+         photos rehydrate from the backend; demo mode re-seeds its own */
+      merged.photos = merged.photos.map((s, i) =>
+        s && typeof s === 'object' && !Array.isArray(s)
+          ? { id: s.id ?? `s${i + 1}`, photo: s.photo ?? null, saved: s.saved }
+          : { id: `s${i + 1}`, photo: null },
+      );
     }
     if (!Array.isArray(merged.constellation) || merged.constellation.length !== 5) {
       merged.constellation = emptyProfileSetupDraft.constellation;
@@ -140,11 +174,27 @@ export function loadProfileSetupDraft(): ProfileSetupDraft {
   }
 }
 
-export function saveProfileSetupDraft(draft: ProfileSetupDraft) {
+/** Persist the draft to localStorage. Photo data URLs that are already saved
+    to the backend are replaced with a lightweight `{ saved: true }` marker —
+    multi-MB base64 strings blow the ~5MB iOS Safari quota and silently kill
+    the whole draft. Returns false when the write fails so callers can toast. */
+export function saveProfileSetupDraft(draft: ProfileSetupDraft): boolean {
   try {
-    window.localStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(draft));
+    const persistable: ProfileSetupDraft = {
+      ...draft,
+      photosTouched: false, // session-only — never persisted
+      voiceNoteData: null, // session memory only — never hits localStorage quota
+      photos: draft.photos.map((s) =>
+        s.saved && typeof s.photo === 'string' && s.photo.startsWith('data:')
+          ? { id: s.id, photo: null, saved: true }
+          : s,
+      ),
+    };
+    window.localStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(persistable));
+    return true;
   } catch {
-    /* storage unavailable — builder still works in-session */
+    /* storage unavailable / quota exceeded — caller surfaces a toast */
+    return false;
   }
 }
 

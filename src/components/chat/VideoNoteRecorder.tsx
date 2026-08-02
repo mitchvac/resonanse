@@ -5,7 +5,7 @@ import { trpc } from '@/providers/trpc';
 import { BtnPrimary } from '@/components/ui/buttons';
 import { DarkSurfaceBtn } from '@/components/call/CallOverlay';
 import type { ChatMessage } from '@/components/chat/types';
-import { CAMERA_ERROR } from '@/components/call/useVideoCall';
+import { cameraErrorMessage } from '@/lib/cameraCheck';
 import { cn } from '@/lib/utils';
 
 /**
@@ -32,7 +32,14 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 
 function pickMimeType(): string | undefined {
   if (typeof MediaRecorder === 'undefined') return undefined;
-  for (const t of ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']) {
+  /* webm first (Chrome/Android/Firefox), then mp4 — iOS Safari records mp4 */
+  for (const t of [
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm',
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4',
+  ]) {
     if (MediaRecorder.isTypeSupported(t)) return t;
   }
   return undefined;
@@ -353,7 +360,7 @@ export default function VideoNoteRecorder({
               {phase === 'error' && (
                 <div className="flex flex-col items-center gap-3 text-center">
                   <AlertTriangle size={26} style={{ color: '#FFC95C' }} aria-hidden="true" />
-                  <p className="t-body text-white/85">{CAMERA_ERROR}</p>
+                  <p className="t-body text-white/85">{cameraErrorMessage()}</p>
                   <DarkSurfaceBtn onClick={() => setRetryTick((t) => t + 1)} className="h-11 px-5">
                     Retry
                   </DarkSurfaceBtn>

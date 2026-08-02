@@ -6,22 +6,23 @@ import IdVerifySheet from '@/components/verify/IdVerifySheet';
 import { DarkSurfaceBtn } from '@/components/call/CallOverlay';
 import { BtnGhost, BtnGlass } from '@/components/ui/buttons';
 import { ParticleRing, VerifiedBadge } from '@/components/flow/feedback';
+import { cameraErrorMessage } from '@/lib/cameraCheck';
 import { cn } from '@/lib/utils';
 
 /**
  * VerifyStep — onboarding.md §3 (mandatory photo verification gate)
  * Always-dark camera module (theme-independent). Rounded-rect frame (radius
- * 24px) with dashed face-oval guide + /verify-demo.jpg demo feed.
- * Wizard: 1 Selfie (72px white ring capture, white flash 120ms) → 2 Live
- * check ("Turn your head slowly →" arrow arc 2s loop + violet progress ring
- * stroke-dash 0→100% over 2.4s) → 3 Result. Success: VerifiedBadge spring
- * 480ms + white particle ring; frame outline converts to the edge-glow ring
- * (.glass-edge energize 560ms → 2.4s breath) — the flow's only glow surface.
- * Failure: warn icon + Try again / Get help. Reduced motion: ring sweep
- * becomes a linear opacity progress bar.
+ * 24px) with dashed face-oval guide + REAL getUserMedia selfie feed.
+ * Wizard: 1 Selfie (3-2-1 countdown → real frame capture to canvas, white
+ * flash, "captured" 1s — then the canvas is CLEARED; nothing is stored,
+ * consistent with the ID-scan privacy model) → 2 Live check ("Turn your
+ * head slowly →" arrow arc 2s loop + violet progress ring 0→100% over 2.4s)
+ * → 3 Result. Camera blocked/unavailable → honest blocked copy + a
+ * "Continue without photo verification" tertiary route to ID verification
+ * (verified stays false — never stamped without a real captured frame).
  */
 
-type Phase = 'selfie' | 'live' | 'success' | 'failure';
+type Phase = 'selfie' | 'live' | 'success' | 'failure' | 'camera-error';
 
 const EASE_SPRING = [0.34, 1.56, 0.64, 1] as [number, number, number, number];
 
@@ -35,6 +36,8 @@ export default function VerifyStep({
   const [phase, setPhase] = useState<Phase>('selfie');
   const [flash, setFlash] = useState(0);
   const [burst, setBurst] = useState(0);
+  const [captured, setCaptured] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const [whyOpen, setWhyOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [idOpen, setIdOpen] = useState(false);
@@ -42,14 +45,103 @@ export default function VerifyStep({
   const [idDismissed, setIdDismissed] = useState(false);
   const finishing = useRef(false);
 
+  const streamRef = useRef<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const capturedFrameRef = useRef(false);
+
+  const stopStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  }, []);
+
+  /* Live camera for the selfie + live-check phases */
+  const cameraActive = phase === 'selfie' || phase === 'live';
+  useEffect(() => {
+    if (!cameraActive || streamRef.current) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) throw new Error('unsupported');
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' },
+          audio: false,
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        streamRef.current = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
+      } catch {
+        if (!cancelled) setPhase('camera-error');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [cameraActive, phase]);
+
+  /* Re-attach when the video element (re)mounts across phases */
+  useEffect(() => {
+    if (cameraActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [cameraActive, phase]);
+
+  /* Release the camera once the wizard leaves the live phases, and on unmount */
+  useEffect(() => {
+    if (!cameraActive) stopStream();
+  }, [cameraActive, stopStream]);
+  useEffect(() => stopStream, [stopStream]);
+
+  /* ---- countdown → real frame capture → 1s "captured" flash → discard ---- */
   const capture = () => {
-    if (phase !== 'selfie') return;
-    setFlash((f) => f + 1);
-    window.setTimeout(() => setPhase('live'), 380);
+    if (phase !== 'selfie' || countdown !== null || !streamRef.current) return;
+    setCountdown(3);
   };
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) {
+      /* grab the frame NOW — it never leaves this canvas and is cleared 1s
+         after the "captured" flash; nothing is uploaded or persisted */
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas || video.videoWidth === 0) {
+        setCountdown(null);
+        setPhase('camera-error');
+        return;
+      }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d')?.drawImage(video, 0, 0);
+      capturedFrameRef.current = true;
+      setFlash((f) => f + 1);
+      setCaptured(true);
+      setCountdown(null);
+      window.setTimeout(() => {
+        /* discard the frame — then advance to the live check */
+        const ctx = canvas.getContext('2d');
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 0;
+        canvas.height = 0;
+        setCaptured(false);
+        setPhase('live');
+      }, 1000);
+      return;
+    }
+    const t = window.setTimeout(() => setCountdown((c) => (c === null ? null : c - 1)), 800);
+    return () => window.clearTimeout(t);
+  }, [countdown]);
 
   const finish = useCallback(async () => {
     if (finishing.current) return;
+    /* never stamp verified without a real captured frame */
+    if (!capturedFrameRef.current) {
+      setPhase('failure');
+      return;
+    }
     finishing.current = true;
     const ok = await onVerified();
     setPhase(ok ? 'success' : 'failure');
@@ -64,7 +156,18 @@ export default function VerifyStep({
     return () => window.clearTimeout(t);
   }, [phase, reduced, finish]);
 
-  const retry = () => setPhase('selfie');
+  const retry = () => {
+    capturedFrameRef.current = false;
+    setPhase('selfie');
+  };
+
+  /* Camera blocked → honest route: verified stays false, offer the ID
+     verification option on the Trust sheet instead. */
+  const continueWithoutPhoto = () => {
+    capturedFrameRef.current = false;
+    setIdDismissed(false);
+    setIdOpen(true);
+  };
 
   return (
     <div className="flex h-full flex-col bg-[#07070D] px-5 pt-4 pb-5">
@@ -90,13 +193,56 @@ export default function VerifyStep({
                   : '2px solid rgba(255,255,255,0.22)',
             }}
           >
-            <img
-              src="/verify-demo.jpg"
-              alt="Demo capture feed — a member taking a verification selfie"
-              className="h-full w-full object-cover"
+            {/* REAL selfie feed (mirrored) — no demo image. The captured
+                frame flashes for 1s on a canvas overlay, then is discarded. */}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className={cn(
+                'h-full w-full -scale-x-100 object-cover',
+                phase === 'camera-error' && 'hidden',
+              )}
             />
+            <canvas
+              ref={canvasRef}
+              className={cn(
+                'pointer-events-none absolute inset-0 h-full w-full -scale-x-100 object-cover',
+                !captured && 'hidden',
+              )}
+              aria-hidden="true"
+            />
+            {phase === 'camera-error' && (
+              <span className="flex h-full w-full items-center justify-center bg-[#101018]">
+                <AlertTriangle size={28} style={{ color: '#FFC95C' }} aria-hidden="true" />
+              </span>
+            )}
+            {/* countdown overlay */}
+            {countdown !== null && countdown > 0 && (
+              <span className="absolute inset-0 flex items-center justify-center" aria-live="polite">
+                <motion.span
+                  key={countdown}
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.24, ease: EASE_SPRING }}
+                  className="t-heading text-5xl text-white"
+                  style={{ textShadow: '0 2px 16px rgba(0,0,0,0.6)' }}
+                >
+                  {countdown}
+                </motion.span>
+              </span>
+            )}
+            {captured && (
+              <span
+                className="t-micro absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-white"
+                role="status"
+              >
+                CAPTURED — DISCARDED AFTER THE CHECK
+              </span>
+            )}
             {/* face-oval guide: 2px white 0.5 dashed */}
-            {phase !== 'success' && (
+            {phase !== 'success' && phase !== 'camera-error' && (
               <svg
                 className="pointer-events-none absolute inset-0 h-full w-full"
                 viewBox="0 0 100 125"
@@ -116,7 +262,7 @@ export default function VerifyStep({
             )}
             {/* capture flash (120ms white) */}
             <AnimatePresence>
-              {flash > 0 && phase === 'selfie' && (
+              {flash > 0 && captured && (
                 <motion.div
                   key={flash}
                   className="absolute inset-0 bg-white"
@@ -189,17 +335,39 @@ export default function VerifyStep({
                 className="flex flex-col items-center"
               >
                 <p className="t-body max-w-[280px] text-white/80">
-                  Take a quick selfie. This is never shown on your profile.
+                  Take a quick selfie. This is never shown on your profile — and never stored.
                 </p>
                 {/* capture: 72px white ring, violet inner disc */}
                 <button
                   type="button"
                   onClick={capture}
+                  disabled={countdown !== null}
                   aria-label="Capture selfie"
-                  className="mt-5 flex h-[72px] w-[72px] items-center justify-center rounded-full border-[3px] border-white transition-transform duration-fast active:scale-95"
+                  className="mt-5 flex h-[72px] w-[72px] items-center justify-center rounded-full border-[3px] border-white transition-transform duration-fast active:scale-95 disabled:opacity-50"
                 >
                   <span className="h-[52px] w-[52px] rounded-full" style={{ background: 'var(--violet)' }} />
                 </button>
+              </motion.div>
+            )}
+
+            {phase === 'camera-error' && (
+              <motion.div
+                key="camera-error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col items-center"
+              >
+                <p className="t-body max-w-[280px] text-white/80">{cameraErrorMessage()}</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <BtnGlass onClick={retry} className="h-11 px-5 text-white">
+                    Try again
+                  </BtnGlass>
+                </div>
+                <BtnGhost onClick={continueWithoutPhoto} className="t-caption mt-2 text-white/70">
+                  Continue without photo verification
+                </BtnGhost>
               </motion.div>
             )}
 

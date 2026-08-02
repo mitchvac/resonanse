@@ -3,41 +3,10 @@ import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { Camera, GripVertical, ImagePlus, Plus, Sparkles, X } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
 import { Block, StaggerGroup } from '@/components/flow/controls';
-import type { PhotoSlot, ProfileSetupDraft } from './draft';
-
-/** Downscale an image file to a JPEG data URL: max 1600px long edge,
-    quality 0.82, re-compressing until it fits ≈600KB. */
-async function fileToPhotoDataUrl(file: File): Promise<string> {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const el = new Image();
-      el.onload = () => resolve(el);
-      el.onerror = () => reject(new Error('Could not read that image.'));
-      el.src = url;
-    });
-    const longEdge = Math.max(img.naturalWidth, img.naturalHeight) || 1;
-    const scale = Math.min(1, 1600 / longEdge);
-    const w = Math.max(1, Math.round(img.naturalWidth * scale));
-    const h = Math.max(1, Math.round(img.naturalHeight * scale));
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas unavailable.');
-    ctx.drawImage(img, 0, 0, w, h);
-    let quality = 0.82;
-    let dataUrl = canvas.toDataURL('image/jpeg', quality);
-    // base64 inflates ~4/3 — 600KB of bytes ≈ 800k chars
-    while (dataUrl.length > 800_000 && quality > 0.4) {
-      quality = Math.round((quality - 0.12) * 100) / 100;
-      dataUrl = canvas.toDataURL('image/jpeg', quality);
-    }
-    return dataUrl;
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
+import { useAuth } from '@/hooks/useAuth';
+import { trpc } from '@/providers/trpc';
+import { fileToPhotoDataUrl } from '@/lib/photoFile';
+import { DEMO_PHOTO_PATHS, type PhotoSlot, type ProfileSetupDraft } from './draft';
 
 /**
  * PhotosStep — profile-create.md §1
@@ -49,14 +18,14 @@ async function fileToPhotoDataUrl(file: File): Promise<string> {
  * up 240ms after adding. Tiles stagger 50ms scale 0.92→1.
  */
 
-const DEMO_POOL = ['/self-01.jpg', '/self-02.jpg', '/self-03.jpg', '/self-04.jpg'];
-
 export default function PhotosStep({
   draft,
   update,
+  onToast,
 }: {
   draft: ProfileSetupDraft;
   update: (patch: Partial<ProfileSetupDraft>) => void;
+  onToast?: (message: string) => void;
 }) {
   const [addSheet, setAddSheet] = useState<number | null>(null);
   const [editSheet, setEditSheet] = useState<number | null>(null);
@@ -68,19 +37,46 @@ export default function PhotosStep({
   const libraryInput = useRef<HTMLInputElement>(null);
   const cameraInput = useRef<HTMLInputElement>(null);
 
-  const setPhotos = (photos: PhotoSlot[]) => update({ photos });
+  const { isAuthenticated } = useAuth();
+  const upsert = trpc.profile.upsert.useMutation();
+
+  const setPhotos = (photos: PhotoSlot[]) => update({ photos, photosTouched: true });
 
   const pickDemoPhoto = (exclude: (string | null)[]): string => {
-    const unused = DEMO_POOL.filter((p) => !exclude.includes(p));
+    const unused = DEMO_PHOTO_PATHS.filter((p) => !exclude.includes(p));
     if (unused.length > 0) return unused[0];
-    return DEMO_POOL[Math.floor(Math.random() * DEMO_POOL.length)];
+    return DEMO_PHOTO_PATHS[Math.floor(Math.random() * DEMO_PHOTO_PATHS.length)];
   };
 
-  const setSlotPhoto = (slot: number, photo: string) => {
+  /* Signed-in picks persist IMMEDIATELY (P0-3): the photo lands on the
+     backend right away and only a `{saved}` marker stays in the localStorage
+     draft — multi-MB data URLs never hit the ~5MB iOS quota. */
+  const persistNow = async (photos: PhotoSlot[]) => {
+    if (!isAuthenticated) return;
+    try {
+      const filled = photos.filter((s) => s.photo).map((s) => s.photo as string);
+      await upsert.mutateAsync({ photos: filled });
+      /* every data-URL photo is now backend-persisted → safe to strip from
+         the localStorage draft (rehydrated from profile.me on next visit) */
+      update({
+        photos: photos.map((s) =>
+          typeof s.photo === 'string' && s.photo.startsWith('data:')
+            ? { ...s, saved: true }
+            : s,
+        ),
+        photosTouched: true,
+      });
+    } catch {
+      onToast?.("Couldn't save that photo — it's kept in your on-device draft.");
+    }
+  };
+
+  const setSlotPhoto = (slot: number, photo: string, persist = false) => {
     const next = [...draft.photos];
     next[slot] = { ...next[slot], photo };
     setPhotos(next);
     setNudge(true);
+    if (persist) void persistNow(next);
   };
 
   const pickFile = (slot: number, source: 'library' | 'camera') => {
@@ -100,7 +96,7 @@ export default function PhotosStep({
     setProcessing(true);
     try {
       const dataUrl = await fileToPhotoDataUrl(file);
-      setSlotPhoto(fileTarget.current, dataUrl);
+      setSlotPhoto(fileTarget.current, dataUrl, true);
     } catch {
       setUploadError("Couldn't read that photo — try a different one.");
     } finally {
@@ -309,22 +305,26 @@ export default function PhotosStep({
                 </span>
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => addSheet !== null && addSamplePhoto(addSheet)}
-              className="flex min-h-[52px] items-center gap-3 rounded-2xl px-4 text-left transition-colors duration-fast"
-              style={{ background: 'var(--field)' }}
-            >
-              <Sparkles size={20} style={{ color: 'var(--text)' }} aria-hidden="true" />
-              <span>
-                <span className="t-button block" style={{ color: 'var(--text)' }}>
-                  Sample photos
+            {/* Stock photos are demo-mode only — signed-in profiles always
+                use real uploads. */}
+            {!isAuthenticated && (
+              <button
+                type="button"
+                onClick={() => addSheet !== null && addSamplePhoto(addSheet)}
+                className="flex min-h-[52px] items-center gap-3 rounded-2xl px-4 text-left transition-colors duration-fast"
+                style={{ background: 'var(--field)' }}
+              >
+                <Sparkles size={20} style={{ color: 'var(--text)' }} aria-hidden="true" />
+                <span>
+                  <span className="t-button block" style={{ color: 'var(--text)' }}>
+                    Sample photos
+                  </span>
+                  <span className="t-caption block" style={{ color: 'var(--text-secondary)' }}>
+                    Explore with demo pictures
+                  </span>
                 </span>
-                <span className="t-caption block" style={{ color: 'var(--text-secondary)' }}>
-                  Explore with demo pictures
-                </span>
-              </span>
-            </button>
+              </button>
+            )}
           </div>
         </div>
       </GlassSheet>
@@ -336,12 +336,16 @@ export default function PhotosStep({
             Photo options
           </h2>
           <div className="mt-4 flex flex-col gap-2">
-            {[
-              { label: 'Replace', action: () => editSheet !== null && pickFile(editSheet, 'library') },
-              { label: 'Replace with sample', action: () => editSheet !== null && replaceWithSample(editSheet) },
-              { label: 'Set as main', action: () => editSheet !== null && setAsMain(editSheet) },
-              { label: 'Remove', action: () => editSheet !== null && removePhoto(editSheet), danger: true },
-            ].map((opt) => (
+            {(
+              [
+                { label: 'Replace', action: () => editSheet !== null && pickFile(editSheet, 'library') },
+                ...(!isAuthenticated
+                  ? [{ label: 'Replace with sample', action: () => editSheet !== null && replaceWithSample(editSheet) }]
+                  : []),
+                { label: 'Set as main', action: () => editSheet !== null && setAsMain(editSheet) },
+                { label: 'Remove', action: () => editSheet !== null && removePhoto(editSheet), danger: true },
+              ] as { label: string; action: () => void; danger?: boolean }[]
+            ).map((opt) => (
               <button
                 key={opt.label}
                 type="button"

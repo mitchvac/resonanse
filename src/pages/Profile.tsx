@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
@@ -16,6 +16,10 @@ import {
   IdCard,
   TriangleAlert,
   TrendingUp,
+  Camera,
+  ImagePlus,
+  Pencil,
+  Loader2,
 } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import GlassSheet from '@/components/GlassSheet';
@@ -27,6 +31,7 @@ import { BtnGlass, BtnPrimary, BtnGhost } from '@/components/ui/buttons';
 import { LockChip, Chip, ToastHost, useToasts } from '@/components/settings/controls';
 import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
+import { fileToPhotoDataUrl } from '@/lib/photoFile';
 
 const FALLBACK_PHOTOS = ['/self-01.jpg', '/self-02.jpg', '/self-03.jpg', '/self-04.jpg'];
 const FALLBACK_CHIPS = ['Explore', 'Night owl', 'Traveler'];
@@ -184,10 +189,13 @@ export default function Profile() {
   const [weeklyGoal, setWeeklyGoal] = useState(1);
   const [mainPhotoIdx, setMainPhotoIdx] = useState(0);
 
+  /* Always show the user's REAL photos (any count ≥1) — stock visuals only
+     when there are zero photos at all. */
   const photos = useMemo(() => {
     const p = profile?.photos?.filter(Boolean) ?? [];
-    return p.length >= 4 ? p.slice(0, 4) : FALLBACK_PHOTOS;
+    return p.length > 0 ? p : FALLBACK_PHOTOS;
   }, [profile?.photos]);
+  const realPhotoCount = profile?.photos?.filter(Boolean).length ?? 0;
 
   const chips = useMemo(() => {
     const d = profile?.desires?.filter(Boolean) ?? [];
@@ -227,15 +235,69 @@ export default function Profile() {
     }
   };
 
-  /* Make-main — persist the reordered photos array */
+  /* Make-main — persist the reordered photos array (any count ≥2) */
   const makeMain = (idx: number) => {
     const real = profile?.photos?.filter(Boolean) ?? [];
-    if (real.length >= 4) {
+    if (real.length > 1 && idx < real.length) {
       const reordered = [real[idx], ...real.filter((_, i) => i !== idx)];
       setMainPhotoIdx(0);
       upsertProfile.mutate({ photos: reordered });
     } else {
       setMainPhotoIdx(idx);
+    }
+  };
+
+  /* ---- Photo management (add / replace / remove) — persists via upsert;
+     no optimistic keep: a failed save leaves the old photos in place. ---- */
+  const [photoSheet, setPhotoSheet] = useState<'add' | number | null>(null);
+  const [photoPending, setPhotoPending] = useState<'add' | number | null>(null);
+  const photoTarget = useRef<'add' | number>('add');
+  const libraryInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
+
+  const pickPhotoFile = (target: 'add' | number, source: 'library' | 'camera') => {
+    photoTarget.current = target;
+    setPhotoSheet(null);
+    const input = source === 'camera' ? cameraInput.current : libraryInput.current;
+    if (input) {
+      input.value = '';
+      input.click();
+    }
+  };
+
+  const handlePhotoFile = async (file: File | null | undefined) => {
+    if (!file || photoPending !== null) return;
+    setPhotoPending(photoTarget.current);
+    try {
+      const dataUrl = await fileToPhotoDataUrl(file);
+      const real = profile?.photos?.filter(Boolean) ?? [];
+      const target = photoTarget.current;
+      const next =
+        target === 'add'
+          ? [...real, dataUrl].slice(0, 6)
+          : real.map((p, i) => (i === target ? dataUrl : p));
+      await upsertProfile.mutateAsync({ photos: next });
+      push(target === 'add' ? 'Photo added.' : 'Photo updated.');
+    } catch {
+      push("Couldn't save that photo — try again.");
+    } finally {
+      setPhotoPending(null);
+    }
+  };
+
+  const removeRealPhoto = async (idx: number) => {
+    setPhotoSheet(null);
+    if (photoPending !== null) return;
+    setPhotoPending(idx);
+    try {
+      const real = profile?.photos?.filter(Boolean) ?? [];
+      await upsertProfile.mutateAsync({ photos: real.filter((_, i) => i !== idx) });
+      setMainPhotoIdx(0);
+      push('Photo removed.');
+    } catch {
+      push("Couldn't remove that photo — try again.");
+    } finally {
+      setPhotoPending(null);
     }
   };
 
@@ -415,6 +477,75 @@ export default function Profile() {
               </GlassCard>
             </motion.div>
 
+            {/* ── Your photos — add / replace / make main / remove ────── */}
+            <h3 className="t-eyebrow mb-3 mt-8">Your photos</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {photos.slice(0, 6).map((src, i) => {
+                const isReal = i < realPhotoCount;
+                return (
+                  <motion.button
+                    key={src.slice(0, 48) + i}
+                    type="button"
+                    disabled={!isReal}
+                    onClick={() => setPhotoSheet(i)}
+                    aria-label={isReal ? `Edit photo ${i + 1}` : `Photo ${i + 1}`}
+                    className="relative aspect-[4/5] overflow-hidden rounded-[16px] text-left disabled:cursor-default"
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.3, delay: i * 0.05 }}
+                  >
+                    <img
+                      src={src}
+                      alt={`Profile photo ${i + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                    {i === 0 && isReal && (
+                      <span className="t-micro absolute left-1.5 top-1.5 rounded-full bg-black/45 px-2 py-0.5 text-white">
+                        MAIN
+                      </span>
+                    )}
+                    {isReal && (
+                      <span
+                        className="absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/45 text-white"
+                        aria-hidden="true"
+                      >
+                        {photoPending === i ? (
+                          <Loader2 size={13} className="animate-spin" />
+                        ) : (
+                          <Pencil size={13} />
+                        )}
+                      </span>
+                    )}
+                  </motion.button>
+                );
+              })}
+              {realPhotoCount < 6 && (
+                <motion.button
+                  type="button"
+                  onClick={() => setPhotoSheet('add')}
+                  disabled={photoPending !== null}
+                  aria-label="Add a photo"
+                  className="relative flex aspect-[4/5] items-center justify-center rounded-[16px] disabled:opacity-50"
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3, delay: Math.min(realPhotoCount, 6) * 0.05 }}
+                >
+                  <span
+                    className="absolute inset-0 rounded-[16px]"
+                    style={{ border: '1.5px dashed var(--text)', opacity: 0.25 }}
+                    aria-hidden="true"
+                  />
+                  {photoPending === 'add' ? (
+                    <Loader2 size={20} className="animate-spin" style={{ color: 'var(--text)' }} aria-hidden="true" />
+                  ) : (
+                    <Plus size={20} style={{ color: 'var(--text)', opacity: 0.5 }} aria-hidden="true" />
+                  )}
+                </motion.button>
+              )}
+            </div>
+
             {/* ── §2 This week — outcome stats ───────────────────────── */}
             <h3 className="t-eyebrow mb-3 mt-8">This week</h3>
             <div className="grid grid-cols-3 gap-3">
@@ -501,7 +632,7 @@ export default function Profile() {
             {isPremium ? (
               <div>
                 <div className="grid grid-cols-4 gap-2">
-                  {photos.map((src, i) => (
+                  {photos.slice(0, 4).map((src, i) => (
                     <motion.div
                       key={src + i}
                       className="relative"
@@ -692,6 +823,116 @@ export default function Profile() {
 
       {/* ── ID verification takeover (privacy-first, in-browser scan) ── */}
       <IdVerifySheet open={idVerifyOpen} onClose={() => setIdVerifyOpen(false)} />
+
+      {/* ── Photo pickers — hidden library input + camera capture input ── */}
+      <input
+        ref={libraryInput}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(e) => void handlePhotoFile(e.target.files?.[0])}
+      />
+      <input
+        ref={cameraInput}
+        type="file"
+        accept="image/*"
+        capture="user"
+        className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(e) => void handlePhotoFile(e.target.files?.[0])}
+      />
+
+      {/* ── Add-photo sheet — Camera / Library ──────────────────────── */}
+      <GlassSheet open={photoSheet === 'add'} onClose={() => setPhotoSheet(null)} labelledBy="add-photo-title">
+        <div className="px-6 pb-8 pt-2">
+          <h3 id="add-photo-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
+            Add a photo
+          </h3>
+          <div className="mt-4 flex flex-col gap-2">
+            {(
+              [
+                { icon: Camera, label: 'Camera', hint: 'Take one now', source: 'camera' },
+                { icon: ImagePlus, label: 'Library', hint: 'Pick from your photos', source: 'library' },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() => pickPhotoFile('add', opt.source)}
+                className="flex min-h-[52px] items-center gap-3 rounded-2xl px-4 text-left transition-colors duration-fast"
+                style={{ background: 'var(--field)' }}
+              >
+                <opt.icon size={20} style={{ color: 'var(--text)' }} aria-hidden="true" />
+                <span>
+                  <span className="t-button block" style={{ color: 'var(--text)' }}>
+                    {opt.label}
+                  </span>
+                  <span className="t-caption block" style={{ color: 'var(--text-secondary)' }}>
+                    {opt.hint}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </GlassSheet>
+
+      {/* ── Edit-photo sheet — Replace / Make main / Remove ─────────── */}
+      <GlassSheet
+        open={typeof photoSheet === 'number'}
+        onClose={() => setPhotoSheet(null)}
+        labelledBy="edit-photo-title"
+      >
+        <div className="px-6 pb-8 pt-2">
+          <h3 id="edit-photo-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
+            Photo options
+          </h3>
+          <div className="mt-4 flex flex-col gap-2">
+            {(
+              [
+                {
+                  label: 'Replace',
+                  action: () => typeof photoSheet === 'number' && pickPhotoFile(photoSheet, 'library'),
+                },
+                {
+                  label: 'Take a new one',
+                  action: () => typeof photoSheet === 'number' && pickPhotoFile(photoSheet, 'camera'),
+                },
+                {
+                  label: 'Make main',
+                  action: () => {
+                    if (typeof photoSheet === 'number') makeMain(photoSheet);
+                    setPhotoSheet(null);
+                  },
+                },
+                {
+                  label: 'Remove',
+                  danger: true,
+                  action: () => typeof photoSheet === 'number' && void removeRealPhoto(photoSheet),
+                },
+              ] as { label: string; action: () => void; danger?: boolean }[]
+            ).map((opt) => (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={opt.action}
+                className="flex min-h-[52px] items-center rounded-2xl px-4 text-left transition-colors duration-fast"
+                style={{ background: 'var(--field)' }}
+              >
+                <span
+                  className="t-button"
+                  style={{ color: opt.danger ? 'var(--danger)' : 'var(--text)' }}
+                >
+                  {opt.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </GlassSheet>
 
       {/* ── Goal sheet — edit weekly goal (stepper 1–3) ────────────── */}
       <GlassSheet open={goalOpen} onClose={() => setGoalOpen(false)} labelledBy="goal-title">

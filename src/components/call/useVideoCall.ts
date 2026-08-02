@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { trpc } from '@/providers/trpc';
+import { cameraErrorMessage } from '@/lib/cameraCheck';
 
 /**
  * useVideoCall — real WebRTC 1:1 call over tRPC polling signaling.
@@ -22,6 +23,7 @@ const RTC_CONFIG: RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
+/** @deprecated use cameraErrorMessage() from @/lib/cameraCheck — kept for imports */
 export const CAMERA_ERROR = 'Camera unavailable — check browser permissions';
 
 export function useVideoCall({
@@ -189,7 +191,7 @@ export function useVideoCall({
           await sendSignal({ type: 'offer', data: offer });
         }
       } catch {
-        if (!cancelled) setError(CAMERA_ERROR);
+        if (!cancelled) setError(cameraErrorMessage());
       }
     })();
     return () => {

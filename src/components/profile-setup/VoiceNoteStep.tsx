@@ -1,46 +1,84 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, animate, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
-import { Mic, Play, RotateCcw, Square } from 'lucide-react';
+import { motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
+import { Mic, Play, RotateCcw, Square, TriangleAlert } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import { Block, FlowChip } from '@/components/flow/controls';
+import { useAuth } from '@/hooks/useAuth';
+import { trpc } from '@/providers/trpc';
+import { isMediaCaptureUnavailable, micErrorMessage } from '@/lib/cameraCheck';
 import type { ProfileSetupDraft } from './draft';
 
 /**
  * VoiceNoteStep — profile-create.md §4 (optional)
- * Glass card: t-title-sm "Add your voice" + caption. Waveform recorder: 48
- * vertical SVG bars (--text 0.3 idle); recording animates bar height 8–28px
- * (simulated amplitude); on playback the played portion turns violet (overlay
- * clipped by a motion-value width — 60fps transform, no re-render). Controls:
- * record (violet disc) / play / redo. Recorded → duration micro label
- * "0:17 / 0:20" + "Sounds great" toast on save.
+ * REAL MediaRecorder capture (mime fallback webm/opus → webm → mp4 → aac),
+ * 60s hard cap. The violet fill sweeps the waveform with ACTUAL recording
+ * time; playback is the recorded blob via <audio>. Saved as a data URL
+ * (≤1.2M chars — larger is rejected with an error) into profile.voiceNoteUrl.
+ * Mic unavailable → honest blocked/permissions copy, no fake recording.
  */
 
 const BAR_COUNT = 48;
-const MAX_SECONDS = 20;
+const MAX_SECONDS = 60;
+const MAX_DATAURL_CHARS = 1_200_000;
 const PROMPT_CHIPS = ['Introduce yourself in one breath', 'Describe your perfect Sunday'];
 
 type Phase = 'idle' | 'recording' | 'recorded' | 'playing';
 
 function fmt(seconds: number): string {
   const s = Math.max(0, Math.round(seconds));
-  return `0:${String(s).padStart(2, '0')}`;
+  const m = Math.floor(s / 60);
+  return `${m}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function pickAudioMime(): string | undefined {
+  if (typeof MediaRecorder === 'undefined') return undefined;
+  for (const t of ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac']) {
+    if (MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return undefined;
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error('read failed'));
+    reader.readAsDataURL(blob);
+  });
 }
 
 export default function VoiceNoteStep({
   draft,
   update,
   onToast,
+  savedVoiceUrl,
 }: {
   draft: ProfileSetupDraft;
   update: (patch: Partial<ProfileSetupDraft>) => void;
   onToast: (message: string) => void;
+  /** voice note already on the backend (data URL) — enables playback on revisit */
+  savedVoiceUrl?: string | null;
 }) {
   const reduced = useReducedMotion();
+  const { isAuthenticated } = useAuth();
+  const upsert = trpc.profile.upsert.useMutation();
+
+  /* playback source: this session's recording → backend data URL → nothing */
+  const playableSrc =
+    draft.voiceNoteData ??
+    (savedVoiceUrl && savedVoiceUrl.startsWith('data:') ? savedVoiceUrl : null);
+
   const [phase, setPhase] = useState<Phase>(draft.voiceRecorded ? 'recorded' : 'idle');
   const [elapsed, setElapsed] = useState(draft.voiceSeconds || 0);
   const [prompt, setPrompt] = useState<string | null>(null);
+  const [micError, setMicError] = useState<string | null>(null);
+
+  const streamRef = useRef<MediaStream | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const startedAtRef = useRef(0);
   const timerRef = useRef<number | null>(null);
-  const playbackRef = useRef<{ stop: () => void } | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const playhead = useMotionValue(0);
   /* clip the violet "played" layer from the right as playback advances */
   const playClip = useTransform(playhead, (v) => `inset(0 ${(1 - v) * 100}% 0 0)`);
@@ -60,17 +98,60 @@ export default function VoiceNoteStep({
     [],
   );
 
-  useEffect(() => () => {
-    if (timerRef.current) window.clearInterval(timerRef.current);
-    playbackRef.current?.stop();
-  }, []);
+  const stopStream = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  };
 
-  const startRecording = () => {
+  useEffect(
+    () => () => {
+      if (timerRef.current) window.clearInterval(timerRef.current);
+      const rec = recorderRef.current;
+      if (rec && rec.state !== 'inactive') rec.stop();
+      stopStream();
+      audioRef.current?.pause();
+    },
+    [],
+  );
+
+  /* ---- real recording ---- */
+  const startRecording = async () => {
+    setMicError(null);
+    if (isMediaCaptureUnavailable() || typeof MediaRecorder === 'undefined') {
+      setMicError(micErrorMessage());
+      return;
+    }
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      setMicError(micErrorMessage());
+      return;
+    }
+    streamRef.current = stream;
+    const mime = pickAudioMime();
+    let rec: MediaRecorder;
+    try {
+      rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    } catch {
+      stopStream();
+      setMicError(micErrorMessage());
+      return;
+    }
+    chunksRef.current = [];
+    rec.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data);
+    };
+    rec.onstop = () => {
+      void finalizeRecording(rec.mimeType || mime || 'audio/webm');
+    };
+    recorderRef.current = rec;
+    startedAtRef.current = Date.now();
     setElapsed(0);
     setPhase('recording');
-    const started = Date.now();
+    rec.start(250);
     timerRef.current = window.setInterval(() => {
-      const s = (Date.now() - started) / 1000;
+      const s = (Date.now() - startedAtRef.current) / 1000;
       if (s >= MAX_SECONDS) stopRecording();
       else setElapsed(s);
     }, 250);
@@ -81,31 +162,77 @@ export default function VoiceNoteStep({
       window.clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    setElapsed((current) => {
-      const seconds = Math.min(MAX_SECONDS, Math.max(1, Math.round(current)));
-      update({ voiceRecorded: true, voiceSeconds: seconds });
-      onToast('Sounds great');
-      return seconds;
-    });
-    setPhase('recorded');
+    const rec = recorderRef.current;
+    if (rec && rec.state !== 'inactive') rec.stop();
+    stopStream();
   };
 
+  const finalizeRecording = async (mimeType: string) => {
+    const seconds = Math.min(
+      MAX_SECONDS,
+      Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000)),
+    );
+    const blob = new Blob(chunksRef.current, { type: mimeType });
+    chunksRef.current = [];
+    try {
+      const dataUrl = await blobToDataUrl(blob);
+      if (dataUrl.length > MAX_DATAURL_CHARS) {
+        setPhase('idle');
+        setElapsed(0);
+        onToast('That recording is too large — try a shorter one.');
+        return;
+      }
+      update({ voiceRecorded: true, voiceSeconds: seconds, voiceNoteData: dataUrl });
+      setElapsed(seconds);
+      setPhase('recorded');
+      onToast('Sounds great');
+      /* signed-in: persist immediately so the data URL never needs localStorage */
+      if (isAuthenticated) {
+        try {
+          await upsert.mutateAsync({ voiceNoteUrl: dataUrl });
+        } catch {
+          onToast("Couldn't save your voice note — it's kept in this session.");
+        }
+      }
+    } catch {
+      setPhase('idle');
+      onToast("Couldn't read that recording — try again.");
+    }
+  };
+
+  /* ---- playback of the actual recorded audio ---- */
   const play = () => {
-    setPhase('playing');
+    if (!playableSrc) return;
+    let audio = audioRef.current;
+    if (!audio || audio.src !== playableSrc) {
+      audio?.pause();
+      const next = new Audio(playableSrc);
+      audioRef.current = next;
+      next.addEventListener('timeupdate', () => {
+        if (next.duration > 0) playhead.set(next.currentTime / next.duration);
+      });
+      next.addEventListener('ended', () => {
+        setPhase('recorded');
+        playhead.set(0);
+      });
+      audio = next;
+    }
     playhead.set(0);
-    playbackRef.current = animate(playhead, 1, {
-      duration: Math.max(1, elapsed),
-      ease: 'linear',
-      onComplete: () => setPhase('recorded'),
-    });
+    setPhase('playing');
+    void audio.play().catch(() => setPhase('recorded'));
   };
 
   const redo = () => {
+    audioRef.current?.pause();
+    audioRef.current = null;
     playhead.set(0);
-    update({ voiceRecorded: false, voiceSeconds: 0 });
+    update({ voiceRecorded: false, voiceSeconds: 0, voiceNoteData: null });
     setElapsed(0);
     setPhase('idle');
   };
+
+  /* violet fill sweeps with ACTUAL elapsed recording time */
+  const recordedFraction = phase === 'recording' ? Math.min(1, elapsed / MAX_SECONDS) : 0;
 
   return (
     <div className="px-5 pt-6 pb-8">
@@ -116,7 +243,7 @@ export default function VoiceNoteStep({
               Add your voice
             </h1>
             <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-              20 seconds. People reply 2× more when they hear you.
+              Up to 60 seconds. People reply 2× more when they hear you.
             </p>
 
             {/* prompt suggestion chips */}
@@ -151,6 +278,9 @@ export default function VoiceNoteStep({
                 {bars.map((bar, i) => {
                   const x = i * 7 + 1.5;
                   const recording = phase === 'recording' && !reduced;
+                  /* bars up to the live elapsed fraction turn violet — the
+                     sweep tracks real recording time, not a simulation */
+                  const swept = phase === 'recording' && i / BAR_COUNT < recordedFraction;
                   return (
                     <motion.rect
                       key={i}
@@ -159,8 +289,8 @@ export default function VoiceNoteStep({
                       rx={2}
                       y={20 - bar.idle / 2}
                       height={bar.idle}
-                      fill="var(--text)"
-                      opacity={phase === 'idle' ? 0.3 : 0.45}
+                      fill={swept ? 'var(--violet)' : 'var(--text)'}
+                      opacity={phase === 'idle' ? 0.3 : swept ? 1 : 0.45}
                       style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
                       animate={
                         recording
@@ -200,13 +330,25 @@ export default function VoiceNoteStep({
               )}
             </div>
 
+            {/* honest mic-blocked state — no fake recording */}
+            {micError && (
+              <p
+                className="t-caption mt-3 flex items-start gap-1.5 rounded-[12px] px-3 py-2"
+                style={{ background: 'var(--field)', color: 'var(--warn)' }}
+                role="alert"
+              >
+                <TriangleAlert size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+                {micError}
+              </p>
+            )}
+
             {/* controls + duration */}
             <div className="mt-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {/* record / stop — violet disc */}
                 <button
                   type="button"
-                  onClick={phase === 'recording' ? stopRecording : startRecording}
+                  onClick={() => (phase === 'recording' ? stopRecording() : void startRecording())}
                   disabled={phase === 'playing'}
                   aria-label={phase === 'recording' ? 'Stop recording' : 'Record voice note'}
                   className="flex h-14 w-14 items-center justify-center rounded-full text-white transition-transform duration-fast active:scale-95 disabled:opacity-40"
@@ -220,16 +362,18 @@ export default function VoiceNoteStep({
                 </button>
                 {(phase === 'recorded' || phase === 'playing') && (
                   <>
-                    <button
-                      type="button"
-                      onClick={play}
-                      disabled={phase === 'playing'}
-                      aria-label="Play voice note"
-                      className="flex h-11 w-11 items-center justify-center rounded-full transition-opacity duration-fast active:opacity-70 disabled:opacity-40"
-                      style={{ background: 'var(--field)', color: 'var(--text)' }}
-                    >
-                      <Play size={18} fill="currentColor" aria-hidden="true" />
-                    </button>
+                    {playableSrc && (
+                      <button
+                        type="button"
+                        onClick={play}
+                        disabled={phase === 'playing'}
+                        aria-label="Play voice note"
+                        className="flex h-11 w-11 items-center justify-center rounded-full transition-opacity duration-fast active:opacity-70 disabled:opacity-40"
+                        style={{ background: 'var(--field)', color: 'var(--text)' }}
+                      >
+                        <Play size={18} fill="currentColor" aria-hidden="true" />
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={redo}

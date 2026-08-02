@@ -13,10 +13,12 @@ import ConstellationStep from '@/components/profile-setup/ConstellationStep';
 import ReflectionsStep, { ReflectionsFlow } from '@/components/profile-setup/ReflectionsStep';
 import { MissingSheet, PreviewOverlay, PublishOverlay } from '@/components/profile-setup/overlays';
 import {
+  demoPhotoSlots,
   emptyProfileSetupDraft,
   loadProfileSetupDraft,
   profileStrength,
   saveProfileSetupDraft,
+  type PhotoSlot,
   type ProfileSetupDraft,
 } from '@/components/profile-setup/draft';
 import { loadOnboardingDraft } from '@/components/onboarding/draft';
@@ -83,7 +85,7 @@ function StrengthMeter({ pct }: { pct: number }) {
 
 export default function ProfileSetup() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [draft, setDraft] = useState<ProfileSetupDraft>(() =>
     typeof window === 'undefined' ? emptyProfileSetupDraft : loadProfileSetupDraft(),
@@ -99,12 +101,24 @@ export default function ProfileSetup() {
   const pct = profileStrength(draft);
 
   const update = useCallback((patch: Partial<ProfileSetupDraft>) => {
-    setDraft((d) => {
-      const next = { ...d, ...patch };
-      saveProfileSetupDraft(next);
-      return next;
-    });
+    setDraft((d) => ({ ...d, ...patch }));
   }, []);
+
+  /* Draft autosave — surface quota/write failures (iOS ~5MB) instead of
+     silently losing the draft and reverting to an empty/stock builder. */
+  const skipFirstSave = useRef(true);
+  useEffect(() => {
+    if (skipFirstSave.current) {
+      skipFirstSave.current = false;
+      return;
+    }
+    if (!saveProfileSetupDraft(draft)) {
+      setToast({
+        id: Date.now(),
+        message: "Couldn't save your draft on this device — keep this tab open.",
+      });
+    }
+  }, [draft]);
 
   const goTo = useCallback(
     (next: number) => {
@@ -142,6 +156,31 @@ export default function ProfileSetup() {
     update({ goal: profileGoal as ProfileSetupDraft['goal'] });
   }, [profileGoal, draft.goalTouched, draft.goal, update]);
 
+  /* P0-2: seed photos from the backend profile (source of truth) so "Edit
+     profile" never clobbers real photos with localStorage leftovers — unless
+     the user has unsaved picks from THIS device session (photosTouched). */
+  const backendPhotos = meQuery.data?.profile?.photos;
+  useEffect(() => {
+    if (!backendPhotos || draft.photosTouched) return;
+    const current = draft.photos.filter((s) => s.photo).map((s) => s.photo as string);
+    const same =
+      current.length === backendPhotos.length &&
+      current.every((p, i) => p === backendPhotos[i]);
+    if (same) return;
+    const slots: PhotoSlot[] = Array.from({ length: 6 }, (_, i) => ({
+      id: `s${i + 1}`,
+      photo: backendPhotos[i] ?? null,
+    }));
+    update({ photos: slots });
+  }, [backendPhotos, draft.photosTouched, draft.photos, update]);
+
+  /* Demo mode ONLY: signed-out visitors get the stock photos to play with. */
+  useEffect(() => {
+    if (authLoading || isAuthenticated || draft.photosTouched) return;
+    if (draft.photos.some((s) => s.photo)) return;
+    update({ photos: demoPhotoSlots() });
+  }, [authLoading, isAuthenticated, draft.photosTouched, draft.photos, update]);
+
   /* Throws on failure — callers decide whether to advance (per-step continue
      tolerates offline; publish surfaces an honest error state). */
   const saveStep = useCallback(
@@ -162,9 +201,14 @@ export default function ProfileSetup() {
           familyPlans: draft.family || null,
         });
       } else if (which === 4) {
-        await upsert.mutateAsync({
-          voiceNoteUrl: draft.voiceRecorded ? 'resonance://voice-notes/demo' : null,
-        });
+        if (draft.voiceNoteData) {
+          /* real recording (data URL) — persisted to the profile field */
+          await upsert.mutateAsync({ voiceNoteUrl: draft.voiceNoteData });
+        } else if (!draft.voiceRecorded) {
+          await upsert.mutateAsync({ voiceNoteUrl: null });
+        }
+        /* voiceRecorded without data: recorded earlier + already persisted
+           immediately — don't clobber the backend value */
       } else if (which === 5) {
         await upsert.mutateAsync({
           constellation: draft.constellation
@@ -186,6 +230,16 @@ export default function ProfileSetup() {
   );
 
   const continueFrom = (which: number) => {
+    if (which === 1) {
+      /* Photo step: if the save fails, stay put with the error toast — never
+         advance past photos that didn't actually persist. */
+      saveStep(1)
+        .then(() => goTo(2))
+        .catch(() =>
+          setToast({ id: Date.now(), message: "Couldn't save your photos — try again." }),
+        );
+      return;
+    }
     saveStep(which).catch(() =>
       setToast({ id: Date.now(), message: "Couldn't save — your draft is safe on this device." }),
     );
@@ -303,7 +357,13 @@ export default function ProfileSetup() {
             exit={{ opacity: 0, x: -64 * dir }}
             transition={{ duration: 0.32, ease: EASE_OUT }}
           >
-            {step === 1 && <PhotosStep draft={draft} update={update} />}
+            {step === 1 && (
+              <PhotosStep
+                draft={draft}
+                update={update}
+                onToast={(message) => setToast({ id: Date.now(), message })}
+              />
+            )}
             {step === 2 && <PromptsStep draft={draft} update={update} />}
             {step === 3 && <DesiresStep draft={draft} update={update} />}
             {step === 4 && (
@@ -311,6 +371,7 @@ export default function ProfileSetup() {
                 draft={draft}
                 update={update}
                 onToast={(message) => setToast({ id: Date.now(), message })}
+                savedVoiceUrl={profile?.voiceNoteUrl ?? null}
               />
             )}
             {step === 5 && <ConstellationStep draft={draft} update={update} />}
