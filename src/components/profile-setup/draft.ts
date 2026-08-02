@@ -86,23 +86,10 @@ export const emptyProfileSetupDraft: ProfileSetupDraft = {
      the source of truth and seeds these slots once profile.me loads. */
   photos: emptyPhotoSlots.map((s) => ({ ...s })),
   photosTouched: false,
-  prompts: [
-    {
-      question: 'The way to my heart is…',
-      answer:
-        'A farmers-market tomato, good olive oil, and someone who reads the whole menu out loud.',
-    },
-    {
-      question: 'Green flags I look for…',
-      answer:
-        "You text back when you say you will. You have a thing you're nerdy about. You're kind to waiters.",
-    },
-    {
-      question: 'Two truths and a lie:',
-      answer:
-        "I've brewed coffee in 9 countries. I can wiggle my ears. I once DJ'd a wedding by accident.",
-    },
-  ],
+  /* Start EMPTY — real users write their own answers. Demo prompt answers
+     must never be pre-filled: anything present here publishes to the live
+     profile on save. */
+  prompts: [],
   goal: 'explore',
   goalTouched: false,
   status: 'Single',

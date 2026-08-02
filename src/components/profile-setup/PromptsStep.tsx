@@ -22,28 +22,101 @@ const MAX_PROMPTS = 5;
 const MAX_ANSWER = 140;
 
 const PROMPT_BANK: { question: string; moods: string[] }[] = [
-  { question: 'The way to my heart is…', moods: ['Honest', 'Deep'] },
-  { question: 'Two truths and a lie:', moods: ['Playful'] },
-  { question: 'My most controversial food opinion…', moods: ['Playful', 'Spicy'] },
-  { question: 'A perfect Sunday looks like…', moods: ['Deep'] },
-  { question: "I'm unreasonably good at…", moods: ['Playful'] },
+  { question: "What I'm actually looking for…", moods: ['Honest', 'Deep'] },
+  { question: 'A relationship feels right when…', moods: ['Deep', 'Honest'] },
+  { question: 'The way I show love is…', moods: ['Deep'] },
+  { question: 'The lesson my last relationship taught me…', moods: ['Honest', 'Deep'] },
+  { question: "I'll know it's real when…", moods: ['Deep'] },
+  { question: 'My non-negotiable is…', moods: ['Honest'] },
+  { question: 'My life in five years looks like…', moods: ['Deep'] },
   { question: 'Green flags I look for…', moods: ['Honest'] },
+  { question: 'The way to my heart is…', moods: ['Honest', 'Playful'] },
   { question: "We'll get along if…", moods: ['Honest', 'Spicy'] },
-  { question: 'My simple pleasure is…', moods: ['Deep'] },
+  { question: "A first date I'll actually say yes to…", moods: ['Playful', 'Spicy'] },
+  { question: 'A perfect Sunday looks like…', moods: ['Playful', 'Deep'] },
+  { question: 'Home feels like…', moods: ['Deep'] },
+  { question: 'My simple pleasure is…', moods: ['Playful', 'Deep'] },
+  { question: "I'm unreasonably good at…", moods: ['Playful'] },
+  { question: 'Two truths and a lie:', moods: ['Playful'] },
 ];
 
 const MOODS = ['Playful', 'Honest', 'Spicy', 'Deep'];
 
 const SUGGESTIONS: Record<string, string[]> = {
-  'The way to my heart is…': [
-    'Cooking something ambitious and laughing when it flops.',
-    'Long walks that accidentally become 12km.',
-    'Remembering the small stuff I mentioned once.',
+  "What I'm actually looking for…": [
+    'A partner, not a project. Someone building a life, not escaping one.',
+    'Slow on purpose: real conversation, then a real date, then we see.',
+    'One person, honest effort, and a reason to delete this app.',
+  ],
+  'A relationship feels right when…': [
+    'Silence is comfortable and hard talks end with us closer, not scorekeeping.',
+    'We both leave the argument liking each other more, not less.',
+    'I never have to translate myself. It just lands.',
+  ],
+  'The way I show love is…': [
+    'Acts of service — I notice what you need before you ask.',
+    'Words. You will always know exactly where you stand with me.',
+    'Time. My calendar is the honestest thing I own.',
+  ],
+  'The lesson my last relationship taught me…': [
+    'Chemistry is common. Compatibility is work. I want both.',
+    'Say the hard thing early — it only gets more expensive.',
+    'How someone fights tells you more than how they flirts.',
+  ],
+  "I'll know it's real when…": [
+    'I stop performing. When the unfiltered version of me gets to stay.',
+    'Bad days bring us closer instead of giving us an exit.',
+    'Planning a year ahead feels easy, not scary.',
+  ],
+  'My non-negotiable is…': [
+    'Honesty when it costs something. Everything else is negotiable.',
+    'Kindness to strangers — how you treat waiters is who you are.',
+    'You have your own life. I want a partner, not a dependent.',
+  ],
+  'My life in five years looks like…': [
+    'A home with people I chose in it. Location flexible, people not.',
+    'Building something — a family, a business, a garden. Probably all three.',
+    'Slower mornings, bigger table, same person across from me.',
   ],
   'Green flags I look for…': [
     'You ask follow-up questions. You tip well. You mean what you say.',
     'Curiosity over judgement, every single time.',
     'You introduce me to your friends like you mean it.',
+  ],
+  'The way to my heart is…': [
+    'Cooking something ambitious and laughing when it flops.',
+    'Long walks that accidentally become 12km.',
+    'Remembering the small stuff I mentioned once.',
+  ],
+  "We'll get along if…": [
+    "You can disagree without making it a courtroom.",
+    'You laugh at yourself first and often.',
+    'You actually want to meet in person within the week.',
+  ],
+  "A first date I'll actually say yes to…": [
+    'Coffee that turns into a walk that turns into dinner on accident.',
+    'Something with an out: one drink, great conversation, no pressure.',
+    'Cooking something together — teamwork with snacks.',
+  ],
+  'A perfect Sunday looks like…': [
+    'Slow morning, long brunch, nowhere to be until Monday.',
+    'Trail in the morning, takeout and a movie by eight.',
+    'Farmers market, cooking together, phones in a drawer.',
+  ],
+  'Home feels like…': [
+    'The smell of something cooking and someone glad I walked in.',
+    'Where I can be fully quiet without it being weird.',
+    'A place I want to bring people, not escape from.',
+  ],
+  'My simple pleasure is…': [
+    'First coffee of the day, outside, no phone.',
+    'The produce section of a good market on a Saturday.',
+    'Fresh sheets, open window, nowhere to be.',
+  ],
+  "I'm unreasonably good at…": [
+    'Remembering what you said three weeks ago.',
+    'Finding the best thing on any menu in under a minute.',
+    'Making friends with every dog at the party.',
   ],
   'Two truths and a lie:': [
     "I've swum with bioluminescence. I hate cilantro. I met my best friend on a plane.",
