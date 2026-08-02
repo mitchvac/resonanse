@@ -49,7 +49,7 @@ export default function DoneStep({ onContinue }: { onContinue: () => void }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.37, duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
       >
-        Photos, prompts, and your desires. This is the part that makes the queue good.
+        Photos, sentence starters, and your desires. This is the part that makes the queue good.
       </motion.p>
 
       <motion.div

@@ -185,7 +185,7 @@ export function PublishOverlay({
               >
                 <span className="glass-content flex h-full items-end p-4">
                   <span className="t-micro" style={{ color: 'var(--text)' }}>
-                    {slot === 0 ? 'PHOTOS' : slot < 0 ? 'PROMPTS' : 'INTENT'}
+                    {slot === 0 ? 'PHOTOS' : slot < 0 ? 'STARTERS' : 'INTENT'}
                   </span>
                 </span>
               </motion.div>

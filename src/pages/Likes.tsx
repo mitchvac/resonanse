@@ -28,7 +28,7 @@ const GRID_CAP = 6;
 function contextLabel(like: ReceivedLike): string {
   if (like.targetType === 'prompt' && like.targetRef) {
     const ref = like.targetRef.length > 22 ? `${like.targetRef.slice(0, 22)}…` : like.targetRef;
-    return `Liked your prompt '${ref}'`;
+    return `Liked your answer '${ref}'`;
   }
   if (like.targetType === 'photo') return 'Liked your photo';
   return 'Liked your profile';

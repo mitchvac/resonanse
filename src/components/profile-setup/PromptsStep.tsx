@@ -8,13 +8,15 @@ import { Block, FlowTextArea, SegmentedControl, StaggerGroup } from '@/component
 import type { ProfileSetupDraft, PromptEntry } from './draft';
 
 /**
- * PromptsStep — profile-create.md §2
- * t-heading "Answer 3–5 prompts". Chosen prompts render as GlassCards
- * (edge:none, rings only): question as eyebrow (t-caption 700 var(--text)),
- * answer TextArea (t-value, 140-char cap, live counter fades in only when
- * typing). "+ Add a prompt" opens the picker sheet: search + mood segmented
- * control (Playful / Honest / Spicy / Deep). Sparkle per card → 3 AI
- * suggestion chips sliding up staggered 60ms. Cards stagger 80ms.
+ * PromptsStep — profile-create.md §2 — "Finish the sentence"
+ * The mechanic: every starter is an unfinished sentence ("After a long day
+ * I like to…"); the user writes the ending. Endings are what people comment
+ * on. Chosen starters render as GlassCards (edge:none, rings only): starter
+ * as eyebrow (t-caption 700 var(--text)), ending TextArea (t-value, 140-char
+ * cap, live counter fades in only when typing). "+ Add a starter" opens the
+ * picker sheet: search + mood segmented control (Playful / Honest / Spicy /
+ * Deep). Sparkle per card → 3 example endings sliding up staggered 60ms.
+ * Cards stagger 80ms.
  */
 
 const EASE_SPRING = [0.34, 1.56, 0.64, 1] as [number, number, number, number];
@@ -22,6 +24,9 @@ const MAX_PROMPTS = 5;
 const MAX_ANSWER = 140;
 
 const PROMPT_BANK: { question: string; moods: string[] }[] = [
+  { question: 'After a long day I like to…', moods: ['Playful', 'Honest'] },
+  { question: 'Life is like…', moods: ['Playful', 'Deep'] },
+  { question: 'My favorite color is…', moods: ['Playful'] },
   { question: "What I'm actually looking for…", moods: ['Honest', 'Deep'] },
   { question: 'A relationship feels right when…', moods: ['Deep', 'Honest'] },
   { question: 'The way I show love is…', moods: ['Deep'] },
@@ -43,6 +48,21 @@ const PROMPT_BANK: { question: string; moods: string[] }[] = [
 const MOODS = ['Playful', 'Honest', 'Spicy', 'Deep'];
 
 const SUGGESTIONS: Record<string, string[]> = {
+  'After a long day I like to…': [
+    'Cook something real, music on, phone face-down in the kitchen.',
+    'A long walk with no destination — I always come back with a better mood.',
+    'Gym first, then a show I pretend I will only watch one episode of.',
+  ],
+  'Life is like…': [
+    'A road trip — the detours end up being the story you tell.',
+    'Cooking without a recipe: trust your taste, adjust as you go.',
+    'A playlist on shuffle — you get what you get, so dance anyway.',
+  ],
+  'My favorite color is…': [
+    'Sunset orange — the ten minutes where the whole day forgives you.',
+    'Deep green. Forests, not traffic lights.',
+    'Black coffee counts as a color and I will die on this hill.',
+  ],
   "What I'm actually looking for…": [
     'A partner, not a project. Someone building a life, not escaping one.',
     'Slow on purpose: real conversation, then a real date, then we see.',
@@ -169,10 +189,10 @@ export default function PromptsStep({
     <div className="px-5 pt-6 pb-8">
       <Block>
         <h1 className="t-heading" style={{ color: 'var(--text-ink)' }}>
-          Answer 3–5 prompts
+          Finish the sentence
         </h1>
         <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-          This is what people comment on. Specific beats clever.
+          Pick 3–5 starters and finish them your way. Your endings are what people comment on — specific beats clever.
         </p>
       </Block>
 
@@ -198,7 +218,7 @@ export default function PromptsStep({
                     <button
                       type="button"
                       onClick={() => setPrompts(draft.prompts.filter((_, j) => j !== i))}
-                      aria-label={`Remove prompt “${prompt.question}”`}
+                      aria-label={`Remove starter “${prompt.question}”`}
                       className="flex h-9 w-9 items-center justify-center rounded-full transition-opacity duration-fast active:opacity-70"
                       style={{ color: 'var(--text-secondary)' }}
                     >
@@ -216,10 +236,10 @@ export default function PromptsStep({
                         ),
                       )
                     }
-                    placeholder="Your answer — make it specific."
+                    placeholder="Finish it — make it specific."
                     rows={3}
                     maxLength={MAX_ANSWER}
-                    aria-label={`Answer to “${prompt.question}”`}
+                    aria-label={`Your ending for “${prompt.question}”`}
                   />
                 </div>
 
@@ -268,20 +288,20 @@ export default function PromptsStep({
           <Block>
             <BtnGlass onClick={() => setPickerOpen(true)} className="w-full">
               <Plus size={18} aria-hidden="true" />
-              Add a prompt
+              Add a starter
             </BtnGlass>
           </Block>
         )}
       </StaggerGroup>
 
-      {/* Prompt picker sheet — search + mood segmented control */}
+      {/* Starter picker sheet — search + mood segmented control */}
       <GlassSheet open={pickerOpen} onClose={() => setPickerOpen(false)} labelledBy="picker-title">
         <div className="px-5 pb-8 pt-2">
           <h2 id="picker-title" className="t-title-sm px-1" style={{ color: 'var(--text)' }}>
-            Pick a prompt
+            Pick a starter
           </h2>
           <div className="mt-3">
-            <SegmentedControl options={MOODS} value={mood} onChange={setMood} ariaLabel="Prompt mood" />
+            <SegmentedControl options={MOODS} value={mood} onChange={setMood} ariaLabel="Starter mood" />
           </div>
           <div
             className="mt-3 flex items-center gap-2 rounded-2xl px-3.5"
@@ -291,8 +311,8 @@ export default function PromptsStep({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search prompts"
-              aria-label="Search prompts"
+              placeholder="Search starters"
+              aria-label="Search starters"
               className="t-value h-11 w-full bg-transparent outline-none"
               style={{ color: 'var(--text)' }}
             />
@@ -300,7 +320,7 @@ export default function PromptsStep({
           <div className="mt-3 flex max-h-[320px] flex-col gap-2 overflow-y-auto no-scrollbar">
             {available.length === 0 && (
               <p className="t-caption px-1 py-4 text-center" style={{ color: 'var(--text-secondary)' }}>
-                No prompts here yet — try another mood.
+                No starters here — try another mood.
               </p>
             )}
             {available.map((p) => (

@@ -255,7 +255,7 @@ export default function ProfileSetup() {
     }
     if (answeredPrompts.length < 3) {
       const n = 3 - answeredPrompts.length;
-      items.push(`Answer ${n} more prompt${n === 1 ? '' : 's'} (3 minimum)`);
+      items.push(`Finish ${n} more sentence${n === 1 ? '' : 's'} (3 minimum)`);
     }
     return items;
   }, [filledPhotos, answeredPrompts]);
