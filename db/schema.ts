@@ -60,6 +60,31 @@ export const passwordCredentials = mysqlTable(
 export type PasswordCredential = typeof passwordCredentials.$inferSelect;
 export type InsertPasswordCredential = typeof passwordCredentials.$inferInsert;
 
+/**
+ * Single-use password reset tokens. Only the sha256 of the token is stored —
+ * the raw token lives solely in the emailed link.
+ */
+export const passwordResetTokens = mysqlTable(
+  "passwordResetTokens",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    tokenHash: varchar("tokenHash", { length: 128 }).notNull(),
+    expiresAt: timestamp("expiresAt").notNull(),
+    usedAt: timestamp("usedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("passwordResetTokens_tokenHash_unique").on(table.tokenHash),
+    index("passwordResetTokens_userId_idx").on(table.userId),
+  ],
+);
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
 // ── Resonance data model ───────────────────────────────────────────────
 
 export type ProfilePrompt = { question: string; answer: string };

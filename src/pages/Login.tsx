@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import GoogleMark from "@/components/GoogleMark";
 
 function getOAuthUrl() {
   const kimiAuthUrl = import.meta.env.VITE_KIMI_AUTH_URL;
@@ -24,15 +25,26 @@ export default function Login() {
         <CardHeader className="text-center">
           <CardTitle>Welcome</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <Button
-            className="w-full"
+            className="w-full min-h-[44px]"
             size="lg"
             onClick={() => {
               window.location.href = getOAuthUrl();
             }}
           >
             Sign in with Kimi
+          </Button>
+          <Button
+            className="w-full min-h-[44px]"
+            size="lg"
+            variant="outline"
+            onClick={() => {
+              window.location.href = "/api/auth/google";
+            }}
+          >
+            <GoogleMark size={18} />
+            Continue with Google
           </Button>
         </CardContent>
       </Card>

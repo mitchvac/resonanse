@@ -21,4 +21,15 @@ export const env = {
   merchantBtcAddress: process.env.MERCHANT_BTC_ADDRESS ?? "",
   // Owner gate for the treasury admin view.
   adminEmail: process.env.ADMIN_EMAIL ?? "",
+  // Public base URL of the app (e.g. https://resonance.example.com). Used to
+  // build absolute links in emails and OAuth redirect URIs. Falls back to the
+  // request origin when unset.
+  appUrl: process.env.APP_URL ?? "",
+  // Transactional email (Resend). Empty = email service not configured.
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  emailFrom: process.env.EMAIL_FROM ?? "",
+  // Google social login. Empty = provider not configured.
+  googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  googleRedirectUri: process.env.GOOGLE_REDIRECT_URI ?? "",
 };

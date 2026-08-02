@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import BrandMark from '@/components/BrandMark';
 import GlassCard from '@/components/GlassCard';
+import GoogleMark from '@/components/GoogleMark';
 import StageBackdrop from '@/components/StageBackdrop';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
+import { useAuth } from '@/hooks/useAuth';
 import { trpc } from '@/providers/trpc';
 import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
@@ -71,6 +73,17 @@ export default function SignIn() {
 
   const navigate = useNavigate();
   const utils = trpc.useUtils();
+  const [searchParams] = useSearchParams();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Friendly notice for OAuth handoff failures (e.g. provider not configured).
+  const oauthErrorCode = searchParams.get('error');
+  const oauthNotice =
+    oauthErrorCode === 'google-not-configured'
+      ? 'Google sign-in isn’t available yet — use email or Kimi instead.'
+      : oauthErrorCode === 'google-auth-failed'
+        ? 'Google sign-in didn’t complete. Try again, or use email or Kimi.'
+        : null;
 
   const onSuccess = async () => {
     await utils.invalidate();
@@ -117,6 +130,11 @@ export default function SignIn() {
       registerMutation.mutate({ email: email.trim(), password, name: name.trim() });
     }
   };
+
+  // Already signed in — no reason to sit on the auth screen.
+  if (!authLoading && isAuthenticated) {
+    return <Navigate to="/discover" replace />;
+  }
 
   return (
     <div className="relative flex min-h-[100dvh] items-center justify-center px-5 py-10">
@@ -232,6 +250,28 @@ export default function SignIn() {
               </span>
             </Field>
 
+            {mode === 'signin' && (
+              <div className="-mt-2 text-right">
+                <Link
+                  to="/forgot-password"
+                  className="t-caption inline-flex min-h-[44px] items-center transition-opacity duration-fast hover:opacity-70"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  Forgot password?
+                </Link>
+              </div>
+            )}
+
+            {oauthNotice && (
+              <p
+                className="t-caption rounded-2xl px-4 py-3 ring-1 ring-inset ring-[var(--ring-stroke)]"
+                role="status"
+                style={{ color: 'var(--text)' }}
+              >
+                {oauthNotice}
+              </p>
+            )}
+
             {serverError && (
               <p
                 className="t-caption rounded-2xl px-4 py-3 text-danger ring-1 ring-inset ring-[var(--danger)]/40"
@@ -264,9 +304,21 @@ export default function SignIn() {
             <span className="h-px flex-1" style={{ background: 'var(--ring-stroke)' }} />
           </div>
 
-          <BtnGlass to={LOGIN_PATH} className="w-full" ariaLabel="Continue with Kimi">
-            Continue with Kimi
-          </BtnGlass>
+          <div className="space-y-3">
+            <BtnGlass to={LOGIN_PATH} className="w-full" ariaLabel="Continue with Kimi">
+              Continue with Kimi
+            </BtnGlass>
+            <BtnGlass
+              onClick={() => {
+                window.location.href = '/api/auth/google';
+              }}
+              className="w-full"
+              ariaLabel="Continue with Google"
+            >
+              <GoogleMark size={18} />
+              Continue with Google
+            </BtnGlass>
+          </div>
         </GlassCard>
       </motion.div>
     </div>

@@ -1,6 +1,11 @@
-import { randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
+import {
+  createHash,
+  randomBytes,
+  scrypt as scryptCb,
+  timingSafeEqual,
+} from "node:crypto";
 import * as cookie from "cookie";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as schema from "@db/schema";
@@ -8,6 +13,7 @@ import { Session } from "@contracts/constants";
 import { createRouter, publicQuery } from "./middleware";
 import type { TrpcContext } from "./context";
 import { getSessionCookieOptions } from "./lib/cookies";
+import { EmailNotConfiguredError, sendPasswordResetEmail } from "./lib/email";
 import { env } from "./lib/env";
 import { signSessionToken } from "./kimi/session";
 import { findUserByUnionId, upsertUser } from "./queries/users";
@@ -89,18 +95,81 @@ async function mintSessionCookie(
 }
 
 const emailSchema = z.string().email().max(320);
+// Single source of truth for the password policy — register and reset must match.
+const passwordSchema = z.string().min(8).max(128);
+
+// ── In-memory rate limiting (fixed window) ────────────────────────────
+// Best-effort per-process throttle; move to a shared store if the server
+// ever runs more than one replica.
+const RATE_WINDOW_MS = 15 * 60 * 1000;
+const rateBuckets = new Map<string, number[]>();
+
+function rateLimitAllow(key: string, max: number): boolean {
+  const now = Date.now();
+  const hits = (rateBuckets.get(key) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  if (hits.length >= max) {
+    rateBuckets.set(key, hits);
+    return false;
+  }
+  hits.push(now);
+  rateBuckets.set(key, hits);
+  // Opportunistic cleanup so the map can't grow unbounded.
+  if (rateBuckets.size > 10_000) {
+    for (const [k, v] of rateBuckets) {
+      if (v.every((t) => now - t >= RATE_WINDOW_MS)) rateBuckets.delete(k);
+    }
+  }
+  return true;
+}
+
+function clientIp(req: Request): string {
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0]!.trim();
+  return "unknown";
+}
+
+function requestOrigin(req: Request): string {
+  const url = new URL(req.url);
+  const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
+  const host =
+    req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? url.host;
+  return `${proto}://${host}`;
+}
+
+function appBaseUrl(req: Request): string {
+  return (env.appUrl || requestOrigin(req)).replace(/\/$/, "");
+}
+
+const GENERIC_RESET_MESSAGE =
+  "If an account exists for that email, a reset link is on its way.";
+const INVALID_TOKEN_MESSAGE = "This reset link is invalid or has expired.";
+const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
+
+function sha256(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
 
 export const passwordAuthRouter = createRouter({
   register: publicQuery
     .input(
       z.object({
         email: emailSchema,
-        password: z.string().min(8).max(128),
+        password: passwordSchema,
         name: z.string().min(1).max(80),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const email = input.email.toLowerCase();
+      const ip = clientIp(ctx.req);
+      if (
+        !rateLimitAllow(`register:email:${email}`, 10) ||
+        !rateLimitAllow(`register:ip:${ip}`, 30)
+      ) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Too many attempts — try again in a few minutes",
+        });
+      }
       const existing = await getDb()
         .select({ id: schema.passwordCredentials.id })
         .from(schema.passwordCredentials)
@@ -163,6 +232,18 @@ export const passwordAuthRouter = createRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const email = input.email.toLowerCase();
+      const ip = clientIp(ctx.req);
+      if (
+        !rateLimitAllow(`login:email:${email}`, 10) ||
+        !rateLimitAllow(`login:ip:${ip}`, 30)
+      ) {
+        // Burn scrypt time so throttled logins are timing-indistinguishable.
+        await hashPassword(input.password);
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Too many attempts — try again in a few minutes",
+        });
+      }
       const rows = await getDb()
         .select({
           credential: schema.passwordCredentials,
@@ -205,5 +286,104 @@ export const passwordAuthRouter = createRouter({
 
       await mintSessionCookie(ctx, row.user.unionId);
       return { user: { ...row.user, lastSignInAt } };
+    }),
+
+  requestPasswordReset: publicQuery
+    .input(z.object({ email: emailSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const email = input.email.toLowerCase();
+      const ip = clientIp(ctx.req);
+      // Rate limits are enforced identically whether or not the account
+      // exists, and the response never reveals which case we hit.
+      if (
+        !rateLimitAllow(`reset:email:${email}`, 3) ||
+        !rateLimitAllow(`reset:ip:${ip}`, 10)
+      ) {
+        return { ok: true as const, message: GENERIC_RESET_MESSAGE };
+      }
+
+      const rows = await getDb()
+        .select({
+          credentialId: schema.passwordCredentials.id,
+          userId: schema.passwordCredentials.userId,
+        })
+        .from(schema.passwordCredentials)
+        .where(eq(schema.passwordCredentials.email, email))
+        .limit(1);
+      const row = rows.at(0);
+      if (!row) {
+        return { ok: true as const, message: GENERIC_RESET_MESSAGE };
+      }
+
+      const token = randomBytes(32).toString("base64url");
+      await getDb()
+        .insert(schema.passwordResetTokens)
+        .values({
+          userId: row.userId,
+          tokenHash: sha256(token),
+          expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+        });
+
+      const resetUrl = `${appBaseUrl(ctx.req)}/reset-password?token=${token}`;
+      try {
+        await sendPasswordResetEmail(email, resetUrl);
+      } catch (error) {
+        if (!(error instanceof EmailNotConfiguredError)) {
+          console.error("[password-reset] email send failed", error);
+        } else {
+          console.warn("[password-reset] email service not configured");
+        }
+        // Never leak config/delivery state to the client.
+      }
+      return { ok: true as const, message: GENERIC_RESET_MESSAGE };
+    }),
+
+  resetPassword: publicQuery
+    .input(
+      z.object({
+        token: z.string().min(1).max(512),
+        newPassword: passwordSchema,
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const tokenHash = sha256(input.token);
+      const invalid = () =>
+        new TRPCError({ code: "BAD_REQUEST", message: INVALID_TOKEN_MESSAGE });
+
+      const rows = await getDb()
+        .select()
+        .from(schema.passwordResetTokens)
+        .where(eq(schema.passwordResetTokens.tokenHash, tokenHash))
+        .limit(1);
+      const row = rows.at(0);
+      if (!row || row.usedAt || row.expiresAt.getTime() < Date.now()) {
+        throw invalid();
+      }
+
+      const passwordHash = await hashPassword(input.newPassword);
+      const now = new Date();
+
+      // Update the credential for this user (same scrypt format as register).
+      const updated = await getDb()
+        .update(schema.passwordCredentials)
+        .set({ passwordHash })
+        .where(eq(schema.passwordCredentials.userId, row.userId));
+      if ((updated[0] as { affectedRows?: number }).affectedRows === 0) {
+        throw invalid();
+      }
+
+      // Mark this token used and invalidate every other outstanding token
+      // for the user.
+      await getDb()
+        .update(schema.passwordResetTokens)
+        .set({ usedAt: now })
+        .where(
+          and(
+            eq(schema.passwordResetTokens.userId, row.userId),
+            isNull(schema.passwordResetTokens.usedAt),
+          ),
+        );
+
+      return { ok: true as const };
     }),
 });

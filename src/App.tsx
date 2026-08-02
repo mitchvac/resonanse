@@ -14,6 +14,8 @@ import Profile from '@/pages/Profile'
 import Settings from '@/pages/Settings'
 import Login from '@/pages/Login'
 import SignIn from '@/pages/SignIn'
+import ForgotPassword from '@/pages/ForgotPassword'
+import ResetPassword from '@/pages/ResetPassword'
 import NotFound from '@/pages/NotFound'
 import RequireProfile from '@/components/RequireProfile'
 
@@ -26,6 +28,9 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       {/* Unified sign-in — email + password accounts, or continue with Kimi */}
       <Route path="/signin" element={<SignIn />} />
+      {/* Password reset — request link / consume token */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* App pages — nested under the phone-shell layout; signed-in users
           who haven't answered the onboarding questionnaire are routed there
