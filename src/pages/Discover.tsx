@@ -102,6 +102,7 @@ export default function Discover() {
   const [match, setMatch] = useState<{ entry: QueueEntry; matchId: number | null } | null>(null);
   const [outOfLikes, setOutOfLikes] = useState(false);
   const [outOfPulses, setOutOfPulses] = useState(false);
+  const [outOfFlowers, setOutOfFlowers] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
   const [sheetEntry, setSheetEntry] = useState<QueueEntry | null>(null);
   const [composer, setComposer] = useState<{ entry: QueueEntry; question: string | null } | null>(null);
@@ -144,10 +145,13 @@ export default function Discover() {
   const activeEntry = entries[queueIndex] ?? null;
   const likesLeft = remainingQuery.data?.likesLeftToday ?? null;
   const pulsesLeft = remainingQuery.data?.pulses ?? null;
+  const flowersLeft = remainingQuery.data?.flowers ?? null;
   const tier = entitlementsQuery.data?.entitlement.tier;
   const isPremium = tier === 'plus' || tier === 'x';
   const likesBadge =
-    (receivedQuery.data?.pulses.length ?? 0) + (receivedQuery.data?.likes.length ?? 0);
+    (receivedQuery.data?.pulses.length ?? 0) +
+    (receivedQuery.data?.flowers.length ?? 0) +
+    (receivedQuery.data?.likes.length ?? 0);
 
   const swipeMutation = trpc.discover.swipe.useMutation({
     onSuccess: async (result, input) => {
@@ -164,6 +168,7 @@ export default function Discover() {
     onError: (error, input) => {
       if (error.data?.code !== 'FORBIDDEN') return;
       if (input.action === 'pulse') setOutOfPulses(true);
+      else if (input.action === 'flower') setOutOfFlowers(true);
       else setOutOfLikes(true);
     },
   });
@@ -172,6 +177,10 @@ export default function Discover() {
     if (swipedIds.has(entry.profile.id)) return;
     if (action === 'pulse' && pulsesLeft === 0) {
       setOutOfPulses(true);
+      return;
+    }
+    if (action === 'flower' && flowersLeft === 0) {
+      setOutOfFlowers(true);
       return;
     }
     swipeMutation.mutate({
@@ -192,10 +201,10 @@ export default function Discover() {
     rail.scrollTo({ left: queueIndex * slideWidth, behavior: reduced ? 'auto' : 'smooth' });
   }, [queueIndex, mode, reduced]);
 
-  // keyboard: ← pass, → like, ↑ pulse, Enter open (design.md §9)
+  // keyboard: ← pass, → like, ↑ pulse, F flower, Enter open (design.md §9)
   useEffect(() => {
     const anySheetOpen =
-      sheetEntry || composer || filtersOpen || travelOpen || outOfLikes || outOfPulses || match || lockedFilterGate;
+      sheetEntry || composer || filtersOpen || travelOpen || outOfLikes || outOfPulses || outOfFlowers || match || lockedFilterGate;
     if (anySheetOpen || (mode !== 'Queue' && mode !== 'Swipe')) return;
     const onKey = (e: KeyboardEvent) => {
       const entry = mode === 'Queue' ? activeEntry : swipeEntries[0];
@@ -203,6 +212,7 @@ export default function Discover() {
       if (e.key === 'ArrowLeft') doSwipe(entry, 'pass');
       else if (e.key === 'ArrowRight') doSwipe(entry, 'like');
       else if (e.key === 'ArrowUp') doSwipe(entry, 'pulse');
+      else if (e.key === 'f' || e.key === 'F') doSwipe(entry, 'flower');
       else if (e.key === 'Enter') setSheetEntry(entry);
     };
     window.addEventListener('keydown', onKey);
@@ -283,6 +293,7 @@ export default function Discover() {
             reduced={!!reduced}
             likesLeft={likesLeft}
             pulsesLeft={pulsesLeft}
+            flowersLeft={flowersLeft}
             pending={swipeMutation.isPending}
             onAction={(action) => activeEntry && doSwipe(activeEntry, action)}
             onTrySwipe={() => setMode('Swipe')}
@@ -300,10 +311,12 @@ export default function Discover() {
                   <ActionDock
                     likesLeft={likesLeft}
                     pulsesLeft={pulsesLeft}
+                    flowersLeft={flowersLeft}
                     disabled={swipeMutation.isPending}
                     onPass={() => doSwipe(swipeEntries[0], 'pass')}
                     onLike={() => doSwipe(swipeEntries[0], 'like')}
                     onPulse={() => doSwipe(swipeEntries[0], 'pulse')}
+                    onFlower={() => doSwipe(swipeEntries[0], 'flower')}
                   />
                 </div>
               </>
@@ -460,6 +473,20 @@ export default function Discover() {
         </div>
       </GlassSheet>
 
+      {/* Out-of-flowers gate (flower FORBIDDEN from the server) */}
+      <GlassSheet open={outOfFlowers} onClose={() => setOutOfFlowers(false)} labelledBy="out-of-flowers">
+        <div className="px-6 pb-8 pt-2">
+          <h3 id="out-of-flowers" className="sr-only">
+            You're out of flowers for today
+          </h3>
+          <GateCard
+            title="You're out of flowers for today"
+            caption="Free members send 3 flowers a day. Resonance+ grows an unlimited garden — and flowers always land unblurred."
+            ctaLabel="Get Resonance+"
+          />
+        </div>
+      </GlassSheet>
+
       {/* Out-of-pulses gate (pulse FORBIDDEN from the server) */}
       <GlassSheet open={outOfPulses} onClose={() => setOutOfPulses(false)} labelledBy="out-of-pulses">
         <div className="px-6 pb-8 pt-2">
@@ -525,6 +552,7 @@ function QueueMode({
   reduced,
   likesLeft,
   pulsesLeft,
+  flowersLeft,
   pending,
   onAction,
   onTrySwipe,
@@ -543,6 +571,7 @@ function QueueMode({
   reduced: boolean;
   likesLeft: number | null;
   pulsesLeft: number | null;
+  flowersLeft: number | null;
   pending: boolean;
   onAction: (a: SwipeAction) => void;
   onTrySwipe: () => void;
@@ -680,10 +709,12 @@ function QueueMode({
             <ActionDock
               likesLeft={likesLeft}
               pulsesLeft={pulsesLeft}
+              flowersLeft={flowersLeft}
               disabled={pending}
               onPass={() => onAction('pass')}
               onLike={() => onAction('like')}
               onPulse={() => onAction('pulse')}
+              onFlower={() => onAction('flower')}
             />
           </div>
         </>

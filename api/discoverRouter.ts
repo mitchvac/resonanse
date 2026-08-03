@@ -2,9 +2,11 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createRouter, authedQuery } from "./middleware";
 import {
+  countFlowersToday,
   countLikesToday,
   dismissIncomingLikesFrom,
   findExistingLike,
+  FREE_DAILY_FLOWERS,
   getDiscoveryQueue,
   getOrCreateMatch,
   recordLike,
@@ -53,7 +55,7 @@ export const discoverRouter = createRouter({
     .input(
       z.object({
         toProfileId: z.number().int().positive(),
-        action: z.enum(["like", "pass", "pulse"]),
+        action: z.enum(["like", "pass", "pulse", "flower"]),
         comment: z.string().max(500).optional(),
         targetType: z.enum(["profile", "prompt", "photo"]).optional(),
         targetRef: z.string().max(255).optional(),
@@ -95,13 +97,24 @@ export const discoverRouter = createRouter({
             message: "You're out of likes for today",
           });
         }
-      } else {
+      } else if (input.action === "pulse") {
         // pulse — consumes a Pulse balance
         if (entitlement.pulses <= 0) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: "You're out of Pulses",
           });
+        }
+      } else {
+        // flower — free tier: FREE_DAILY_FLOWERS/day; Resonance+ unlimited
+        if (entitlement.tier === "free") {
+          const flowersToday = await countFlowersToday(userId);
+          if (flowersToday >= FREE_DAILY_FLOWERS) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "You're out of flowers for today",
+            });
+          }
         }
       }
 
@@ -112,7 +125,7 @@ export const discoverRouter = createRouter({
       await recordLike({
         fromUserId: userId,
         toProfileId: input.toProfileId,
-        kind: input.action === "pulse" ? "pulse" : "like",
+        kind: input.action as "like" | "pulse" | "flower",
         comment: input.comment ?? null,
         targetType: input.targetType ?? "profile",
         targetRef: input.targetRef ?? null,

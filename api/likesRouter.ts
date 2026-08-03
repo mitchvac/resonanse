@@ -1,8 +1,10 @@
 import { createRouter, authedQuery } from "./middleware";
 import {
   compatibilityScore,
+  countFlowersToday,
   countLikesToday,
   countMatchesForUser,
+  FREE_DAILY_FLOWERS,
   likesReceivedForProfile,
   seedIncomingLikes,
 } from "./queries/discovery";
@@ -54,8 +56,9 @@ export const likesRouter = createRouter({
 
     return {
       blurred,
-      // Pulses are never hidden and always pinned first.
+      // Pulses and flowers are never hidden and always pinned first.
       pulses: decorated.filter((l) => l.kind === "pulse"),
+      flowers: decorated.filter((l) => l.kind === "flower"),
       likes: decorated.filter((l) => l.kind === "like"),
     };
   }),
@@ -63,10 +66,16 @@ export const likesRouter = createRouter({
   remaining: authedQuery.query(async ({ ctx }) => {
     const entitlement = await ensureEntitlement(ctx.user.id);
     const likesToday = await countLikesToday(ctx.user.id);
+    const flowersToday = await countFlowersToday(ctx.user.id);
     return {
       likesLeftToday: Math.max(0, entitlement.dailyLikeLimit - likesToday),
       dailyLikeLimit: entitlement.dailyLikeLimit,
       pulses: entitlement.pulses,
+      // 99 = "unlimited" demo representation for Resonance+, mirrors pulses.
+      flowers:
+        entitlement.tier === "free"
+          ? Math.max(0, FREE_DAILY_FLOWERS - flowersToday)
+          : 99,
     };
   }),
 });

@@ -258,6 +258,25 @@ export async function countLikesToday(userId: number): Promise<number> {
   return rows.length;
 }
 
+/** Free tier gets FREE_DAILY_FLOWERS per day; Resonance+ is unlimited. */
+export const FREE_DAILY_FLOWERS = 3;
+
+export async function countFlowersToday(userId: number): Promise<number> {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const rows = await getDb()
+    .select({ id: likes.id })
+    .from(likes)
+    .where(
+      and(
+        eq(likes.fromUserId, userId),
+        eq(likes.kind, "flower"),
+        gte(likes.createdAt, startOfDay),
+      ),
+    );
+  return rows.length;
+}
+
 export async function recordPass(
   fromUserId: number,
   toProfileId: number,

@@ -65,6 +65,7 @@ export default function Likes() {
   }, [serverBlurred, reduced]);
 
   const pulses = useMemo(() => receivedQuery.data?.pulses ?? [], [receivedQuery.data]);
+  const flowers = useMemo(() => receivedQuery.data?.flowers ?? [], [receivedQuery.data]);
   const likesAll = useMemo(() => receivedQuery.data?.likes ?? [], [receivedQuery.data]);
 
   const [viewedPulses, setViewedPulses] = useState<Set<number>>(new Set());
@@ -153,7 +154,7 @@ export default function Likes() {
     setPreview(v);
   };
 
-  const totalCount = pulses.length + likesAll.length;
+  const totalCount = pulses.length + flowers.length + likesAll.length;
   const shownLikes = blurred ? likes.slice(0, GRID_CAP) : likes;
   const collapsed = blurred ? likes.length - shownLikes.length : 0;
 
@@ -172,6 +173,7 @@ export default function Likes() {
           </h1>
           <p className="t-micro mt-1" style={{ color: 'var(--text-secondary)' }}>
             {totalCount} PEOPLE · {pulses.length} PULSES
+            {flowers.length > 0 ? ` · ${flowers.length} FLOWERS` : ''}
           </p>
         </div>
         {blurred ? (
@@ -245,6 +247,27 @@ export default function Likes() {
                       onOpen={() => {
                         setViewedPulses((prev) => new Set(prev).add(pulse.id));
                         if (pulse.liker) setSheetLike(pulse);
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* §1b Flowers received — scarce gesture, never blurred */}
+            {flowers.length > 0 && (
+              <section aria-label="Flowers received" className="mt-6">
+                <p className="t-eyebrow mb-3">Flowers received</p>
+                <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
+                  {flowers.map((flower, i) => (
+                    <PulseCard
+                      key={flower.id}
+                      pulse={flower}
+                      index={i}
+                      label="FLOWER"
+                      accent="#e35d7c"
+                      onOpen={() => {
+                        if (flower.liker) setSheetLike(flower);
                       }}
                     />
                   ))}

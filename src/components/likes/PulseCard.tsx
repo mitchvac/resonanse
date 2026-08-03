@@ -17,11 +17,16 @@ export default function PulseCard({
   hero = false,
   index = 0,
   onOpen,
+  label = 'PULSE',
+  accent = 'var(--violet)',
 }: {
   pulse: ReceivedLike;
   hero?: boolean;
   index?: number;
   onOpen: () => void;
+  /** 'FLOWER' + rose accent for the flower rail */
+  label?: string;
+  accent?: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const liker = pulse.liker;
@@ -47,8 +52,8 @@ export default function PulseCard({
           />
           <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="t-micro" style={{ color: 'var(--violet)' }}>
-                PULSE
+              <p className="t-micro" style={{ color: accent }}>
+                {label}
               </p>
               <p className="t-title-sm truncate" style={{ color: 'var(--text)' }}>
                 {liker?.displayName ?? 'Someone'}

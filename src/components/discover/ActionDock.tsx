@@ -1,25 +1,30 @@
 import { motion } from 'framer-motion';
-import { Heart, Sparkle, X } from 'lucide-react';
+import { Flower2, Heart, Sparkle, X } from 'lucide-react';
 
 /**
  * ActionDock — design.md §8.8
- * Three floating buttons under the queue card: Pass (48px, glass, ✕),
- * Like (64px center, violet, heart, --violet-glow), Pulse (48px, glass,
- * spark). Like elevated 8px. Remaining-likes micro label above.
+ * Floating buttons under the queue card: Pass (48px, glass, ✕), Flower
+ * (48px, glass, rose — scarce daily gesture), Like (64px center, violet,
+ * heart, --violet-glow), Pulse (48px, glass, spark). Like elevated 8px.
+ * Remaining-likes micro label above.
  */
 export default function ActionDock({
   likesLeft,
   pulsesLeft,
+  flowersLeft,
   onPass,
   onLike,
   onPulse,
+  onFlower,
   disabled = false,
 }: {
   likesLeft?: number | null;
   pulsesLeft?: number | null;
+  flowersLeft?: number | null;
   onPass: () => void;
   onLike: () => void;
   onPulse: () => void;
+  onFlower: () => void;
   disabled?: boolean;
 }) {
   const press = {
@@ -42,7 +47,7 @@ export default function ActionDock({
             : `${likesLeft} LIKES LEFT TODAY`}
         </motion.span>
       )}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-5">
         <motion.button
           type="button"
           aria-label="Pass"
@@ -54,6 +59,30 @@ export default function ActionDock({
           <span className="glass-content flex items-center justify-center">
             <X size={20} strokeWidth={2.4} style={{ color: 'var(--text)' }} aria-hidden="true" />
           </span>
+        </motion.button>
+
+        <motion.button
+          type="button"
+          aria-label={
+            flowersLeft != null ? `Send a flower (${flowersLeft} left)` : 'Send a flower'
+          }
+          disabled={disabled || flowersLeft === 0}
+          onClick={onFlower}
+          className="glass relative flex h-12 w-12 items-center justify-center rounded-full disabled:opacity-50"
+          {...press}
+        >
+          <span className="glass-content flex items-center justify-center">
+            <Flower2 size={20} style={{ color: '#e35d7c' }} aria-hidden="true" />
+          </span>
+          {flowersLeft != null && flowersLeft < 900 && (
+            <span
+              className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none text-white"
+              style={{ background: '#e35d7c' }}
+              aria-hidden="true"
+            >
+              {flowersLeft}
+            </span>
+          )}
         </motion.button>
 
         <motion.button
