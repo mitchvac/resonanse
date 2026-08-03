@@ -25,6 +25,7 @@ import BrandMark from '@/components/BrandMark';
 import { BtnPrimary, BtnGhost } from '@/components/ui/buttons';
 import LandingFX from '@/components/landing/LandingFX';
 import HeroPhone from '@/components/landing/HeroPhone';
+import ShareButton from '@/components/ShareButton';
 import LightTrail from '@/components/LightTrail';
 import { cn } from '@/lib/utils';
 
@@ -192,6 +193,7 @@ function Hero() {
             >
               See how it works ↓
             </BtnGhost>
+            <ShareButton />
           </motion.div>
           <motion.p
             className="t-caption mt-5"
@@ -879,6 +881,9 @@ function FinalCta() {
         <p className="t-caption mt-5" style={{ color: 'var(--text-secondary)' }}>
           Free to start · Takes two minutes · Photo verification required
         </p>
+        <div className="mt-7 flex justify-center">
+          <ShareButton label="Share with a friend who needs this" />
+        </div>
       </Reveal>
     </section>
   );
