@@ -5,7 +5,8 @@ import { Archive, Search, X } from 'lucide-react';
 import BrandMark from '@/components/BrandMark';
 import GlassCard from '@/components/GlassCard';
 import TabBar from '@/components/TabBar';
-import { BtnPrimary } from '@/components/ui/buttons';
+import { BtnDanger, BtnGlass, BtnPrimary } from '@/components/ui/buttons';
+import GlassSheet from '@/components/GlassSheet';
 import NewMatchesRail from '@/components/matches/NewMatchesRail';
 import ConversationRow, {
   type OutcomeChipKind,
@@ -14,7 +15,7 @@ import SafetySheet from '@/components/chat/SafetySheet';
 import { useToast, Toast } from '@/components/chat/Toast';
 import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
-import type { MatchEntry } from '@/components/chat/types';
+import { firstNameOf, type MatchEntry } from '@/components/chat/types';
 
 const WINDOW_MS = 48 * 60 * 60 * 1000;
 
@@ -50,6 +51,7 @@ export default function Matches() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [reportEntry, setReportEntry] = useState<MatchEntry | null>(null);
+  const [removeEntry, setRemoveEntry] = useState<MatchEntry | null>(null);
   const [pullY, setPullY] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const touchStart = useRef<number | null>(null);
@@ -68,6 +70,15 @@ export default function Matches() {
       void utils.matches.list.invalidate();
     },
     onError: () => showToast("Couldn't update the chat."),
+  });
+  const removeMut = trpc.matches.remove.useMutation({
+    onSuccess: () => {
+      showToast("Removed. They won't be notified.");
+      setRemoveEntry(null);
+      void utils.matches.list.invalidate();
+      void utils.chat.messages.invalidate();
+    },
+    onError: () => showToast("Couldn't remove that match."),
   });
 
   /* §1 New matches rail: no conversation yet, inside the 48h window */
@@ -157,6 +168,7 @@ export default function Matches() {
 
   const otherUserIdOf = (entry: MatchEntry) =>
     entry.match.userAId === myUserId ? entry.match.userBId : entry.match.userAId;
+  const removeName = firstNameOf(removeEntry?.otherProfile?.displayName);
 
   const isLoading = listQuery.isLoading;
   const isEmpty = !isLoading && entries.length === 0;
@@ -276,7 +288,11 @@ export default function Matches() {
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           >
             {newMatches.length > 0 && (
-              <NewMatchesRail entries={newMatches} onOpen={(e) => openChat(e, true)} />
+              <NewMatchesRail
+                entries={newMatches}
+                onOpen={(e) => openChat(e, true)}
+                onRemove={(e) => setRemoveEntry(e)}
+              />
             )}
 
             {/* §2 Active conversations */}
@@ -306,6 +322,7 @@ export default function Matches() {
                       }
                     }}
                     onReport={() => setReportEntry(entry)}
+                    onRemove={() => setRemoveEntry(entry)}
                   />
                 ))}
               </section>
@@ -340,6 +357,7 @@ export default function Matches() {
                       }
                     }}
                     onReport={() => setReportEntry(entry)}
+                    onRemove={() => setRemoveEntry(entry)}
                   />
                 ))}
               </section>
@@ -404,6 +422,40 @@ export default function Matches() {
           </motion.div>
         )}
       </div>
+
+      {/* Remove match — explicit, quiet, user-owned. */}
+      <GlassSheet
+        open={!!removeEntry}
+        onClose={() => (removeMut.isPending ? undefined : setRemoveEntry(null))}
+        labelledBy="remove-match-title"
+      >
+        <div className="px-5 pb-6 pt-1">
+          <h2 id="remove-match-title" className="t-title" style={{ color: 'var(--text)' }}>
+            Remove {removeName}?
+          </h2>
+          <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+            They won't be notified. This also removes the chat and keeps them out of your queue.
+          </p>
+          <div className="mt-5 flex gap-3">
+            <BtnGlass
+              className="flex-1"
+              onClick={() => setRemoveEntry(null)}
+              disabled={removeMut.isPending}
+            >
+              Keep
+            </BtnGlass>
+            <BtnDanger
+              className="flex-1"
+              disabled={!removeEntry || removeMut.isPending}
+              onClick={() => {
+                if (removeEntry) removeMut.mutate({ matchId: removeEntry.match.id });
+              }}
+            >
+              {removeMut.isPending ? 'Removing…' : 'Remove'}
+            </BtnDanger>
+          </div>
+        </div>
+      </GlassSheet>
 
       {/* Swipe-report — reason chips + block, same pattern as chat safety */}
       <SafetySheet

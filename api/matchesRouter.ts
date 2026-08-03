@@ -9,6 +9,7 @@ import {
   getConversationContext,
   listMatchesForUser,
   matchIncludesUser,
+  removeMatchForUser,
   setConversationArchived,
   setConversationMuted,
 } from "./queries/chat";
@@ -83,6 +84,16 @@ export const matchesRouter = createRouter({
         input.muted,
       );
       return { conversation };
+    }),
+
+  remove: authedQuery
+    .input(z.object({ matchId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const removed = await removeMatchForUser(input.matchId, ctx.user.id);
+      if (!removed) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Match not found" });
+      }
+      return { ok: true as const };
     }),
 
   weMet: authedQuery

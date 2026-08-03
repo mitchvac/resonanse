@@ -1,8 +1,13 @@
-import { and, desc, eq, gt, isNull, lt, or } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, lt, or } from "drizzle-orm";
 import {
+  callSessions,
+  callSignals,
   conversations,
+  feedback,
+  likes,
   matches,
   messages,
+  passes,
   profiles,
   videoNotes,
   type Conversation,
@@ -282,6 +287,69 @@ export async function listMatchesForUser(
   });
 
   return entries;
+}
+
+/**
+ * User-controlled unmatch. Removes the match for BOTH sides (quiet — no
+ * notification), deletes its conversation tree (messages/video notes/call
+ * signaling), clears likes between the two users, and records a pass from the
+ * remover toward the removed profile so they don't reappear in that user's
+ * queue. Returns the peer user id, or null when the match isn't the caller's.
+ */
+export async function removeMatchForUser(
+  matchId: number,
+  userId: number,
+): Promise<{ otherUserId: number } | null> {
+  const db = getDb();
+  const match = await findMatchById(matchId);
+  if (!match || !matchIncludesUser(match, userId)) return null;
+  const otherId = otherUserId(match, userId);
+
+  const conversation = await findConversationByMatchId(matchId);
+  if (conversation) {
+    const sessionRows = await db
+      .select({ id: callSessions.id })
+      .from(callSessions)
+      .where(eq(callSessions.conversationId, conversation.id));
+    const sessionIds = sessionRows.map((r) => r.id);
+    if (sessionIds.length > 0) {
+      await db.delete(callSignals).where(inArray(callSignals.sessionId, sessionIds));
+    }
+    await db.delete(callSessions).where(eq(callSessions.conversationId, conversation.id));
+    await db.delete(videoNotes).where(eq(videoNotes.conversationId, conversation.id));
+    await db.delete(messages).where(eq(messages.conversationId, conversation.id));
+    await db.delete(conversations).where(eq(conversations.id, conversation.id));
+  }
+
+  // feedback references matches — remove before the match row.
+  await db.delete(feedback).where(eq(feedback.matchId, matchId));
+
+  const [myProfileRows, otherProfileRows] = await Promise.all([
+    db.select({ id: profiles.id }).from(profiles).where(eq(profiles.userId, userId)).limit(1),
+    db.select({ id: profiles.id }).from(profiles).where(eq(profiles.userId, otherId)).limit(1),
+  ]);
+  const myProfileId = myProfileRows.at(0)?.id;
+  const otherProfileId = otherProfileRows.at(0)?.id;
+
+  // Clean likes in both directions so neither Likes You points at a removed match.
+  if (myProfileId) {
+    await db
+      .delete(likes)
+      .where(and(eq(likes.fromUserId, otherId), eq(likes.toProfileId, myProfileId)));
+  }
+  if (otherProfileId) {
+    await db
+      .delete(likes)
+      .where(and(eq(likes.fromUserId, userId), eq(likes.toProfileId, otherProfileId)));
+    // Don't re-show the removed person to the user who removed them.
+    await db
+      .insert(passes)
+      .values({ fromUserId: userId, toProfileId: otherProfileId })
+      .onDuplicateKeyUpdate({ set: { toProfileId: otherProfileId } });
+  }
+
+  await db.delete(matches).where(eq(matches.id, matchId));
+  return { otherUserId: otherId };
 }
 
 /** Resolve the conversation + match + peer profile for a participant. */

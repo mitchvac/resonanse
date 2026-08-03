@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { X } from 'lucide-react';
 import LightTrail from '@/components/LightTrail';
 import type { MatchEntry } from '@/components/chat/types';
 
@@ -72,9 +73,11 @@ function ExpiryRing({ pct, index }: { pct: number; index: number }) {
 export default function NewMatchesRail({
   entries,
   onOpen,
+  onRemove,
 }: {
   entries: MatchEntry[];
   onOpen: (entry: MatchEntry) => void;
+  onRemove: (entry: MatchEntry) => void;
 }) {
   const cells = entries.length + 1; // + "Your turn" tile
   const railWidth = cells * 72 + (cells - 1) * 16;
@@ -123,11 +126,9 @@ export default function NewMatchesRail({
               const name = profile?.displayName?.split(' ')[0] ?? 'Match';
               const pct = ringPct(entry.match.createdAt);
               return (
-                <motion.button
+                <motion.div
                   key={entry.match.id}
-                  type="button"
-                  onClick={() => onOpen(entry)}
-                  className="flex w-[72px] shrink-0 flex-col items-center gap-1.5"
+                  className="relative flex w-[72px] shrink-0 flex-col items-center gap-1.5"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{
@@ -135,21 +136,45 @@ export default function NewMatchesRail({
                     duration: 0.38,
                     ease: [0.34, 1.56, 0.64, 1],
                   }}
-                  aria-label={`Say hi to ${name} — ${Math.round(100 - pct)}% of 48 hours left`}
                 >
-                  <span className="relative h-[72px] w-[72px]">
-                    <ExpiryRing pct={pct} index={i + 1} />
-                    <img
-                      src={photo}
-                      alt={name}
-                      className="absolute inset-[5px] h-[62px] w-[62px] rounded-full object-cover"
-                      loading="lazy"
-                    />
-                  </span>
-                  <span className="t-caption" style={{ color: 'var(--text)' }}>
-                    {name}
-                  </span>
-                </motion.button>
+                  <button
+                    type="button"
+                    onClick={() => onOpen(entry)}
+                    className="flex w-full flex-col items-center gap-1.5"
+                    aria-label={`Say hi to ${name} — ${Math.round(100 - pct)}% of 48 hours left`}
+                  >
+                    <span className="relative h-[72px] w-[72px]">
+                      <ExpiryRing pct={pct} index={i + 1} />
+                      <img
+                        src={photo}
+                        alt={name}
+                        className="absolute inset-[5px] h-[62px] w-[62px] rounded-full object-cover"
+                        loading="lazy"
+                      />
+                    </span>
+                    <span className="t-caption" style={{ color: 'var(--text)' }}>
+                      {name}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onRemove(entry)}
+                    className="absolute -right-2 -top-2 flex h-11 w-11 items-start justify-end"
+                    aria-label={`Remove ${name}`}
+                  >
+                    <span
+                      className="flex h-6 w-6 items-center justify-center rounded-full"
+                      style={{
+                        background: 'var(--stage-base)',
+                        color: 'var(--danger)',
+                        boxShadow: '0 0 0 1.5px var(--ring-stroke)',
+                      }}
+                      aria-hidden="true"
+                    >
+                      <X size={12} strokeWidth={3} />
+                    </span>
+                  </button>
+                </motion.div>
               );
             })}
           </div>

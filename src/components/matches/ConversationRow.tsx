@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Archive, ArchiveRestore, BellOff, Bell, Check, Flag, MapPin, Timer } from 'lucide-react';
+import { Archive, ArchiveRestore, BellOff, Bell, Check, Flag, MapPin, Timer, UserX } from 'lucide-react';
 import type { MatchEntry } from '@/components/chat/types';
 import { relTime } from '@/components/chat/types';
 import { cn } from '@/lib/utils';
@@ -75,6 +75,7 @@ export default function ConversationRow({
   onArchive,
   onMute,
   onReport,
+  onRemove,
 }: {
   entry: MatchEntry;
   myUserId: number | null;
@@ -89,6 +90,7 @@ export default function ConversationRow({
   onArchive: () => void;
   onMute: () => void;
   onReport: () => void;
+  onRemove: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const profile = entry.otherProfile;
@@ -118,10 +120,11 @@ export default function ConversationRow({
       <div className="absolute inset-y-0 right-0 flex items-center gap-2 pr-3" aria-hidden={!open}>
         {[
           archived
-            ? { icon: ArchiveRestore, label: 'Unarchive chat', fn: onArchive }
-            : { icon: Archive, label: 'Archive chat', fn: onArchive },
-          { icon: muted ? Bell : BellOff, label: muted ? 'Unmute chat' : 'Mute chat', fn: onMute },
-          { icon: Flag, label: 'Report', fn: onReport },
+            ? { icon: ArchiveRestore, label: 'Unarchive chat', fn: onArchive, danger: false }
+            : { icon: Archive, label: 'Archive chat', fn: onArchive, danger: false },
+          { icon: muted ? Bell : BellOff, label: muted ? 'Unmute chat' : 'Mute chat', fn: onMute, danger: false },
+          { icon: Flag, label: 'Report', fn: onReport, danger: true },
+          { icon: UserX, label: 'Remove match', fn: onRemove, danger: true },
         ].map((a) => (
           <button
             key={a.label}
@@ -135,7 +138,7 @@ export default function ConversationRow({
             style={{
               background: 'var(--glass-a)',
               border: 'var(--glass-quiet-border)',
-              color: a.label === 'Report' ? 'var(--danger)' : 'var(--text)',
+              color: a.danger ? 'var(--danger)' : 'var(--text)',
             }}
             aria-label={a.label}
           >
@@ -148,10 +151,10 @@ export default function ConversationRow({
         type="button"
         onClick={() => (open ? setOpen(false) : onOpen())}
         drag="x"
-        dragConstraints={{ left: -156, right: 0 }}
+        dragConstraints={{ left: -196, right: 0 }}
         dragElastic={0.08}
         onDragEnd={(_, info) => setOpen(info.offset.x < -60)}
-        animate={{ x: open ? -156 : 0 }}
+        animate={{ x: open ? -196 : 0 }}
         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="relative flex h-[72px] w-full items-center gap-3 rounded-[20px] px-3 text-left"
         style={{ background: 'var(--field)' }}
