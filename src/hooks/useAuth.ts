@@ -24,6 +24,10 @@ export function useAuth(options?: UseAuthOptions) {
   } = trpc.auth.me.useQuery(undefined, {
     staleTime: 1000 * 60 * 5,
     retry: false,
+    // auth.me is explicitly invalidated on login/logout. Do not refetch it
+    // for every mounted consumer: a signed-out 401 is permanently stale, so
+    // refetch-on-mount can bounce gated layouts into a request loop.
+    refetchOnMount: false,
   });
 
   const logoutMutation = trpc.auth.logout.useMutation({

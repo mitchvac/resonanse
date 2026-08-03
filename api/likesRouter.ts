@@ -15,7 +15,7 @@ export const likesRouter = createRouter({
     const entitlement = await ensureEntitlement(ctx.user.id);
     let myProfile = await findProfileByUserId(ctx.user.id);
     if (!myProfile) {
-      return { blurred: true, likes: [], pulses: [] };
+      return { blurred: true, likes: [], pulses: [], flowers: [] };
     }
 
     // One-time lazy seed: a brand-new caller with zero likes and zero matches
