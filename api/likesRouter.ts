@@ -8,7 +8,8 @@ import {
   likesReceivedForProfile,
   seedIncomingLikes,
 } from "./queries/discovery";
-import { ensureEntitlement, findProfileByUserId } from "./queries/profiles";
+import { findProfileByUserId } from "./queries/profiles";
+import { ensureEntitlement } from "./queries/entitlements";
 
 export const likesRouter = createRouter({
   received: authedQuery.query(async ({ ctx }) => {

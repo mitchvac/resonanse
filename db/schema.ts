@@ -389,6 +389,9 @@ export const entitlements = mysqlTable(
     pulses: int("pulses").notNull().default(3),
     boosts: int("boosts").notNull().default(0),
     dailyLikeLimit: int("dailyLikeLimit").notNull().default(5),
+    /** One-time free trial window (all features). Null until started. */
+    trialStartedAt: timestamp("trialStartedAt"),
+    trialEndsAt: timestamp("trialEndsAt"),
     renewedAt: timestamp("renewedAt"),
     updatedAt: timestamp("updatedAt")
       .defaultNow()

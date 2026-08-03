@@ -14,12 +14,11 @@ import {
   seedReciprocates,
 } from "./queries/discovery";
 import {
-  ensureEntitlement,
   ensureProfile,
   findProfileById,
   findProfileByUserId,
 } from "./queries/profiles";
-import { decrementPulses } from "./queries/entitlements";
+import { decrementPulses, ensureEntitlement } from "./queries/entitlements";
 import { isBlockedBetween } from "./queries/safety";
 
 const queueInput = z

@@ -198,6 +198,15 @@ export default function Premium() {
     enabled: isAuthenticated,
   });
   const entitlement = entitlementsQuery.data?.entitlement ?? null;
+  const trial = entitlementsQuery.data?.trial ?? null;
+  const trialActive = trial?.active ?? false;
+  const trialEligible = trial?.eligible ?? false;
+  const trialEndsLabel = trial?.endsAt
+    ? new Date(trial.endsAt).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+      })
+    : null;
   const currentTier: Tier | 'free' = entitlement?.tier ?? 'free';
 
   /* X card edge glow energizes once after settle (§7.2 / premium.md §1) */
@@ -205,6 +214,19 @@ export default function Premium() {
     const t = setTimeout(() => setEnergized(true), 900);
     return () => clearTimeout(t);
   }, []);
+
+  const startTrial = trpc.premium.startTrial.useMutation({
+    onSuccess: () => {
+      utils.premium.entitlements.invalidate();
+      utils.profile.me.invalidate();
+      utils.likes.received.invalidate();
+      utils.likes.remaining.invalidate();
+      showToast('Your free 7-day trial is on — every feature is unlocked.');
+    },
+    onError: (err) => {
+      showToast(err.message || 'Could not start your trial right now.');
+    },
+  });
 
   const subscribe = trpc.premium.subscribe.useMutation({
     onSuccess: (_d, vars) => {
@@ -326,8 +348,64 @@ export default function Premium() {
           </section>
         )}
 
+        {/* ============ FREE TRIAL ACTIVE ============ */}
+        {isAuthenticated && !entitlementsQuery.isLoading && trialActive && !success && (
+          <motion.section
+            className="mt-8 flex flex-col gap-4 px-5"
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <GlassCard edge="amber" className="p-5">
+              <p className="t-eyebrow">FREE TRIAL</p>
+              <h2 className="t-title mt-1">Resonance X — all features free</h2>
+              <p className="t-caption mt-2" style={{ color: 'var(--text-secondary)' }}>
+                {trial?.daysLeft ?? 0} day{(trial?.daysLeft ?? 0) === 1 ? '' : 's'} left
+                {trialEndsLabel ? ` · ends ${trialEndsLabel}` : ''}. No card. It turns off
+                automatically.
+              </p>
+              <div className="mt-4 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="t-micro" style={{ color: 'var(--text)' }}>
+                    DAILY LIKES
+                  </span>
+                  <span className="t-caption font-bold" style={{ color: 'var(--text)' }}>
+                    Unlimited
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="t-micro" style={{ color: 'var(--text)' }}>
+                    LIKES YOU
+                  </span>
+                  <span className="t-caption font-bold" style={{ color: 'var(--text)' }}>
+                    Unblurred
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="t-micro" style={{ color: 'var(--text)' }}>
+                    PULSES + BOOST
+                  </span>
+                  <span className="t-caption font-bold" style={{ color: 'var(--text)' }}>
+                    Included
+                  </span>
+                </div>
+              </div>
+              <div className="mt-5">
+                <BtnPrimary to="/likes" className="w-full">
+                  See who likes you
+                </BtnPrimary>
+              </div>
+              <div className="mt-2">
+                <BtnGlass to="/discover" className="w-full">
+                  Back to Discover
+                </BtnGlass>
+              </div>
+            </GlassCard>
+          </motion.section>
+        )}
+
         {/* ============ MANAGEMENT VIEW (already subscribed) ============ */}
-        {isAuthenticated && !entitlementsQuery.isLoading && isMember && !success && (
+        {isAuthenticated && !entitlementsQuery.isLoading && isMember && !trialActive && !success && (
           <motion.section
             className="mt-8 flex flex-col gap-4 px-5"
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16 }}
@@ -406,6 +484,36 @@ export default function Premium() {
         {/* ============ PAYWALL (free tier) ============ */}
         {isAuthenticated && !entitlementsQuery.isLoading && !isMember && !success && (
           <>
+            {/* — Free 7-day trial (one-time, no card) — */}
+            {trialEligible && (
+              <section className="mt-8 px-5" aria-label="Free trial">
+                <GlassCard edge="amber" className="p-5">
+                  <p className="t-eyebrow">TRY EVERYTHING FREE</p>
+                  <h2 className="t-title-sm mt-1">7 days of Resonance X</h2>
+                  <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
+                    Unlimited likes, unblurred Likes You, travel mode, boosts and Pulses —
+                    every feature on. No card. It ends automatically.
+                  </p>
+                  <BtnPrimary
+                    className="mt-4 w-full"
+                    disabled={startTrial.isPending}
+                    onClick={() => startTrial.mutate()}
+                  >
+                    {startTrial.isPending ? (
+                      <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+                    ) : (
+                      'Start free 7-day trial'
+                    )}
+                  </BtnPrimary>
+                </GlassCard>
+              </section>
+            )}
+            {!trialEligible && trial?.endsAt && !trialActive && (
+              <p className="t-caption mt-6 px-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+                Your free trial has ended — pick a plan to keep the premium features on.
+              </p>
+            )}
+
             {/* — §1 Billing segmented control — */}
             <div className="mt-8 flex items-center justify-center gap-2 px-5">
               <div
@@ -645,11 +753,12 @@ export default function Premium() {
                     </span>
                     <BtnGlass
                       className="h-10 px-4"
+                      disabled={trialActive}
                       onClick={() =>
                         setConfirm({ kind: 'pulses', count: pulsePack.count, price: pulsePack.price })
                       }
                     >
-                      Buy Pulses
+                      {trialActive ? 'Included in trial' : 'Buy Pulses'}
                     </BtnGlass>
                   </div>
                 </GlassCard>
@@ -677,9 +786,10 @@ export default function Premium() {
                     </span>
                     <BtnGlass
                       className="h-10 px-4"
+                      disabled={trialActive}
                       onClick={() => setConfirm({ kind: 'boost', price: '€3.99' })}
                     >
-                      Boost me
+                      {trialActive ? 'Included in trial' : 'Boost me'}
                     </BtnGlass>
                   </div>
                 </GlassCard>
@@ -712,7 +822,28 @@ export default function Premium() {
             paddingBottom: 'max(20px, env(safe-area-inset-bottom, 0px))',
           }}
         >
-          {!isMember && (
+          {!isMember && trialEligible && (
+            <>
+              <BtnPrimary
+                className="w-full"
+                disabled={startTrial.isPending}
+                onClick={() => startTrial.mutate()}
+              >
+                {startTrial.isPending ? (
+                  <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+                ) : (
+                  'Start free 7-day trial'
+                )}
+              </BtnPrimary>
+              <p
+                className="t-micro mt-2 text-center"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                No card. Every feature on. Ends automatically after 7 days.
+              </p>
+            </>
+          )}
+          {!isMember && !trialEligible && (
             <BtnPrimary
               className="w-full"
               disabled={processing}
@@ -728,7 +859,7 @@ export default function Premium() {
               )}
             </BtnPrimary>
           )}
-          {!isMember && (
+          {!isMember && !trialEligible && (
             <BtnGlass
               className="mt-2.5 w-full"
               disabled={processing}

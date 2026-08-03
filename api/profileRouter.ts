@@ -3,7 +3,6 @@ import { z } from "zod";
 import { RELATIONSHIP_GOALS, type Profile } from "@db/schema";
 import { createRouter, authedQuery } from "./middleware";
 import {
-  ensureEntitlement,
   ensureProfile,
   findProfileById,
   markIdVerified,
@@ -11,6 +10,7 @@ import {
   updateProfileSettings,
   upsertProfile,
 } from "./queries/profiles";
+import { ensureEntitlement } from "./queries/entitlements";
 import { isBlockedBetween } from "./queries/safety";
 
 const promptSchema = z.object({
