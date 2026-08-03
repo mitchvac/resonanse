@@ -262,7 +262,12 @@ export default function Discover() {
         ) : queueQuery.isError ? (
           <LoadError onRetry={() => void queueQuery.refetch()} />
         ) : entries.length === 0 ? (
-          <EmptyQueue countdown={countdownToNoon()} onTrySwipe={() => setMode('Swipe')} />
+          <EmptyQueue
+            countdown={countdownToNoon()}
+            onTrySwipe={() => setMode('Swipe')}
+            travelCity={travelCity}
+            onClearTravel={() => setTravelCity(null)}
+          />
         ) : mode === 'Queue' ? (
           <QueueMode
             entries={entries}
@@ -303,7 +308,12 @@ export default function Discover() {
                 </div>
               </>
             ) : (
-              <EmptyQueue countdown={countdownToNoon()} onTrySwipe={() => setMode('Queue')} />
+              <EmptyQueue
+                countdown={countdownToNoon()}
+                onTrySwipe={() => setMode('Queue')}
+                travelCity={travelCity}
+                onClearTravel={() => setTravelCity(null)}
+              />
             )}
           </section>
         ) : (
@@ -388,6 +398,17 @@ export default function Discover() {
           </h3>
           {isPremium ? (
             <div className="mt-4 flex flex-wrap gap-1.5">
+              {travelCity && (
+                <Chip
+                  selected={false}
+                  onClick={() => {
+                    setTravelCity(null);
+                    setTravelOpen(false);
+                  }}
+                >
+                  ← Back to my city
+                </Chip>
+              )}
               {['Lisbon', 'Tokyo', 'Berlin', 'Mexico City', 'London', 'New York'].map((city) => (
                 <Chip
                   key={city}
@@ -676,10 +697,34 @@ function QueueMode({
 function EmptyQueue({
   countdown,
   onTrySwipe,
+  travelCity,
+  onClearTravel,
 }: {
   countdown: string;
   onTrySwipe: () => void;
+  travelCity?: string | null;
+  onClearTravel?: () => void;
 }) {
+  /* Filters active but nothing matched — say so honestly instead of the
+     generic "that's today's queue" (which reads like the app is empty). */
+  if (travelCity) {
+    return (
+      <div className="flex flex-col items-center px-6 py-14 text-center">
+        <BrandMark size={56} />
+        <h2 className="t-title-sm mt-5" style={{ color: 'var(--text-ink)' }}>
+          No one in {travelCity} yet.
+        </h2>
+        <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+          This city is still growing. Turn off Travel mode to see people near you.
+        </p>
+        {onClearTravel && (
+          <BtnGlass className="mt-6" onClick={onClearTravel}>
+            Turn off Travel mode
+          </BtnGlass>
+        )}
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">
       <BrandMark size={56} />

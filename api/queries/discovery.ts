@@ -111,6 +111,33 @@ export function genderCompatible(
   );
 }
 
+/* — city matching (Travel mode) ———————————————————————————————
+ * Cities are free-text ("Brooklyn, NY"); an exact match on the whole string
+ * makes Travel mode useless ("New York" matched nothing). Match on the city
+ * core with alias expansion, falling back to same-state. */
+const CITY_ALIASES: Record<string, string[]> = {
+  "new york": ["new york", "nyc", "brooklyn", "queens", "manhattan", "bronx", "staten island"],
+  nyc: ["new york", "nyc", "brooklyn", "queens", "manhattan", "bronx", "staten island"],
+  "los angeles": ["los angeles", "la", "hollywood", "santa monica"],
+  la: ["los angeles", "la", "hollywood", "santa monica"],
+  "san francisco": ["san francisco", "sf", "bay area"],
+  sf: ["san francisco", "sf", "bay area"],
+};
+
+export function cityMatches(
+  candidateCity: string | null | undefined,
+  filterCity: string,
+): boolean {
+  if (!candidateCity) return false;
+  const [cCore, cState] = candidateCity.toLowerCase().split(",").map((s) => s.trim());
+  const [fCore, fState] = filterCity.toLowerCase().split(",").map((s) => s.trim());
+  if (!cCore || !fCore) return false;
+  const fCores = CITY_ALIASES[fCore] ?? [fCore];
+  const cCores = CITY_ALIASES[cCore] ?? [cCore];
+  if (fCores.some((f) => cCores.some((c) => c.includes(f) || f.includes(c)))) return true;
+  return Boolean(fState && cState && fState === cState);
+}
+
 export type DiscoveryFilters = {
   intents?: string[];
   dealbreakerIntents?: string[];
@@ -186,10 +213,6 @@ export async function getDiscoveryQueue(
   if (filters.verifiedOnly) {
     conditions.push(eq(profiles.verified, true));
   }
-  if (filters.city) {
-    conditions.push(eq(profiles.city, filters.city));
-  }
-
   const candidates = await db
     .select()
     .from(profiles)
@@ -198,7 +221,13 @@ export async function getDiscoveryQueue(
 
   // Gender preferences are a hard gate: I only see genders I asked for,
   // and only candidates whose own "Show me" accepts my gender.
-  const compatible = candidates.filter((c) => genderCompatible(c, myPrefs));
+  let compatible = candidates.filter((c) => genderCompatible(c, myPrefs));
+
+  // Travel/city filter — fuzzy core/state match, not exact string equality.
+  if (filters.city) {
+    const city = filters.city;
+    compatible = compatible.filter((c) => cityMatches(c.city, city));
+  }
 
   // Intent-aligned first: same relationshipGoal sorts ahead, stable otherwise.
   const sorted = [...compatible].sort((a, b) => {
