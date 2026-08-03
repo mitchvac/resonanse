@@ -25,6 +25,92 @@ export function seedReciprocates(fromUserId: number, toProfileId: number): boole
 
 export type QueueEntry = { profile: Profile; compatibility: number };
 
+/* — gender preference matching ————————————————————————————————
+ * The queue must respect "Show me" (and the candidate's own preference).
+ * Genders are free-text (chips or self-describe), so normalize to buckets.
+ * Check "woman" BEFORE "man" — "woman" contains "man" as a substring. */
+export type GenderCategory = "woman" | "man" | "nonbinary" | "other";
+
+export function categorizeGender(
+  gender: string | null | undefined,
+): GenderCategory | null {
+  if (!gender) return null;
+  const g = gender.toLowerCase();
+  if (g.includes("woman") || g.includes("female") || g.includes("girl")) return "woman";
+  if (g.includes("man") || g.includes("male") || g.includes("boy")) return "man";
+  if (
+    g.includes("nonbinary") ||
+    g.includes("non-binary") ||
+    g.includes("non binary") ||
+    g.includes("two-spirit") ||
+    g.includes("two spirit") ||
+    g.includes("enby")
+  ) {
+    return "nonbinary";
+  }
+  return "other"; // self-described — visible only to "Everyone"
+}
+
+/**
+ * Map a "Show me" selection (e.g. ['Women', 'Men', 'Nonbinary people',
+ * 'Everyone']) to gender buckets. null/empty/'Everyone' → null (no filter).
+ */
+export function showMeCategories(
+  showMe: string[] | null | undefined,
+): Set<GenderCategory> | null {
+  if (!showMe || showMe.length === 0 || showMe.includes("Everyone")) return null;
+  const set = new Set<GenderCategory>();
+  for (const s of showMe) {
+    const v = s.toLowerCase();
+    if (v.startsWith("women")) set.add("woman");
+    else if (v.startsWith("men")) set.add("man");
+    else if (v.startsWith("nonbinary")) set.add("nonbinary");
+  }
+  return set.size > 0 ? set : null;
+}
+
+export type GenderPrefs = {
+  gender: string | null | undefined;
+  showMe: string[] | null | undefined;
+};
+
+/** Does the viewer's "Show me" accept this candidate's gender? */
+function candidateVisibleToViewer(
+  candidate: Pick<Profile, "gender">,
+  wanted: Set<GenderCategory> | null,
+): boolean {
+  if (!wanted) return true;
+  const cat = categorizeGender(candidate.gender);
+  if (cat === null) return true; // unknown gender — never hide
+  if (cat === "other") return false; // self-described → only "Everyone" sees them
+  return wanted.has(cat);
+}
+
+/** Does the candidate's own "Show me" accept the viewer's gender? */
+function viewerVisibleToCandidate(
+  candidate: Pick<Profile, "showMe">,
+  myCat: GenderCategory | null,
+): boolean {
+  const theirs = showMeCategories(candidate.showMe);
+  if (!theirs) return true; // they're open to Everyone
+  if (myCat === null) return true; // viewer's gender unknown — don't over-filter
+  if (myCat === "other") return false;
+  return theirs.has(myCat);
+}
+
+/** Mutual gender-preference match between viewer prefs and a candidate. */
+export function genderCompatible(
+  candidate: Pick<Profile, "gender" | "showMe">,
+  myPrefs: GenderPrefs,
+): boolean {
+  const wanted = showMeCategories(myPrefs.showMe);
+  const myCat = categorizeGender(myPrefs.gender);
+  return (
+    candidateVisibleToViewer(candidate, wanted) &&
+    viewerVisibleToCandidate(candidate, myCat)
+  );
+}
+
 export type DiscoveryFilters = {
   intents?: string[];
   dealbreakerIntents?: string[];
@@ -39,6 +125,7 @@ export async function getDiscoveryQueue(
   myGoal: string | null,
   limit = 8,
   filters: DiscoveryFilters = {},
+  myPrefs: GenderPrefs = { gender: null, showMe: null },
 ): Promise<QueueEntry[]> {
   const db = getDb();
 
@@ -109,8 +196,12 @@ export async function getDiscoveryQueue(
     .where(and(...conditions))
     .orderBy(asc(profiles.createdAt), asc(profiles.id));
 
+  // Gender preferences are a hard gate: I only see genders I asked for,
+  // and only candidates whose own "Show me" accepts my gender.
+  const compatible = candidates.filter((c) => genderCompatible(c, myPrefs));
+
   // Intent-aligned first: same relationshipGoal sorts ahead, stable otherwise.
-  const sorted = [...candidates].sort((a, b) => {
+  const sorted = [...compatible].sort((a, b) => {
     const aAlign = myGoal && a.relationshipGoal === myGoal ? 0 : 1;
     const bAlign = myGoal && b.relationshipGoal === myGoal ? 0 : 1;
     return aAlign - bAlign;
@@ -289,6 +380,7 @@ export async function countMatchesForUser(userId: number): Promise<number> {
 export async function seedIncomingLikes(
   userId: number,
   myProfileId: number,
+  myPrefs: GenderPrefs = { gender: null, showMe: null },
 ): Promise<void> {
   const db = getDb();
 
@@ -306,12 +398,15 @@ export async function seedIncomingLikes(
   if (excludedProfileIds.length > 0) {
     conditions.push(notInArray(profiles.id, excludedProfileIds));
   }
-  const seedProfiles = await db
-    .select()
-    .from(profiles)
-    .where(and(...conditions))
-    .orderBy(asc(profiles.createdAt), asc(profiles.id))
-    .limit(7);
+  const seedProfiles = (
+    await db
+      .select()
+      .from(profiles)
+      .where(and(...conditions))
+      .orderBy(asc(profiles.createdAt), asc(profiles.id))
+  )
+    .filter((p) => genderCompatible(p, myPrefs))
+    .slice(0, 7);
 
   const now = new Date();
   const rows = seedProfiles.map((profile, i) => {

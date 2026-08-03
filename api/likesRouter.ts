@@ -25,7 +25,10 @@ export const likesRouter = createRouter({
         countMatchesForUser(ctx.user.id),
       ]);
       if (existing.length === 0 && matchCount === 0) {
-        await seedIncomingLikes(ctx.user.id, myProfile.id);
+        await seedIncomingLikes(ctx.user.id, myProfile.id, {
+          gender: myProfile.gender,
+          showMe: myProfile.showMe,
+        });
         myProfile = (await findProfileByUserId(ctx.user.id)) ?? myProfile;
       }
     }

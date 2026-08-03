@@ -41,6 +41,7 @@ export const discoverRouter = createRouter({
       profile.relationshipGoal ?? null,
       8,
       input ?? {},
+      { gender: profile.gender, showMe: profile.showMe },
     );
     return {
       entries,

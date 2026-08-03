@@ -191,8 +191,32 @@ export default function Onboarding() {
     navigate('/');
   };
 
-  const finishFlow = () => {
-    /* handoff to profile creation */
+  const finishFlow = async () => {
+    /* Flush the draft before handoff. Users can onboard while signed out
+       (demo mode skips every per-step save); if they signed in mid-flow,
+       steps 1–2 never persisted. Re-save basics + intent now so the profile
+       isn't a stub when profile-setup begins. */
+    if (isAuthenticated) {
+      const age = ageFromBirthday(draft.birthday);
+      const genderLabel = draft.gender
+        .map((g) => (g === 'Self-describe' ? draft.customGender.trim() : g))
+        .join(', ');
+      const pronouns = draft.pronouns === 'custom' ? draft.customPronouns.trim() : draft.pronouns;
+      try {
+        await upsert.mutateAsync({
+          displayName: draft.firstName.trim() || undefined,
+          age: age !== null && age >= 18 && age <= 120 ? age : undefined,
+          gender: genderLabel || undefined,
+          pronouns: pronouns || undefined,
+          showMe: draft.showMe.length > 0 ? draft.showMe : undefined,
+          relationshipGoal: draft.intent || undefined,
+          openTo: draft.openTo,
+          showIntent: draft.showIntent,
+        });
+      } catch {
+        /* don't block the handoff — profile-setup saves every step too */
+      }
+    }
     navigate('/profile-setup');
   };
 
