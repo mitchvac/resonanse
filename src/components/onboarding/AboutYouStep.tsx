@@ -41,6 +41,19 @@ export default function AboutYouStep({
   const gateAge = ageFromBirthday(draft.birthday);
   const gateTooOld = gateAge !== null && gateAge > 120;
 
+  /* Inline feedback for a COMPLETE but invalid birthday. Without this the
+     Continue button silently disables (age null ≠ gate, gate never fires) —
+     e.g. year 2962 gave no hint about what was wrong. */
+  const birthdayError = (() => {
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(draft.birthday)) return null; // still typing
+    if (ageFromBirthday(draft.birthday) !== null) return null; // valid — 18–120 handled by gate
+    const year = Number(draft.birthday.slice(6));
+    const thisYear = new Date().getFullYear();
+    if (year > thisYear) return 'That year is in the future — double-check it.';
+    if (year < 1900) return 'Check the year — it looks too early.';
+    return "That date doesn't exist — check the month and day.";
+  })();
+
   useEffect(() => {
     if (selfDescribe) customGenderRef.current?.focus();
   }, [selfDescribe]);
@@ -85,7 +98,13 @@ export default function AboutYouStep({
             inputMode="numeric"
             autoComplete="bday"
             aria-label="Birthday, month day year"
+            aria-invalid={birthdayError !== null}
           />
+          {birthdayError && (
+            <p className="t-caption px-1" style={{ color: 'var(--danger)' }} role="alert">
+              {birthdayError}
+            </p>
+          )}
         </Block>
 
         <Block className="flex flex-col gap-2.5">
