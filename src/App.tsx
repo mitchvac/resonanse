@@ -8,6 +8,7 @@ import Likes from '@/pages/Likes'
 import Matches from '@/pages/Matches'
 import Chat from '@/pages/Chat'
 import Events from '@/pages/Events'
+import Community from '@/pages/Community'
 import Premium from '@/pages/Premium'
 import Wallet from '@/pages/Wallet'
 import Profile from '@/pages/Profile'
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/matches" element={<Matches />} />
         <Route path="/chat/:id" element={<Chat />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/community" element={<Community />} />
         <Route path="/premium" element={<Premium />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/profile" element={<Profile />} />

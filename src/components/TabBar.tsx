@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router';
-import { Compass, Heart, MessageCircle, CalendarDays, User } from 'lucide-react';
+import { Compass, Heart, MessageCircle, CalendarDays, Gamepad2, User } from 'lucide-react';
 
 /**
  * TabBar — design.md §8.4
@@ -16,6 +16,7 @@ const TABS = [
   { to: '/likes', label: 'Likes', icon: Heart, badge: true },
   { to: '/matches', label: 'Matches', icon: MessageCircle, unread: true },
   { to: '/events', label: 'Events', icon: CalendarDays },
+  { to: '/community', label: 'Community', icon: Gamepad2 },
   { to: '/profile', label: 'Profile', icon: User },
 ] as const;
 
@@ -36,7 +37,7 @@ export default function TabBar({
         className="glass h-[72px] rounded-[24px]"
         style={{ background: 'var(--tabbar-bg)' }}
       >
-        <div className="glass-content grid h-full grid-cols-5">
+        <div className="glass-content grid h-full grid-cols-6">
           {TABS.map((tab) => (
             <NavLink
               key={tab.to}
