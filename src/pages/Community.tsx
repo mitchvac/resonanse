@@ -26,12 +26,12 @@ const TABLES: Array<{
   {
     eyebrow: 'TRICK-TAKING',
     title: 'Spades',
-    note: '4 seats · bot backfill labelled',
+    note: 'You + 3 labelled bots · local table',
     seats: [
-      { kind: 'person', handle: 'lighthouse', photo: '/avatar-02.jpg', verified: true },
-      { kind: 'person', handle: 'red door', photo: '/avatar-04.jpg' },
-      { kind: 'person', handle: 'tide pool', photo: '/avatar-06.jpg', verified: true },
+      { kind: 'open' },
       { kind: 'bot', handle: 'BOT · Riley' },
+      { kind: 'bot', handle: 'BOT · Maya' },
+      { kind: 'bot', handle: 'BOT · Sam' },
     ],
   },
   {
@@ -178,6 +178,8 @@ export default function Community() {
                 delay: reduced ? 0 : 0.08 + i * 0.06,
                 ease: [0.22, 1, 0.36, 1],
               }}
+              onClick={table.title === 'Spades' ? () => navigate('/community/spades') : undefined}
+              className={table.title === 'Spades' ? 'cursor-pointer' : undefined}
             >
               <GlassCard className="min-h-[188px] p-5" ringX={i * 18}>
                 <div className="flex h-full flex-col justify-between gap-5">
@@ -200,7 +202,9 @@ export default function Community() {
                         onOpen={() =>
                           table.title === 'Concentration'
                             ? navigate('/community/concentration')
-                            : setPreviewOpen(true)
+                            : table.title === 'Spades'
+                              ? navigate('/community/spades')
+                              : setPreviewOpen(true)
                         }
                       />
                     ))}
