@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { motion, useReducedMotion } from 'framer-motion';
 import { BadgeCheck, Crown, Plus } from 'lucide-react';
 import BrandMark from '@/components/BrandMark';
@@ -109,6 +110,7 @@ function SeatTile({ seat, onOpen }: { seat: Seat; onOpen: () => void }) {
 }
 
 export default function Community() {
+  const navigate = useNavigate();
   const reduced = useReducedMotion();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -195,7 +197,11 @@ export default function Community() {
                       <SeatTile
                         key={`${table.title}-${seatIndex}`}
                         seat={seat}
-                        onOpen={() => setPreviewOpen(true)}
+                        onOpen={() =>
+                          table.title === 'Concentration'
+                            ? navigate('/community/concentration')
+                            : setPreviewOpen(true)
+                        }
                       />
                     ))}
                   </div>
