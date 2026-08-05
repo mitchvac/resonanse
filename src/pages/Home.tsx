@@ -172,19 +172,9 @@ function Hero() {
             <Words text="More meeting." onLoad delay={0.22} />
           </h1>
 
-          {/* ART SLOT — hero artwork lives here.
-              Guaranteed safe for blend modes and exact placement:
-              .art-slot and every ancestor of it are transform-free and
-              animation-free (hero GSAP pin removed in V34; entrance
-              animations only ever touch sibling text, never this node).
-              Do NOT wrap this slot in motion.* or data-fx elements.
-              Sizing (see .art-slot img in index.css): at md+ the artwork
-              stops 8px BEFORE the card column — as close as possible
-              without ever crossing into it — and it stays fully inside
-              the hero section (in-flow, so it can never bleed into §2). */}
-          <div className="art-slot" aria-hidden="true">
-            <img src="/neon-be-real-v2.png" alt="" draggable="false" />
-          </div>
+          {/* ART SLOT — intentionally empty (artwork removed per user request, V36).
+              The .art-slot CSS contract stays in index.css for future artwork:
+              transform/animation/filter-free zone, in-flow inside the hero. */}
 
           <motion.p
             className="t-value mt-6 max-w-md"
