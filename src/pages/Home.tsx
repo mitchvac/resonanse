@@ -172,23 +172,6 @@ function Hero() {
             <Words text="More meeting." onLoad delay={0.22} />
           </h1>
 
-          {/* Neon artwork — poster-scale per the approved mockup: spans the
-              column, overlaps the headline's second line, and reaches across
-              IN FRONT of the phone card. Static element on purpose: no
-              framer-motion wrapper, so no animated transform can create an
-              isolated stacking context around the artwork. */}
-          <div className="hero-neon-wrap pointer-events-none relative z-30 select-none">
-            {/* The actual neon artwork from the approved mockup, lifted with
-                true transparency — composites cleanly on both Warm Glass
-                cream and Night HUD navy. */}
-            <img
-              src="/neon-be-real.png"
-              alt="Be Real, Be Yourself"
-              draggable="false"
-              className="hero-neon-img"
-            />
-          </div>
-
           <motion.p
             className="t-value mt-6 max-w-md"
             style={{ color: 'var(--text-ink)' }}
