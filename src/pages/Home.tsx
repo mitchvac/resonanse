@@ -25,6 +25,7 @@ import BrandMark from '@/components/BrandMark';
 import { BtnPrimary, BtnGhost } from '@/components/ui/buttons';
 import LandingFX from '@/components/landing/LandingFX';
 import HeroPhone from '@/components/landing/HeroPhone';
+import NeonScript from '@/components/landing/NeonScript';
 import ShareButton from '@/components/ShareButton';
 import LightTrail from '@/components/LightTrail';
 import { cn } from '@/lib/utils';
@@ -170,40 +171,15 @@ function Hero() {
           </h1>
 
           {/* Neon script — "Be Real, Be Yourself" (landing artwork motif).
-              Decorative: overlaps the headline tail, sits in flow so the
-              sub-copy always clears it on any viewport. */}
+              Layered SVG neon-sign rendering; sits in flow so the sub-copy
+              always clears it on any viewport. */}
           <motion.div
-            aria-hidden="true"
             className="pointer-events-none relative z-10 -mt-2 -rotate-[4deg] select-none md:-mt-4"
             initial={{ opacity: 0, scale: 0.92, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.62, ease: EASE_OUT }}
           >
-            <svg width="0" height="0" className="absolute" focusable="false">
-              <defs>
-                <linearGradient id="neonSpeedGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0" stopColor="#ff2fb3" />
-                  <stop offset="1" stopColor="#7b49f5" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div className="flex items-end gap-3">
-              <span className="neon-script block text-[clamp(2.6rem,9vw,5rem)]">
-                Be Real,
-              </span>
-              <svg
-                viewBox="0 0 72 40"
-                className="mb-4 hidden w-14 sm:block md:w-[72px]"
-                fill="none"
-              >
-                <path d="M4 8 H52" strokeWidth="5" className="neon-speed-line" />
-                <path d="M14 20 H68" strokeWidth="5" className="neon-speed-line" />
-                <path d="M28 32 H60" strokeWidth="5" className="neon-speed-line" />
-              </svg>
-            </div>
-            <span className="neon-script block text-[clamp(2.6rem,9vw,5rem)]">
-              Be Yourself
-            </span>
+            <NeonScript />
           </motion.div>
 
           <motion.p
