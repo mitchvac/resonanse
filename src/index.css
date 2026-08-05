@@ -491,6 +491,38 @@
     /* momentum scrolling for horizontal rails/carousels on iOS */
     -webkit-overflow-scrolling: touch;
   }
+
+  /* ============================================================
+     Neon script — landing hero "Be Real, Be Yourself"
+     Gradient tube letters (pink → violet) + neon glow.
+     Warm Glass: soft bloom. Night HUD: brighter, neon-sign feel.
+     ============================================================ */
+  .neon-script {
+    font-family: "Yellowtail", "Plus Jakarta Sans", cursive;
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    background: linear-gradient(100deg, #ff2fb3 8%, #c026d3 42%, #7b49f5 78%, #ff2fb3 105%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter:
+      drop-shadow(0 0 10px rgba(255, 47, 179, 0.42))
+      drop-shadow(0 0 26px rgba(123, 73, 245, 0.3));
+  }
+  [data-theme="dark"] .neon-script {
+    background: linear-gradient(100deg, #ff7ad1 8%, #e879f9 42%, #a78bfa 78%, #ff7ad1 105%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter:
+      drop-shadow(0 0 8px rgba(255, 122, 209, 0.65))
+      drop-shadow(0 0 30px rgba(167, 139, 250, 0.5));
+  }
+  .neon-speed-line {
+    stroke: url(#neonSpeedGradient);
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px rgba(255, 47, 179, 0.5));
+  }
 }
 
 /* Glass fallbacks (§3.3) */
