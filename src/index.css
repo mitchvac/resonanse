@@ -545,6 +545,29 @@
     filter: none !important;
     will-change: auto !important;
   }
+
+  /* Artwork placement (V35): in-flow inside the hero column, so it can
+     never bleed into the next section. At md+ its width is the column
+     width + 40px — the grid gap is 48px, so the artwork's right edge
+     stops exactly 8px before the card column: as close as possible,
+     never crossing. max-width:none overrides Tailwind's img{max-width:
+     100%} preflight cap. The negative top margin tucks the glow up to
+     the baseline of "More meeting." like the approved mockup. */
+  .art-slot img {
+    display: block;
+    height: auto;
+    width: min(94vw, 640px);
+    max-width: none;
+    margin-top: -0.75rem;
+    pointer-events: none;
+    user-select: none;
+  }
+  @media (min-width: 768px) {
+    .art-slot img {
+      width: calc(100% + 40px);
+      margin-top: -2rem;
+    }
+  }
 }
 
 /* Glass fallbacks (§3.3) */
