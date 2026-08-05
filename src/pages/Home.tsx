@@ -153,7 +153,7 @@ function Hero() {
         </svg>
       </div>
 
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pb-16 pt-28 md:grid-cols-[minmax(0,44vw)_1fr] md:pt-16">
+      <div className="hero-grid mx-auto w-full max-w-6xl items-center gap-12 px-5 pb-16 pt-28 md:pt-16">
         <div>
           <motion.p
             className="t-eyebrow"
@@ -164,7 +164,7 @@ function Hero() {
             Dating, de-noised
           </motion.p>
           <h1
-            className="t-display mt-4 md:text-[clamp(56px,4.8vw,96px)] md:leading-[1.05]"
+            className="t-display hero-title mt-4"
             style={{ color: 'var(--text-ink)' }}
           >
             <Words text="Less swiping." onLoad delay={0.1} />
@@ -173,14 +173,11 @@ function Hero() {
           </h1>
 
           {/* Neon artwork — poster-scale per the approved mockup: spans the
-              column, overlaps the headline's second line, and reaches toward
-              the card (which stays layered above it). */}
-          <motion.div
-            className="pointer-events-none relative z-10 -mt-5 -rotate-[4deg] select-none md:-mt-[7.5rem]"
-            initial={{ opacity: 0, scale: 0.92, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.62, ease: EASE_OUT }}
-          >
+              column, overlaps the headline's second line, and reaches across
+              IN FRONT of the phone card. Static element on purpose: no
+              framer-motion wrapper, so no animated transform can create an
+              isolated stacking context around the artwork. */}
+          <div className="hero-neon-wrap pointer-events-none relative z-30 select-none">
             {/* The actual neon artwork from the approved mockup, lifted with
                 true transparency — composites cleanly on both Warm Glass
                 cream and Night HUD navy. */}
@@ -188,9 +185,9 @@ function Hero() {
               src="/neon-be-real.png"
               alt="Be Real, Be Yourself"
               draggable="false"
-              className="block h-auto w-[min(94vw,640px)] max-w-none md:w-[min(56vw,1080px)]"
+              className="hero-neon-img"
             />
-          </motion.div>
+          </div>
 
           <motion.p
             className="t-value mt-6 max-w-md"

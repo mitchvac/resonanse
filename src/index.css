@@ -508,6 +508,43 @@
       drop-shadow(0 0 12px rgba(232, 121, 249, 0.45))
       drop-shadow(0 0 44px rgba(168, 85, 247, 0.38));
   }
+
+  /* ============================================================
+     Hero poster layout — hand-written plain CSS (no Tailwind
+     arbitrary-value classes) so the hero can never degrade from
+     stale or partially-generated utility CSS. The neon artwork is
+     a static element: no framer-motion wrapper, no animated
+     transform — nothing creates an isolated stacking context
+     around it, and it layers IN FRONT of the phone card.
+     ============================================================ */
+  .hero-grid {
+    display: grid;
+  }
+  .hero-neon-wrap {
+    margin-top: -1.25rem;
+    transform: rotate(-4deg);
+  }
+  .hero-neon-img {
+    display: block;
+    height: auto;
+    width: min(94vw, 640px);
+    max-width: none;
+  }
+  @media (min-width: 768px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 44vw) 1fr;
+    }
+    .hero-title {
+      font-size: clamp(44px, 4.8vw, 96px);
+      line-height: 1.05;
+    }
+    .hero-neon-wrap {
+      margin-top: -3.5rem;
+    }
+    .hero-neon-img {
+      width: min(56vw, 890px);
+    }
+  }
 }
 
 /* Glass fallbacks (§3.3) */
