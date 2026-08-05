@@ -206,19 +206,21 @@ function Hero() {
             structures
           </motion.p>
 
-          {/* Hero artwork — sits in-flow UNDER the microcopy line, inside
-              the hero's left column, so it can never cross into another
-              section. Plain transparent PNG (no blend modes), gentle
-              fade-rise entrance matching the other hero text. */}
-          <motion.img
-            src="/be-real-black.png"
-            alt=""
-            draggable="false"
-            className="hero-art mt-8 select-none"
+          {/* Hero neon — REAL TEXT styled like the reference artwork
+              (no traced/copied image): white-hot core, colored neon
+              tube, 3D extrusion, and a soft blurred color cloud behind.
+              In-flow UNDER the microcopy line, so it can never cross
+              into another section. Decorative: aria-hidden. */}
+          <motion.div
+            className="hero-neon mt-10 select-none"
+            aria-hidden="true"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.9 }}
-          />
+          >
+            <span className="neon-line neon-a">Be Real,</span>
+            <span className="neon-line neon-b">Be Yourself</span>
+          </motion.div>
         </div>
 
         <div data-fx="hero-phone" className="relative">
