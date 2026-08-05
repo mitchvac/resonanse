@@ -211,7 +211,7 @@ function Hero() {
               section. Plain transparent PNG (no blend modes), gentle
               fade-rise entrance matching the other hero text. */}
           <motion.img
-            src="/be-real-rich.png"
+            src="/be-real-gold.png"
             alt=""
             draggable="false"
             className="hero-art mt-8 select-none"
