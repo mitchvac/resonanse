@@ -135,12 +135,12 @@ function CountUp({
 function Hero() {
   return (
     <section
-      data-fx="hero"
       className="relative flex min-h-[100dvh] items-center overflow-hidden"
     >
-      {/* faint ring arcs behind the phone (scale 1.1→1 via GSAP) */}
+      {/* faint ring arcs behind the phone — STATIC by contract (V34):
+          nothing may pin/transform/animate the hero or its ancestors,
+          so artwork placed in .art-slot always blends and places correctly */}
       <div
-        data-fx="hero-rings"
         className="pointer-events-none absolute right-[-10%] top-1/2 hidden -translate-y-1/2 md:block"
         aria-hidden="true"
       >
@@ -171,6 +171,14 @@ function Hero() {
             <br />
             <Words text="More meeting." onLoad delay={0.22} />
           </h1>
+
+          {/* ART SLOT — place future hero artwork here.
+              Guaranteed safe for blend modes and exact placement:
+              .art-slot and every ancestor of it are transform-free and
+              animation-free (hero GSAP pin removed in V34; entrance
+              animations only ever touch sibling text, never this node).
+              Do NOT wrap this slot in motion.* or data-fx elements. */}
+          <div className="art-slot" aria-hidden="true" />
 
           <motion.p
             className="t-value mt-6 max-w-md"
@@ -213,7 +221,7 @@ function Hero() {
           </motion.p>
         </div>
 
-        <div data-fx="hero-phone" className="relative z-20">
+        <div className="relative z-20">
           <HeroPhone />
         </div>
       </div>

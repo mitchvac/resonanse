@@ -13,11 +13,17 @@ gsap.registerPlugin(ScrollTrigger);
  * GSAP only touches [data-fx] wrapper elements).
  *
  * - Lenis smooth scroll synced with ScrollTrigger
- * - Hero pinned 150vh: phone y +60→0, rotate 4°→0°, ring arcs scale 1.1→1
  * - §3 violet progress line scaleY 0→1 (scrub)
  * - §4 modes rail pinned 120vh with parallax drift (desktop)
  * - §5 outcomes image scale 1.08→1.0 (scrub)
  * Reduced motion: everything skipped (static composition, no pins).
+ *
+ * NOTE (V34): the §1 hero pin/timeline was REMOVED permanently. GSAP
+ * pinning and transforms on the hero created an isolated stacking context
+ * around the hero artwork, which broke the artwork's blend mode and
+ * placement. The hero is now a scroll-static zone by contract: nothing
+ * may ever pin, transform, or animate the hero section or its ancestors.
+ * Hero artwork belongs in the static `.art-slot` (see pages/Home.tsx).
  */
 export default function LandingFX({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
@@ -34,29 +40,9 @@ export default function LandingFX({ children }: { children: ReactNode }) {
 
     const mm = gsap.matchMedia();
     const ctx = gsap.context(() => {
-      /* §1 Hero — pinned 150vh */
-      gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: '[data-fx="hero"]',
-            start: 'top top',
-            end: '+=150%',
-            pin: true,
-            scrub: 0.6,
-          },
-        })
-        .fromTo(
-          '[data-fx="hero-phone"]',
-          { y: 60, rotate: 4 },
-          { y: 0, rotate: 0, ease: 'none', duration: 0.5 },
-          0,
-        )
-        .fromTo(
-          '[data-fx="hero-rings"]',
-          { scale: 1.1 },
-          { scale: 1, ease: 'none', duration: 0.5 },
-          0,
-        );
+      /* §1 Hero — INTENTIONALLY EMPTY. Do not pin or transform the hero;
+         it must stay a static stacking context so hero artwork blends and
+         places correctly (see the V34 contract above). */
 
       /* §3 Loop — violet progress line draws down (scaleY scrub) */
       gsap.fromTo(

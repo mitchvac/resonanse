@@ -526,6 +526,25 @@
       line-height: 1.05;
     }
   }
+
+  /* ============================================================
+     ART SLOT (V34) — the only place hero artwork may live.
+     The old animation stack blocked the artwork's blend mode and
+     placement because GSAP/framer wrappers transformed ANCESTORS
+     of the artwork, creating isolated stacking contexts. That
+     machinery is gone from the hero (see LandingFX.tsx). This
+     class is a hard contract: no transform, no animation, no
+     filter on the slot — so mix-blend-mode and exact pixel
+     placement always behave. Never add animated wrappers around
+     this element or its ancestors.
+     ============================================================ */
+  .art-slot,
+  .art-slot > * {
+    transform: none !important;
+    animation: none !important;
+    filter: none !important;
+    will-change: auto !important;
+  }
 }
 
 /* Glass fallbacks (§3.3) */
