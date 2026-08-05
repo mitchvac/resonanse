@@ -153,7 +153,7 @@ function Hero() {
         </svg>
       </div>
 
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pb-16 pt-28 md:grid-cols-[minmax(0,560px)_1fr] md:pt-16">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pb-16 pt-28 md:grid-cols-[minmax(0,44vw)_1fr] md:pt-16">
         <div>
           <motion.p
             className="t-eyebrow"
@@ -163,19 +163,20 @@ function Hero() {
           >
             Dating, de-noised
           </motion.p>
-          <h1 className="t-display mt-4" style={{ color: 'var(--text-ink)' }}>
+          <h1
+            className="t-display mt-4 md:text-[clamp(56px,4.8vw,96px)] md:leading-[1.05]"
+            style={{ color: 'var(--text-ink)' }}
+          >
             <Words text="Less swiping." onLoad delay={0.1} />
             <br />
             <Words text="More meeting." onLoad delay={0.22} />
           </h1>
 
-          {/* Neon script — "Be Real, Be Yourself" (landing artwork motif).
-              Layered SVG neon sign; oversized, soft magenta glow cloud behind,
-              and a deliberate slight overlap of the headline tail — the
-              poster energy of the mockup without losing the reading order.
-              In flow, so sub-copy always clears it on any viewport. */}
+          {/* Neon artwork — poster-scale per the approved mockup: spans the
+              column, overlaps the headline's second line, and reaches toward
+              the card (which stays layered above it). */}
           <motion.div
-            className="pointer-events-none relative z-10 -mt-5 -rotate-[4deg] select-none md:-mt-9"
+            className="pointer-events-none relative z-10 -mt-5 -rotate-[4deg] select-none md:-mt-[7.5rem]"
             initial={{ opacity: 0, scale: 0.92, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.62, ease: EASE_OUT }}
@@ -187,7 +188,7 @@ function Hero() {
               src="/neon-be-real.png"
               alt="Be Real, Be Yourself"
               draggable="false"
-              className="block h-auto w-[min(94vw,640px)]"
+              className="block h-auto w-[min(94vw,640px)] max-w-none md:w-[min(56vw,1080px)]"
             />
           </motion.div>
 
@@ -232,7 +233,7 @@ function Hero() {
           </motion.p>
         </div>
 
-        <div data-fx="hero-phone" className="relative">
+        <div data-fx="hero-phone" className="relative z-20">
           <HeroPhone />
         </div>
       </div>
