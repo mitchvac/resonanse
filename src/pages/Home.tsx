@@ -25,7 +25,6 @@ import BrandMark from '@/components/BrandMark';
 import { BtnPrimary, BtnGhost } from '@/components/ui/buttons';
 import LandingFX from '@/components/landing/LandingFX';
 import HeroPhone from '@/components/landing/HeroPhone';
-import NeonScript from '@/components/landing/NeonScript';
 import ShareButton from '@/components/ShareButton';
 import LightTrail from '@/components/LightTrail';
 import { cn } from '@/lib/utils';
@@ -181,16 +180,15 @@ function Hero() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.62, ease: EASE_OUT }}
           >
-            {/* glow cloud — the poster's magenta wash, theme-adaptive */}
-            <div
-              aria-hidden="true"
-              className="absolute -inset-x-10 -inset-y-6 -z-10 rounded-full opacity-45 blur-3xl dark:opacity-60"
-              style={{
-                background:
-                  'radial-gradient(ellipse 70% 60% at 45% 50%, rgba(217,70,239,0.55), rgba(123,73,245,0.28) 55%, transparent 75%)',
-              }}
+            {/* The actual neon artwork from the approved mockup, lifted with
+                true transparency — composites cleanly on both Warm Glass
+                cream and Night HUD navy. */}
+            <img
+              src="/neon-be-real.png"
+              alt="Be Real, Be Yourself"
+              draggable="false"
+              className="block h-auto w-[min(94vw,640px)]"
             />
-            <NeonScript />
           </motion.div>
 
           <motion.p
