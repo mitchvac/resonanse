@@ -58,7 +58,7 @@ export default function NeonScript() {
   return (
     <svg
       viewBox="0 0 580 262"
-      className="neon-svg block h-auto w-[min(88vw,540px)]"
+      className="neon-svg block h-auto w-[min(94vw,640px)]"
       role="img"
       aria-label="Be Real, Be Yourself"
     >

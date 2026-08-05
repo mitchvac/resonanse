@@ -171,14 +171,25 @@ function Hero() {
           </h1>
 
           {/* Neon script — "Be Real, Be Yourself" (landing artwork motif).
-              Layered SVG neon-sign rendering; sits in flow so the sub-copy
-              always clears it on any viewport. */}
+              Layered SVG neon sign; oversized, soft magenta glow cloud behind,
+              and a deliberate slight overlap of the headline tail — the
+              poster energy of the mockup without losing the reading order.
+              In flow, so sub-copy always clears it on any viewport. */}
           <motion.div
-            className="pointer-events-none relative z-10 -mt-2 -rotate-[4deg] select-none md:-mt-4"
+            className="pointer-events-none relative z-10 -mt-5 -rotate-[4deg] select-none md:-mt-9"
             initial={{ opacity: 0, scale: 0.92, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.62, ease: EASE_OUT }}
           >
+            {/* glow cloud — the poster's magenta wash, theme-adaptive */}
+            <div
+              aria-hidden="true"
+              className="absolute -inset-x-10 -inset-y-6 -z-10 rounded-full opacity-45 blur-3xl dark:opacity-60"
+              style={{
+                background:
+                  'radial-gradient(ellipse 70% 60% at 45% 50%, rgba(217,70,239,0.55), rgba(123,73,245,0.28) 55%, transparent 75%)',
+              }}
+            />
             <NeonScript />
           </motion.div>
 
