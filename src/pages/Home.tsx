@@ -135,12 +135,12 @@ function CountUp({
 function Hero() {
   return (
     <section
+      data-fx="hero"
       className="relative flex min-h-[100dvh] items-center overflow-hidden"
     >
-      {/* faint ring arcs behind the phone — STATIC by contract (V34):
-          nothing may pin/transform/animate the hero or its ancestors,
-          so artwork placed in .art-slot always blends and places correctly */}
+      {/* faint ring arcs behind the phone (scale 1.1→1 via GSAP) */}
       <div
+        data-fx="hero-rings"
         className="pointer-events-none absolute right-[-10%] top-1/2 hidden -translate-y-1/2 md:block"
         aria-hidden="true"
       >
@@ -153,7 +153,7 @@ function Hero() {
         </svg>
       </div>
 
-      <div className="hero-grid mx-auto w-full max-w-6xl items-center gap-12 px-5 pb-16 pt-28 md:pt-16">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pb-16 pt-28 md:grid-cols-[minmax(0,560px)_1fr] md:pt-16">
         <div>
           <motion.p
             className="t-eyebrow"
@@ -163,21 +163,11 @@ function Hero() {
           >
             Dating, de-noised
           </motion.p>
-          <h1
-            className="t-display hero-title mt-4"
-            style={{ color: 'var(--text-ink)' }}
-          >
-            <Words text="Less swiping." onLoad delay={0.1} />
-            <br />
-            <Words text="More meeting." onLoad delay={0.22} />
+          <h1 className="t-display mt-4" style={{ color: 'var(--text-ink)' }}>
+            <Words text="Less swiping. More meeting." onLoad delay={0.1} />
           </h1>
-
-          {/* ART SLOT — intentionally empty (artwork removed per user request, V36).
-              The .art-slot CSS contract stays in index.css for future artwork:
-              transform/animation/filter-free zone, in-flow inside the hero. */}
-
           <motion.p
-            className="t-value mt-6 max-w-md"
+            className="t-value mt-5 max-w-md"
             style={{ color: 'var(--text-ink)' }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -217,7 +207,7 @@ function Hero() {
           </motion.p>
         </div>
 
-        <div className="relative z-20">
+        <div data-fx="hero-phone" className="relative">
           <HeroPhone />
         </div>
       </div>
