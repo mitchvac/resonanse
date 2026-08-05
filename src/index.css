@@ -491,6 +491,17 @@
     /* momentum scrolling for horizontal rails/carousels on iOS */
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Hero artwork (V38) — transparent neon PNG under the hero microcopy.
+     In-flow inside the left column (max 560px), so it can never cross
+     into another section. Tailwind's img{max-width:100%} preflight is
+     exactly right here: it caps the artwork at the column width. */
+  .hero-art {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+  }
 }
 
 /* Glass fallbacks (§3.3) */

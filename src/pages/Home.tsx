@@ -205,6 +205,20 @@ function Hero() {
             Free to start · Photo-verified community · All genders, all
             structures
           </motion.p>
+
+          {/* Hero artwork — sits in-flow UNDER the microcopy line, inside
+              the hero's left column, so it can never cross into another
+              section. Plain transparent PNG (no blend modes), gentle
+              fade-rise entrance matching the other hero text. */}
+          <motion.img
+            src="/be-real-artwork.png"
+            alt=""
+            draggable="false"
+            className="hero-art mt-8 select-none"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.9 }}
+          />
         </div>
 
         <div data-fx="hero-phone" className="relative">
