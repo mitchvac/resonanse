@@ -205,22 +205,6 @@ function Hero() {
             Free to start · Photo-verified community · All genders, all
             structures
           </motion.p>
-
-          {/* Hero neon — REAL TEXT styled like the reference artwork
-              (no traced/copied image): white-hot core, colored neon
-              tube, 3D extrusion, and a soft blurred color cloud behind.
-              In-flow UNDER the microcopy line, so it can never cross
-              into another section. Decorative: aria-hidden. */}
-          <motion.div
-            className="hero-neon mt-10 select-none"
-            aria-hidden="true"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.9 }}
-          >
-            <span className="neon-line neon-a">Be Real,</span>
-            <span className="neon-line neon-b">Be Yourself</span>
-          </motion.div>
         </div>
 
         <div data-fx="hero-phone" className="relative">
