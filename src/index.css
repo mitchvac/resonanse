@@ -529,7 +529,7 @@
 .dc-card {
   position: relative;
   overflow: hidden;
-  width: min(224px, 100%);
+  width: min(354px, 100%);
   border-radius: 24px;
   color: #fff;
   background:
@@ -579,15 +579,15 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .dc-card__meta {
-  font-size: 8px;
-  line-height: 11px;
+  font-size: 9px;
+  line-height: 12px;
   letter-spacing: -0.03em;
   text-transform: uppercase;
 }
 .dc-card__title {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
-  font-size: 24px;
+  font-size: 38px;
   line-height: 1.02;
   letter-spacing: -0.01em;
   color: #F6EAD2;
@@ -595,7 +595,7 @@
 }
 .dc-card__coin {
   position: relative;
-  height: 160px;
+  height: 310px;
   border-radius: 16px;
   overflow: hidden;
   background: #0B1020;
@@ -616,15 +616,15 @@
 .dc-card__pill {
   flex: 1;
   text-align: center;
-  padding: 7px 10px;
+  padding: 10px 16px;
   border-radius: 999px;
   background: linear-gradient(112.8deg, rgba(232, 200, 138, 0.26), rgba(232, 200, 138, 0.10));
   color: #F6EAD2;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 @media (max-width: 480px) {
-  .dc-card__title { font-size: 22px; }
-  .dc-card__coin { height: 140px; }
+  .dc-card__title { font-size: 32px; }
+  .dc-card__coin { height: 260px; }
 }
