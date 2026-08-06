@@ -529,7 +529,7 @@
 .dc-card {
   position: relative;
   overflow: hidden;
-  width: min(280px, 100%);
+  width: min(224px, 100%);
   border-radius: 24px;
   color: #fff;
   background:
@@ -587,7 +587,7 @@
 .dc-card__title {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
-  font-size: 30px;
+  font-size: 24px;
   line-height: 1.02;
   letter-spacing: -0.01em;
   color: #F6EAD2;
@@ -595,7 +595,7 @@
 }
 .dc-card__coin {
   position: relative;
-  height: 220px;
+  height: 160px;
   border-radius: 16px;
   overflow: hidden;
   background: #0B1020;
@@ -616,15 +616,15 @@
 .dc-card__pill {
   flex: 1;
   text-align: center;
-  padding: 8px 12px;
+  padding: 7px 10px;
   border-radius: 999px;
   background: linear-gradient(112.8deg, rgba(232, 200, 138, 0.26), rgba(232, 200, 138, 0.10));
   color: #F6EAD2;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 @media (max-width: 480px) {
-  .dc-card__title { font-size: 26px; }
-  .dc-card__coin { height: 190px; }
+  .dc-card__title { font-size: 22px; }
+  .dc-card__coin { height: 140px; }
 }
