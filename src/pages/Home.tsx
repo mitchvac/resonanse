@@ -205,6 +205,61 @@ function Hero() {
             Free to start · Photo-verified community · All genders, all
             structures
           </motion.p>
+          <motion.div
+            className="mt-10"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.86, ease: EASE_OUT }}
+          >
+            <div
+              className="dc-card"
+              role="note"
+              aria-label="Founding member offer: 10,000 Date Coins"
+            >
+              <svg
+                className="dc-card__rings"
+                viewBox="0 0 334 207"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <g fill="none" strokeWidth="2" transform="rotate(15 46 -60)">
+                  {[70, 130, 190, 250].map((r) => (
+                    <circle key={r} cx="46" cy="-60" r={r} />
+                  ))}
+                </g>
+              </svg>
+              <div className="dc-card__sheen" aria-hidden="true" />
+              <div className="dc-card__grain" aria-hidden="true" />
+              <div className="relative flex flex-col gap-[18px] px-[26px] pb-[30px] pt-[26px]">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="dc-card__meta text-[#E8C88A]">
+                    Resonance · founding offer
+                  </span>
+                  <span className="dc-card__meta text-white/70">
+                    Grows every year
+                  </span>
+                </div>
+                <p className="dc-card__title">10,000 Date Coins</p>
+                <div className="dc-card__coin">
+                  <div className="dc-card__coin-img" />
+                  <div className="dc-card__coin-vignette" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-[16px] font-bold leading-[21px] text-white">
+                    For our first 100,000 founding members
+                  </p>
+                  <p className="text-[15px] leading-6 text-white/[0.78]">
+                    A discount that grows every year you&rsquo;re with us.
+                  </p>
+                </div>
+                <div className="mt-1 flex items-center gap-3">
+                  <span className="dc-card__pill">
+                    Founding Member Exclusive
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         <div data-fx="hero-phone" className="relative">

@@ -524,3 +524,107 @@
   }
   html { scroll-behavior: auto; }
 }
+
+/* ---- Date Coins founding card (ported from the Date Coins Card bundle) ---- */
+.dc-card {
+  position: relative;
+  overflow: hidden;
+  width: min(420px, 100%);
+  border-radius: 24px;
+  color: #fff;
+  background:
+    linear-gradient(112.83deg, rgba(255, 255, 255, 0.47) 0%, rgba(255, 255, 255, 0) 110.84%),
+    #0d1120;
+  backdrop-filter: blur(21px);
+  -webkit-backdrop-filter: blur(21px);
+}
+.dc-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(112.32deg, rgba(255, 255, 255, 0.40) 0%, rgba(255, 255, 255, 0) 101.12%);
+}
+.dc-card__rings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.dc-card__rings circle {
+  stroke: rgba(255, 255, 255, 0.06);
+}
+.dc-card__sheen {
+  position: absolute;
+  pointer-events: none;
+  left: -10.42%;
+  top: -43.53%;
+  width: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: scaleX(-1);
+  background: linear-gradient(12.44deg, rgba(255, 255, 255, 0.47) 8.44%, rgba(255, 255, 255, 0) 75.57%);
+  backdrop-filter: blur(21px);
+  -webkit-backdrop-filter: blur(21px);
+}
+.dc-card__grain {
+  position: absolute;
+  inset: -37% -8%;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  opacity: 0.2;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.dc-card__meta {
+  font-size: 9px;
+  line-height: 12px;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+.dc-card__title {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: 46px;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  color: #F6EAD2;
+  text-wrap: pretty;
+}
+.dc-card__coin {
+  position: relative;
+  height: 368px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0B1020;
+}
+.dc-card__coin-img {
+  position: absolute;
+  inset: 0;
+  background-image: url('/date-coins-card.jpg');
+  background-size: 168% auto;
+  background-position: 49% 44%;
+  background-repeat: no-repeat;
+}
+.dc-card__coin-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(70% 60% at 50% 48%, transparent 40%, rgba(11, 16, 32, 0.55) 100%);
+}
+.dc-card__pill {
+  flex: 1;
+  text-align: center;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: linear-gradient(112.8deg, rgba(232, 200, 138, 0.26), rgba(232, 200, 138, 0.10));
+  color: #F6EAD2;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+@media (max-width: 480px) {
+  .dc-card__title { font-size: 38px; }
+  .dc-card__coin { height: 300px; }
+}
