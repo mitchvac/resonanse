@@ -230,7 +230,7 @@ function Hero() {
               </svg>
               <div className="dc-card__sheen" aria-hidden="true" />
               <div className="dc-card__grain" aria-hidden="true" />
-              <div className="relative flex flex-col gap-[18px] px-[26px] pb-[30px] pt-[26px]">
+              <div className="relative flex flex-col gap-3.5 px-5 pb-6 pt-5">
                 <div className="flex items-center justify-between gap-3">
                   <span className="dc-card__meta text-[#E8C88A]">
                     Resonance · founding offer
@@ -245,10 +245,10 @@ function Hero() {
                   <div className="dc-card__coin-vignette" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <p className="text-[16px] font-bold leading-[21px] text-white">
+                  <p className="text-[14px] font-bold leading-[19px] text-white">
                     For our first 100,000 founding members
                   </p>
-                  <p className="text-[15px] leading-6 text-white/[0.78]">
+                  <p className="text-[13px] leading-[20px] text-white/[0.78]">
                     A discount that grows every year you&rsquo;re with us.
                   </p>
                 </div>
