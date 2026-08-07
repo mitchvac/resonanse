@@ -117,6 +117,8 @@ export const profiles = mysqlTable(
     pronouns: varchar("pronouns", { length: 60 }),
     bio: text("bio"),
     city: varchar("city", { length: 120 }),
+    /** Chosen events area (registry slug or custom city). Null = all areas. */
+    eventArea: varchar("eventArea", { length: 120 }),
     relationshipGoal: mysqlEnum("relationshipGoal", RELATIONSHIP_GOALS)
       .notNull()
       .default("explore"),

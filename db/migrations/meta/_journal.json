@@ -64,6 +64,13 @@
       "when": 1785782431022,
       "tag": "0008_closed_impossible_man",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1786116195881,
+      "tag": "0009_event-area",
+      "breakpoints": true
     }
   ]
 }

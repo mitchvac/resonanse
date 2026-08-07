@@ -11,6 +11,7 @@ import {
   createGoogleAuthStartHandler,
 } from "./google/auth";
 import { Paths } from "@contracts/constants";
+import { startEventAgent } from "./lib/eventEngine/agent";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
@@ -38,5 +39,7 @@ if (env.isProduction) {
   const port = parseInt(process.env.PORT || "3000");
   serve({ fetch: app.fetch, port }, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // Fire-and-forget: curate event feeds on boot + every 20 minutes.
+    startEventAgent();
   });
 }

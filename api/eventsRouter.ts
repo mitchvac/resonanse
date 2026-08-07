@@ -15,6 +15,10 @@ import {
   listEventsWithRsvps,
   upsertRsvp,
 } from "./queries/events";
+import { findProfileByUserId, upsertProfile } from "./queries/profiles";
+import { areaLastUpdatedAt, areaStats } from "./lib/eventEngine/engine";
+import { normaliseArea, resolveArea } from "./lib/eventEngine/locations";
+import { ensureAreaFresh } from "./lib/eventEngine/agent";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -109,5 +113,63 @@ export const eventsRouter = createRouter({
               : `eventId:${input.eventId} metAnyone:${input.metAnyone}`,
         });
       return { ok: true as const };
+    }),
+
+  areas: authedQuery.query(async ({ ctx }) => {
+    const [stats, profile] = await Promise.all([
+      areaStats(),
+      findProfileByUserId(ctx.user.id),
+    ]);
+    return {
+      areas: stats.map((s) => ({
+        ...s,
+        status: (s.lastUpdatedAt ? "live" : "updating") as "live" | "updating",
+      })),
+      myArea: profile?.eventArea ?? null,
+    };
+  }),
+
+  setArea: authedQuery
+    .input(z.object({ area: z.string().max(120).nullable() }))
+    .mutation(async ({ ctx, input }) => {
+      const raw = input.area?.trim() ?? "";
+      const matched = normaliseArea(input.area);
+      // Registry match → slug; unknown custom city → raw string; 'all'/empty → null.
+      const value = matched ? matched.slug : raw === "" ? null : raw;
+      await upsertProfile(ctx.user.id, { eventArea: value });
+      if (!matched && value) {
+        // Unknown city: lazily curate a dynamic area with generic venues.
+        const dynamic = resolveArea(value);
+        if (dynamic) await ensureAreaFresh(dynamic);
+      }
+      return { ok: true as const, myArea: value };
+    }),
+
+  feed: authedQuery
+    .input(
+      z.object({ area: z.string().max(120).nullable().optional() }),
+    )
+    .query(async ({ ctx, input }) => {
+      const profile = await findProfileByUserId(ctx.user.id);
+      const target = input.area ?? profile?.eventArea ?? null;
+      const area = resolveArea(target);
+      if (!area) {
+        const events = await listEventsWithRsvps(ctx.user.id);
+        return { area: null, events };
+      }
+      await ensureAreaFresh(area);
+      const [events, lastUpdatedAt] = await Promise.all([
+        listEventsWithRsvps(ctx.user.id, area.name),
+        areaLastUpdatedAt(area),
+      ]);
+      return {
+        area: {
+          slug: area.slug,
+          name: area.name,
+          country: area.country,
+          lastUpdatedAt,
+        },
+        events,
+      };
     }),
 });

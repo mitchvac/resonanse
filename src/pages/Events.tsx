@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { UIEvent } from 'react';
 import {
   AnimatePresence,
@@ -21,6 +21,7 @@ import type { ToastPayload } from '@/components/AppToast';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import RsvpButton from '@/components/events/RsvpButton';
 import EventDetailSheet from '@/components/events/EventDetailSheet';
+import AreaPickerSheet, { fmtAgo } from '@/components/events/AreaPickerSheet';
 import {
   eventDate,
   fmtEyebrowDate,
@@ -43,8 +44,6 @@ const CATEGORIES = [
 ] as const;
 
 type CategoryKey = (typeof CATEGORIES)[number]['key'];
-
-const CITIES = ['Lisbon', 'Brooklyn', 'Portland', 'Denver', 'Austin', 'Atlanta'];
 
 const ATTENDEE_AVATARS = [
   '/avatar-02.jpg',
@@ -77,9 +76,10 @@ export default function Events() {
   const reduced = useReducedMotion();
 
   const [filter, setFilter] = useState<CategoryKey>('all');
-  const [city, setCity] = useState<string | null>(null);
+  const [selectedArea, setSelectedArea] = useState<string | null>(null);
+  const areaInitialised = useRef(false);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
-  const [citySheetOpen, setCitySheetOpen] = useState(false);
+  const [areaSheetOpen, setAreaSheetOpen] = useState(false);
   const [detail, setDetail] = useState<EventItem | null>(null);
   const [consentEvent, setConsentEvent] = useState<EventItem | null>(null);
   const [consented, setConsented] = useState<Set<number>>(new Set());
@@ -91,28 +91,47 @@ export default function Events() {
     setToast({ id: Date.now(), message, icon });
   }, []);
 
-  const listQuery = trpc.events.list.useQuery(undefined, {
+  const areasQuery = trpc.events.areas.useQuery(undefined, {
     enabled: isAuthenticated,
   });
+  const feedQuery = trpc.events.feed.useQuery(
+    { area: selectedArea },
+    { enabled: isAuthenticated },
+  );
   const profileQuery = trpc.profile.me.useQuery(undefined, {
     enabled: isAuthenticated,
   });
-  const entitlementsQuery = trpc.premium.entitlements.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
+
+  /* — Initialise the picked area from the engine's saved myArea (once) — */
+  useEffect(() => {
+    if (!areaInitialised.current && areasQuery.data) {
+      areaInitialised.current = true;
+      setSelectedArea(areasQuery.data.myArea);
+    }
+  }, [areasQuery.data]);
 
   const events = useMemo<EventItem[]>(
-    () => (listQuery.data?.events ?? []) as EventItem[],
-    [listQuery.data],
+    () => (feedQuery.data?.events ?? []) as EventItem[],
+    [feedQuery.data],
   );
+
+  const selectedAreaName = useMemo(() => {
+    if (!selectedArea) return null;
+    return (
+      areasQuery.data?.areas.find((a) => a.slug === selectedArea)?.name ??
+      selectedArea
+    );
+  }, [areasQuery.data, selectedArea]);
 
   const rsvpMutation = trpc.events.rsvp.useMutation({
     onMutate: async ({ eventId }) => {
-      await utils.events.list.cancel();
-      const prev = utils.events.list.getData();
-      utils.events.list.setData(undefined, (data) =>
+      const input = { area: selectedArea };
+      await utils.events.feed.cancel();
+      const prev = utils.events.feed.getData(input);
+      utils.events.feed.setData(input, (data) =>
         data
           ? {
+              ...data,
               events: data.events.map((e) =>
                 e.id === eventId
                   ? {
@@ -128,23 +147,26 @@ export default function Events() {
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) utils.events.list.setData(undefined, ctx.prev);
+      if (ctx?.prev)
+        utils.events.feed.setData({ area: selectedArea }, ctx.prev);
     },
     onSuccess: () =>
       showToast(
         'See you there — attendees can now message you via the event thread.',
         <BadgeCheck size={14} style={{ color: 'var(--ok)' }} aria-hidden="true" />,
       ),
-    onSettled: () => utils.events.list.invalidate(),
+    onSettled: () => utils.events.feed.invalidate(),
   });
 
   const cancelMutation = trpc.events.cancelRsvp.useMutation({
     onMutate: async ({ eventId }) => {
-      await utils.events.list.cancel();
-      const prev = utils.events.list.getData();
-      utils.events.list.setData(undefined, (data) =>
+      const input = { area: selectedArea };
+      await utils.events.feed.cancel();
+      const prev = utils.events.feed.getData(input);
+      utils.events.feed.setData(input, (data) =>
         data
           ? {
+              ...data,
               events: data.events.map((e) =>
                 e.id === eventId
                   ? {
@@ -160,10 +182,11 @@ export default function Events() {
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) utils.events.list.setData(undefined, ctx.prev);
+      if (ctx?.prev)
+        utils.events.feed.setData({ area: selectedArea }, ctx.prev);
     },
     onSuccess: () => showToast('RSVP removed.'),
-    onSettled: () => utils.events.list.invalidate(),
+    onSettled: () => utils.events.feed.invalidate(),
   });
 
   const feedbackMutation = trpc.events.feedback.useMutation({
@@ -204,17 +227,11 @@ export default function Events() {
   const now = Date.now();
   const upcoming = events.filter((e) => eventDate(e).getTime() >= now);
   const past = events.filter((e) => eventDate(e).getTime() < now);
-  const filtered = upcoming.filter(
-    (e) =>
-      matchesCategory(e, filter) &&
-      (!city || (e.city ?? '').startsWith(city)),
-  );
+  const filtered = upcoming.filter((e) => matchesCategory(e, filter));
   const heroEvent: EventItem | null =
-    filter === 'all' && !city ? (filtered[0] ?? null) : null;
+    filter === 'all' ? (filtered[0] ?? null) : null;
   const listEvents = heroEvent ? filtered.slice(1) : filtered;
   const myRsvps = upcoming.filter((e) => e.myRsvp === 'going');
-
-  const isTraveller = (entitlementsQuery.data?.entitlement.tier ?? 'free') !== 'free';
 
   /* — Hero photo parallax (−8% over scroll-through, transform only) — */
   const heroPhotoY = useMotionValue(0);
@@ -223,7 +240,10 @@ export default function Events() {
     heroPhotoY.set(Math.max(e.currentTarget.scrollTop * -0.08, -28));
   };
 
-  const loading = authLoading || (isAuthenticated && listQuery.isLoading);
+  const loading = authLoading || (isAuthenticated && feedQuery.isLoading);
+
+  const feedArea = feedQuery.data?.area ?? null;
+  const feedFreshness = feedArea ? fmtAgo(feedArea.lastUpdatedAt) : null;
 
   return (
     <div className="relative h-full overflow-hidden">
@@ -238,13 +258,22 @@ export default function Events() {
               type="button"
               className="t-micro -mx-2 mt-0.5 flex min-h-[36px] items-center px-2"
               style={{ color: 'var(--text-secondary)' }}
-              onClick={() => isTraveller && setCitySheetOpen(true)}
-              aria-label={
-                isTraveller ? 'Change city (Travel mode)' : undefined
-              }
+              onClick={() => setAreaSheetOpen(true)}
+              aria-label="Change area"
             >
-              {city ? city.toUpperCase() : 'ALL CITIES'} · THIS WEEK
+              {selectedAreaName ? selectedAreaName.toUpperCase() : 'ALL CITIES'}
             </button>
+            {/* — Engine freshness line — */}
+            {feedArea && (
+              <p
+                className="t-micro mt-0.5"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {feedFreshness
+                  ? `Updated ${feedFreshness} · kept fresh by the event agent`
+                  : 'Updating… · kept fresh by the event agent'}
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -495,7 +524,24 @@ export default function Events() {
         )}
 
         {/* — Empty state — */}
-        {!loading && filtered.length === 0 && (
+        {!loading && filtered.length === 0 && selectedArea && (
+          <section className="mt-16 flex flex-col items-center gap-3 px-8 text-center">
+            <BrandMark size={56} />
+            <h2 className="t-title-sm" style={{ color: 'var(--text-ink)' }}>
+              The agent is setting up {selectedAreaName ?? 'this area'} — check
+              back in a moment
+            </h2>
+            <BtnGlass
+              onClick={() => {
+                feedQuery.refetch();
+                areasQuery.refetch();
+              }}
+            >
+              Refresh
+            </BtnGlass>
+          </section>
+        )}
+        {!loading && filtered.length === 0 && !selectedArea && (
           <section className="mt-16 flex flex-col items-center gap-3 px-8 text-center">
             <BrandMark size={56} />
             <h2 className="t-title-sm" style={{ color: 'var(--text-ink)' }}>
@@ -669,48 +715,13 @@ export default function Events() {
         </div>
       </GlassSheet>
 
-      {/* — Travel-mode city sheet (Resonance+ only) — */}
-      <GlassSheet
-        open={citySheetOpen}
-        onClose={() => setCitySheetOpen(false)}
-        labelledBy="city-sheet-title"
-      >
-        <div className="px-5 pb-8">
-          <h2 id="city-sheet-title" className="t-title-sm mt-2">
-            Travel mode
-          </h2>
-          <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-            See what's on in another city this week.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {['All cities', ...CITIES].map((c) => {
-              const value = c === 'All cities' ? null : c;
-              const selected = city === value;
-              return (
-                <button
-                  key={c}
-                  type="button"
-                  className={cn(
-                    't-caption flex h-8 items-center rounded-full px-4',
-                    selected && 'font-bold',
-                  )}
-                  style={{
-                    background: 'var(--field)',
-                    color: 'var(--text)',
-                    boxShadow: selected ? '0 0 0 1.5px var(--violet)' : undefined,
-                  }}
-                  onClick={() => {
-                    setCity(value);
-                    setCitySheetOpen(false);
-                  }}
-                >
-                  {c}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </GlassSheet>
+      {/* — Engine area picker (all users) — */}
+      <AreaPickerSheet
+        open={areaSheetOpen}
+        onClose={() => setAreaSheetOpen(false)}
+        currentArea={selectedArea}
+        onSelect={setSelectedArea}
+      />
 
       {/* — Anonymity-mode consent step — */}
       <GlassSheet

@@ -24,11 +24,15 @@ export async function findEventById(
   return rows.at(0);
 }
 
-export async function listEventsWithRsvps(userId: number): Promise<EventWithRsvp[]> {
+export async function listEventsWithRsvps(
+  userId: number,
+  city?: string,
+): Promise<EventWithRsvp[]> {
   const db = getDb();
   const allEvents = await db
     .select()
     .from(events)
+    .where(city ? eq(events.city, city) : undefined)
     .orderBy(asc(events.startsAt));
 
   const rsvpRows = await db.select().from(eventRsvps);
