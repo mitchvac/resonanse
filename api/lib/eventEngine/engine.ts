@@ -12,7 +12,7 @@ import {
   type InsertEvent,
 } from "@db/schema";
 import { getDb } from "../../queries/connection";
-import { AREAS, type Area } from "./locations";
+import { AREAS, hashString, mulberry32, venueGeo, type Area } from "./locations";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EXPIRE_AFTER_MS = 7 * DAY_MS;
@@ -24,27 +24,8 @@ export function engineHost(area: Area): string {
   return `Resonance Events · ${area.name}`;
 }
 
-// ── Deterministic-ish PRNG (seeded per area + current week) ────────────
-
-function hashString(input: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < input.length; i++) {
-    h ^= input.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+// ── Deterministic PRNG (seeded per area + current week) ────────────────
+// hashString / mulberry32 live in ./locations (shared with venueGeo).
 
 function weekNumber(now: Date): number {
   return Math.floor(now.getTime() / (7 * DAY_MS));
@@ -207,7 +188,8 @@ export async function refreshArea(
 
       const capacity = 16 + Math.floor(rand() * 25); // 16–40
       const image = `/event-0${(i % 6) + 1}.jpg`;
-      const description = DESCRIPTIONS[i % DESCRIPTIONS.length](area, venue);
+      const description = DESCRIPTIONS[i % DESCRIPTIONS.length](area, venue.name);
+      const geo = venueGeo(area, venue.name);
 
       rows.push({
         title,
@@ -215,7 +197,10 @@ export async function refreshArea(
         description,
         image,
         city: area.name,
-        venue,
+        venue: venue.name,
+        address: venue.address,
+        lat: geo.lat,
+        lng: geo.lng,
         startsAt,
         capacity,
         hostName: host,

@@ -20,6 +20,8 @@ type CommonProps = {
   className?: string;
   /** Render as a react-router Link when set */
   to?: string;
+  /** Render as an external anchor (new tab) when set */
+  href?: string;
   onClick?: () => void;
   type?: 'button' | 'submit';
   disabled?: boolean;
@@ -33,7 +35,7 @@ const press = {
 
 function render(
   variant: 'primary' | 'glass' | 'ghost' | 'danger',
-  { children, className, to, onClick, type = 'button', disabled, ariaLabel }: CommonProps,
+  { children, className, to, href, onClick, type = 'button', disabled, ariaLabel }: CommonProps,
 ) {
   const base = 't-button inline-flex min-h-[44px] items-center justify-center gap-2 select-none';
   const styles: Record<typeof variant, string> = {
@@ -66,6 +68,20 @@ function render(
       <MotionLink to={to} className={cls} aria-label={ariaLabel} {...press}>
         {content}
       </MotionLink>
+    );
+  }
+  if (href) {
+    return (
+      <motion.a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className={cls}
+        aria-label={ariaLabel}
+        {...press}
+      >
+        {content}
+      </motion.a>
     );
   }
   return (

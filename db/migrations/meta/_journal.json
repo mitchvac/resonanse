@@ -71,6 +71,13 @@
       "when": 1786116195881,
       "tag": "0009_event-area",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1786129483496,
+      "tag": "0010_violet_eddie_brock",
+      "breakpoints": true
     }
   ]
 }

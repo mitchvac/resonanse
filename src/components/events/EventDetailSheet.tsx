@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BadgeCheck, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, MapPin, Navigation, ShieldCheck } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
 import LightTrail from '@/components/LightTrail';
 import { BtnGlass } from '@/components/ui/buttons';
@@ -46,6 +46,17 @@ export default function EventDetailSheet({
   const invite = trpc.events.invite.useMutation();
 
   const start = event ? eventDate(event) : null;
+  const lat = event?.lat ?? null;
+  const lng = event?.lng ?? null;
+  const hasGeo = lat != null && lng != null;
+  const mapEmbedUrl = hasGeo
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.012}%2C${lat - 0.007}%2C${lng + 0.012}%2C${lat + 0.007}&layer=mapnik&marker=${lat}%2C${lng}`
+    : null;
+  const directionsUrl = hasGeo
+    ? /iPad|iPhone|iPod/.test(navigator.userAgent)
+      ? `https://maps.apple.com/?daddr=${lat},${lng}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${lat}%2C${lng}`
+    : null;
   const agenda = start
     ? [
         { at: start, label: 'Doors & welcome drinks' },
@@ -102,6 +113,65 @@ export default function EventDetailSheet({
               <p className="t-body mt-3" style={{ color: 'var(--text)' }}>
                 {event.description}
               </p>
+            )}
+
+            {/* Getting there — address, embedded map, directions */}
+            {(event.address || hasGeo) && (
+              <>
+                <p className="t-micro mt-5" style={{ color: 'var(--text)' }}>
+                  GETTING THERE
+                </p>
+                <div className="mt-2 flex items-start gap-2">
+                  <MapPin
+                    size={16}
+                    className="mt-0.5 shrink-0"
+                    style={{ color: 'var(--violet)' }}
+                    aria-hidden="true"
+                  />
+                  <div className="min-w-0">
+                    {event.venue && (
+                      <p className="t-caption font-semibold" style={{ color: 'var(--text)' }}>
+                        {event.venue}
+                      </p>
+                    )}
+                    {event.address && (
+                      <p className="t-caption" style={{ color: 'var(--text-secondary)' }}>
+                        {event.address}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {hasGeo && mapEmbedUrl && directionsUrl && (
+                  <>
+                    <div
+                      className="mt-3 aspect-[16/10] overflow-hidden rounded-2xl"
+                      style={{ border: '1px solid hsl(var(--border))' }}
+                    >
+                      <iframe
+                        src={mapEmbedUrl}
+                        loading="lazy"
+                        title={`Map to ${event.venue ?? 'the venue'}`}
+                        className="h-full w-full border-0"
+                      />
+                    </div>
+                    <div className="mt-3 flex items-center gap-3">
+                      <BtnGlass href={directionsUrl} className="h-[44px] flex-1 px-4">
+                        <Navigation size={16} aria-hidden="true" />
+                        Get directions
+                      </BtnGlass>
+                      <a
+                        href={`https://www.openstreetmap.org/directions?to=${lat}%2C${lng}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="t-caption shrink-0 transition-opacity duration-fast active:opacity-70"
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        OpenStreetMap
+                      </a>
+                    </div>
+                  </>
+                )}
+              </>
             )}
 
             {/* Attendee grid */}

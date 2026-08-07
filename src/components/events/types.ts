@@ -11,6 +11,9 @@ export type EventItem = {
   image: string | null;
   city: string | null;
   venue: string | null;
+  address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   startsAt: Date | string;
   capacity: number;
   hostName: string | null;
