@@ -1,0 +1,62 @@
+# Self-hosted translation stack for Resonance.
+# Everything runs locally — no API keys, no per-request cost, fully offline
+# once images and models are pulled.
+#
+#   docker compose -f translate/docker-compose.yml up -d
+#
+# Then point the app at the services:
+#   LIBRETRANSLATE_URL=http://localhost:5000
+#   WHISPER_URL=http://localhost:8000
+#   PIPER_URL=http://localhost:5500
+
+services:
+  libretranslate:
+    # https://hub.docker.com/r/libretranslate/libretranslate
+    image: libretranslate/libretranslate:v1.6.2
+    container_name: resonance-libretranslate
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # Only load the languages the app supports — keeps RAM ~2GB instead of 6GB+.
+      LT_LOAD_ONLY: en,es,fr,de,pt,ja,zh
+      LT_THREADS: "4"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:5000/languages')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  whisper:
+    # faster-whisper-server: OpenAI-compatible /v1/audio/transcriptions.
+    # https://github.com/fedirz/faster-whisper-server
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: resonance-whisper
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Small model is a good accuracy/speed trade-off on CPU (~1GB RAM).
+      WHISPER__MODEL: Systran/faster-whisper-small
+    volumes:
+      # Cache the downloaded model across restarts.
+      - whisper-models:/root/.cache/huggingface
+
+  piper:
+    # Piper HTTP server: POST plain text to / (some builds use /synthesize)
+    # and receive audio/wav bytes back.
+    # https://hub.docker.com/r/ollycox/piper-http
+    image: ollycox/piper-http:v1.0.1
+    container_name: resonance-piper
+    restart: unless-stopped
+    ports:
+      - "5500:5500"
+    environment:
+      # Voice is server-side in piper-http; swap for any Piper voice.
+      PIPER_VOICE: en_US-lessac-medium
+    volumes:
+      - piper-voices:/app/voices
+
+volumes:
+  whisper-models:
+  piper-voices:

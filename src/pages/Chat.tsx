@@ -7,12 +7,19 @@ import {
   BadgeCheck,
   Check,
   EyeOff,
+  Languages,
   Video,
   Shield,
   X,
 } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
-import { BtnPrimary } from '@/components/ui/buttons';
+import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
+import {
+  TextTranslation,
+  TranslateTargetSheet,
+  VideoNoteTranslation,
+  type TranslateLanguage,
+} from '@/components/chat/TranslateControls';
 import MessageBubble, { SystemBubble } from '@/components/chat/MessageBubble';
 import DateIdeaThreadCard, { type DateMeta } from '@/components/chat/DateIdeaThreadCard';
 import WeMetCard from '@/components/chat/WeMetCard';
@@ -196,6 +203,23 @@ function TypingBubble() {
   );
 }
 
+/** Resonance Translate capability probe — PRECONDITION_FAILED means the
+    service isn't configured; treated as health=false (no translate UI). */
+function useTranslateHealth() {
+  const healthQuery = trpc.translate.health.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60_000,
+  });
+  const unconfigured = healthQuery.error?.data?.code === 'PRECONDITION_FAILED';
+  const data = unconfigured ? undefined : healthQuery.data;
+  return {
+    text: data?.text === true,
+    stt: data?.stt === true,
+    languages: (data?.languages ?? []) as TranslateLanguage[],
+  };
+}
+
 export default function Chat() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -246,6 +270,41 @@ export default function Chat() {
   const [justVideoVerified, setJustVideoVerified] = useState(false);
   const [noteRecorderOpen, setNoteRecorderOpen] = useState(false);
   const [safetyBarDismissed, setSafetyBarDismissed] = useState(true);
+
+  /* Resonance Translate — capability probe + per-message target cache.
+     When both engines are unconfigured, no translate UI renders at all. */
+  const translateHealth = useTranslateHealth();
+  const [translateSheetFor, setTranslateSheetFor] = useState<{
+    kind: 'text' | 'voice';
+    messageId: number;
+  } | null>(null);
+  const [textTargets, setTextTargets] = useState<Record<number, string>>({});
+  const [voiceTargets, setVoiceTargets] = useState<Record<number, string>>({});
+
+  const pickTranslateTarget = (code: string) => {
+    window.localStorage.setItem('translate-target', code);
+    if (!translateSheetFor) return;
+    if (translateSheetFor.kind === 'text') {
+      setTextTargets((t) => ({ ...t, [translateSheetFor.messageId]: code }));
+    } else {
+      setVoiceTargets((t) => ({ ...t, [translateSheetFor.messageId]: code }));
+    }
+    setTranslateSheetFor(null);
+  };
+
+  const dropTarget = (
+    setter: typeof setTextTargets,
+    messageId: number,
+    unconfigured: boolean,
+    fallback: string,
+  ) => {
+    setter((t) => {
+      const next = { ...t };
+      delete next[messageId];
+      return next;
+    });
+    showToast(unconfigured ? "Translation isn't configured yet." : fallback);
+  };
 
   const streamRef = useRef<HTMLDivElement>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -703,11 +762,41 @@ export default function Chat() {
                       onDecline={() => markDateStatus(m.id, 'declined')}
                     />
                   ) : m.kind === 'video_note' ? (
-                    <VideoNoteBubble
-                      message={m}
-                      own={own}
-                      index={Math.max(0, messages.length - i - 1)}
-                    />
+                    <div className="flex flex-col">
+                      <VideoNoteBubble
+                        message={m}
+                        own={own}
+                        index={Math.max(0, messages.length - i - 1)}
+                      />
+                      {translateHealth.stt && !voiceTargets[m.id] && (
+                        <div className={cn('mt-1 flex', own ? 'justify-end' : 'justify-start')}>
+                          <BtnGlass
+                            className="h-9 px-4"
+                            onClick={() => setTranslateSheetFor({ kind: 'voice', messageId: m.id })}
+                            ariaLabel={`Translate video note from ${peerName}`}
+                          >
+                            <Languages size={13} aria-hidden="true" />
+                            Translate
+                          </BtnGlass>
+                        </div>
+                      )}
+                      {voiceTargets[m.id] && (
+                        <div className={cn('flex', own ? 'justify-end' : 'justify-start')}>
+                          <VideoNoteTranslation
+                            messageId={m.id}
+                            target={voiceTargets[m.id]}
+                            onError={(unconfigured) =>
+                              dropTarget(
+                                setVoiceTargets,
+                                m.id,
+                                unconfigured,
+                                "Couldn't translate that note.",
+                              )
+                            }
+                          />
+                        </div>
+                      )}
+                    </div>
                   ) : m.kind === 'event_invite' ? (
                     <EventInviteBubble message={m} own={own} />
                   ) : (m.meta as { flaggedHidden?: boolean } | null)?.flaggedHidden ? (
@@ -719,13 +808,47 @@ export default function Chat() {
                       index={Math.max(0, messages.length - i - 1)}
                     />
                   ) : (
-                    <MessageBubble
-                      message={m}
-                      own={own}
-                      tick={tickFor(m, i)}
-                      ephemeral={ephemeral}
-                      index={Math.max(0, messages.length - i - 1)}
-                    />
+                    <div className="flex flex-col">
+                      <div className="group relative">
+                        <MessageBubble
+                          message={m}
+                          own={own}
+                          tick={tickFor(m, i)}
+                          ephemeral={ephemeral}
+                          index={Math.max(0, messages.length - i - 1)}
+                        />
+                        {!own && m.kind === 'text' && translateHealth.text && (
+                          <button
+                            type="button"
+                            onClick={() => setTranslateSheetFor({ kind: 'text', messageId: m.id })}
+                            className="absolute right-1 top-1/2 flex h-8 w-8 min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full opacity-0 transition-opacity duration-150 before:absolute before:-inset-2 before:content-[''] group-hover:opacity-100 focus-visible:opacity-100"
+                            style={{ color: 'var(--text-secondary)' }}
+                            aria-label={`Translate message from ${peerName}`}
+                          >
+                            <span
+                              className="flex h-7 w-7 items-center justify-center rounded-full"
+                              style={{ background: 'var(--field)' }}
+                            >
+                              <Languages size={13} aria-hidden="true" />
+                            </span>
+                          </button>
+                        )}
+                      </div>
+                      {!own && textTargets[m.id] && (
+                        <TextTranslation
+                          text={m.content}
+                          target={textTargets[m.id]}
+                          onError={(unconfigured) =>
+                            dropTarget(
+                              setTextTargets,
+                              m.id,
+                              unconfigured,
+                              "Couldn't translate that.",
+                            )
+                          }
+                        />
+                      )}
+                    </div>
                   )}
                 </div>
               );
@@ -819,6 +942,14 @@ export default function Chat() {
           </BtnPrimary>
         </div>
       </GlassSheet>
+
+      {/* Resonance Translate — target-language picker */}
+      <TranslateTargetSheet
+        open={translateSheetFor !== null}
+        languages={translateHealth.languages}
+        onPick={pickTranslateTarget}
+        onClose={() => setTranslateSheetFor(null)}
+      />
 
       {/* Ways to verify — trust surface (three identity checks, live status) */}
       <TrustSheet

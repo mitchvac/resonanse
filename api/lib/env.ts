@@ -32,4 +32,9 @@ export const env = {
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
   googleRedirectUri: process.env.GOOGLE_REDIRECT_URI ?? "",
+  // Self-hosted translation sidecars (see translate/docker-compose.yml).
+  // Empty = service not configured; features degrade gracefully.
+  libreTranslateUrl: process.env.LIBRETRANSLATE_URL ?? "",
+  whisperUrl: process.env.WHISPER_URL ?? "",
+  piperUrl: process.env.PIPER_URL ?? "",
 };

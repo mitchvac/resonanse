@@ -8,6 +8,7 @@ import { passwordAuthRouter } from "./passwordAuthRouter";
 import { premiumRouter } from "./premiumRouter";
 import { profileRouter } from "./profileRouter";
 import { safetyRouter } from "./safetyRouter";
+import { translateRouter } from "./translateRouter";
 import { videoCallRouter } from "./videoCallRouter";
 import { walletRouter } from "./walletRouter";
 import { createRouter, publicQuery } from "./middleware";
@@ -25,6 +26,7 @@ export const appRouter = createRouter({
   events: eventsRouter,
   premium: premiumRouter,
   safety: safetyRouter,
+  translate: translateRouter,
   videoCall: videoCallRouter,
   wallet: walletRouter,
 });
