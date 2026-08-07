@@ -20,6 +20,14 @@ import SignIn from '@/pages/SignIn'
 import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import NotFound from '@/pages/NotFound'
+import {
+  PrivacyPolicy,
+  TermsOfService,
+  CookiePreferences,
+  CommunityGuidelines,
+  ReportSafety,
+  DataRequests,
+} from '@/pages/Legal'
 import RequireProfile from '@/components/RequireProfile'
 
 export default function App() {
@@ -34,6 +42,14 @@ export default function App() {
       {/* Password reset — request link / consume token */}
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Legal & safety documents — public, no phone shell (like Home/Login) */}
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/cookies" element={<CookiePreferences />} />
+      <Route path="/guidelines" element={<CommunityGuidelines />} />
+      <Route path="/report" element={<ReportSafety />} />
+      <Route path="/data" element={<DataRequests />} />
 
       {/* App pages — nested under the phone-shell layout; signed-in users
           who haven't answered the onboarding questionnaire are routed there

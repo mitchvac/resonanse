@@ -259,8 +259,9 @@ export default function Settings() {
   const [deleteStep, setDeleteStep] = useState<0 | 1 | 2>(0);
   const [deleted, setDeleted] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [safetyOpen, setSafetyOpen] = useState(false);
-  const [legalSheet, setLegalSheet] = useState<'privacy' | 'help' | null>(null);
+  const [legalSheet, setLegalSheet] = useState<'help' | null>(null);
 
   const updateSettings = trpc.profile.updateSettings.useMutation({
     onSuccess: () => {
@@ -331,6 +332,27 @@ export default function Settings() {
       push("Couldn't export your data — check your connection and try again.");
     } finally {
       setExporting(false);
+    }
+  };
+
+  /* Re-check entitlements with the server and report the real result. */
+  const restorePurchases = async () => {
+    if (restoring) return;
+    setRestoring(true);
+    try {
+      await utils.premium.entitlements.invalidate();
+      await utils.profile.me.invalidate();
+      const result = await utils.premium.entitlements.fetch();
+      const tier = result?.entitlement?.tier ?? 'free';
+      push(
+        tier !== 'free'
+          ? 'Purchases restored — you’re on Resonance+'
+          : 'No previous purchase found',
+      );
+    } catch {
+      push("Couldn't check for purchases — try again.");
+    } finally {
+      setRestoring(false);
     }
   };
 
@@ -857,8 +879,8 @@ export default function Settings() {
                 chevron
                 onClick={() => setDeleteStep(1)}
               />
-              <SettingRow title="Privacy policy" chevron onClick={() => setLegalSheet('privacy')} />
-              <SettingRow title="Cookie preferences" chevron onClick={() => push('Opening cookie preferences.')} />
+              <SettingRow title="Privacy policy" chevron onClick={() => navigate('/privacy')} />
+              <SettingRow title="Cookie preferences" chevron onClick={() => navigate('/cookies')} />
             </Section>
 
             {/* ── §5 AI & matching ──────────────────────────────────── */}
@@ -910,9 +932,14 @@ export default function Settings() {
                   ) : undefined
                 }
               />
-              <SettingRow title="Restore purchases" chevron onClick={() => push('Checking for purchases…')} />
+              <SettingRow
+                title="Restore purchases"
+                caption={restoring ? 'Checking for purchases…' : undefined}
+                chevron
+                onClick={() => void restorePurchases()}
+              />
               <SettingRow title="Help center" chevron onClick={() => setLegalSheet('help')} />
-              <SettingRow title="Community guidelines" chevron onClick={() => push('Opening community guidelines.')} />
+              <SettingRow title="Community guidelines" chevron onClick={() => navigate('/guidelines')} />
               <SettingRow
                 icon={<ShieldCheck size={16} style={{ color: 'var(--ok)' }} aria-hidden="true" />}
                 title="Safety resources"
@@ -1178,17 +1205,32 @@ export default function Settings() {
         </div>
       </GlassSheet>
 
-      {/* ── Legal info — honest “coming soon” until the docs ship ──── */}
+      {/* ── Help center — quick answers + direct support ─────────── */}
       <GlassSheet open={legalSheet !== null} onClose={() => setLegalSheet(null)} labelledBy="legal-title">
         <div className="px-6 pb-8 pt-2">
           <h3 id="legal-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
-            {legalSheet === 'privacy' ? 'Privacy policy' : 'Help center'}
+            Help center
           </h3>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            {legalSheet === 'privacy'
-              ? 'Our full privacy policy is being finalized and will live here soon. The short version: we never sell your data, consent-gated tags stay private, and “Download my data” above gives you everything we hold about you, any time.'
-              : 'A searchable help center is coming soon. Until then, “Download my data” and the safety tools above cover the most common requests — and safety resources are always one tap away.'}
+            A searchable help center is coming soon. Until then, “Download my data” and the safety
+            tools above cover the most common requests — and safety resources are always one tap
+            away.
           </p>
+          <a
+            href="mailto:support@resonanse.app"
+            className="mt-4 flex min-h-[56px] items-center gap-3 rounded-2xl px-4 transition-opacity duration-fast active:opacity-70"
+            style={{ background: 'var(--field)' }}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="t-button block" style={{ color: 'var(--text)' }}>
+                Email support
+              </span>
+              <span className="t-caption block" style={{ color: 'var(--text-secondary)' }}>
+                support@resonanse.app — we reply within one business day
+              </span>
+            </span>
+            <ExternalLink size={16} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} aria-hidden="true" />
+          </a>
           <BtnPrimary onClick={() => setLegalSheet(null)} className="mt-6 w-full">
             Got it
           </BtnPrimary>

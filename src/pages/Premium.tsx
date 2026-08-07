@@ -874,8 +874,18 @@ export default function Premium() {
               className="t-micro min-h-[44px]"
               style={{ color: 'var(--text-secondary)' }}
               onClick={() => {
-                void entitlementsQuery.refetch();
-                showToast('Synced with your account.');
+                void (async () => {
+                  const [result] = await Promise.all([
+                    entitlementsQuery.refetch(),
+                    utils.profile.me.invalidate(),
+                  ]);
+                  const tier = result.data?.entitlement?.tier ?? 'free';
+                  showToast(
+                    tier !== 'free'
+                      ? 'Purchases restored — you’re on Resonance+'
+                      : 'No previous purchase found',
+                  );
+                })();
               }}
             >
               Restore purchase
@@ -884,7 +894,7 @@ export default function Premium() {
               type="button"
               className="t-micro min-h-[44px]"
               style={{ color: 'var(--text-secondary)' }}
-              onClick={() => showToast('Terms open at resonance.date/terms.')}
+              onClick={() => navigate('/terms')}
             >
               Terms
             </button>

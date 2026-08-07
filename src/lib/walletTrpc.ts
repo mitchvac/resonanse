@@ -11,12 +11,10 @@ import type {
 /**
  * Wallet tRPC facade.
  *
- * The `walletRouter` is built on a parallel backend branch against the exact
- * contract declared in `@/types/wallet-router`. On this branch `AppRouter`
- * has no `wallet` key yet, so we widen the shared `trpc` client once, here,
- * with minimal hook signatures matching @trpc/react-query v11 usage. When
- * the branches merge the real router types land on `trpc.wallet` and this
- * cast stays valid (it is a structural superset of the real hooks).
+ * `AppRouter` includes the real `walletRouter`, so `trpc.wallet` is fully
+ * typed against the server procedures. The `WalletApi` type below documents
+ * the contract declared in `@/types/wallet-router` for reference; the facade
+ * itself needs no casts.
  */
 
 type QueryError = { message: string };
@@ -85,18 +83,16 @@ export type WalletApi = {
   };
 };
 
-/** `trpc` + the wallet router (typed per contract; real types land at merge). */
-export const walletTrpc = trpc as unknown as typeof trpc & { wallet: WalletApi };
+/**
+ * `trpc` already carries the real `wallet` router types on `AppRouter` (the
+ * branches merged), so no widening cast is needed — the hooks typecheck
+ * directly against the server procedures.
+ */
+export const walletTrpc = trpc;
 
-/** Query utils with the wallet invalidators widened in (same story as above). */
+/** Query utils — `wallet` invalidators are part of the real AppRouter types. */
 export function useWalletUtils() {
-  const utils = trpc.useUtils();
-  return utils as unknown as typeof utils & {
-    wallet: {
-      state: { invalidate: () => Promise<unknown> };
-      history: { invalidate: () => Promise<unknown> };
-    };
-  };
+  return trpc.useUtils();
 }
 
 /** Format a coin amount (number or numeric string) with grouping. */

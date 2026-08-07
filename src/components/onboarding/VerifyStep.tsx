@@ -17,8 +17,9 @@ import { cn } from '@/lib/utils';
  * flash, "captured" 1s — then the canvas is CLEARED; nothing is stored,
  * consistent with the ID-scan privacy model) → 2 Live check ("Turn your
  * head slowly →" arrow arc 2s loop + violet progress ring 0→100% over 2.4s)
- * → 3 Result. Camera blocked/unavailable → honest blocked copy + a
- * "Continue without photo verification" tertiary route to ID verification
+ * → 3 Result. Camera blocked/unavailable → honest blocked copy, a
+ * "Continue without photo verification" tertiary route to ID verification,
+ * and a "Skip for now" escape (onSkip) that advances onboarding unverified
  * (verified stays false — never stamped without a real captured frame).
  */
 
@@ -28,9 +29,12 @@ const EASE_SPRING = [0.34, 1.56, 0.64, 1] as [number, number, number, number];
 
 export default function VerifyStep({
   onVerified,
+  onSkip,
 }: {
   /** returns true when verification is accepted (backend or demo mode) */
   onVerified: () => Promise<boolean>;
+  /** camera unavailable → advance WITHOUT verifying (no badge is granted) */
+  onSkip?: () => void;
 }) {
   const reduced = useReducedMotion();
   const [phase, setPhase] = useState<Phase>('selfie');
@@ -368,6 +372,16 @@ export default function VerifyStep({
                 <BtnGhost onClick={continueWithoutPhoto} className="t-caption mt-2 text-white/70">
                   Continue without photo verification
                 </BtnGhost>
+                {onSkip && (
+                  <>
+                    <BtnGlass onClick={onSkip} className="mt-4 h-11 px-5 text-white">
+                      Skip for now — verify later from your Profile
+                    </BtnGlass>
+                    <p className="t-caption mt-2 max-w-[280px] text-white/60">
+                      You can browse, but some features need a verified photo.
+                    </p>
+                  </>
+                )}
               </motion.div>
             )}
 
@@ -484,8 +498,8 @@ export default function VerifyStep({
             profile — it&rsquo;s only used for the check.
           </p>
           <p className="t-body mt-3" style={{ color: 'var(--text-secondary)' }}>
-            The verified badge appears next to your name everywhere in the app. No badge, no
-            browsing — that&rsquo;s what keeps this community small and safe.
+            The verified badge appears next to your name everywhere in the app — it&rsquo;s
+            what keeps this community small and safe.
           </p>
         </div>
       </GlassSheet>

@@ -810,8 +810,7 @@ function Pricing() {
         </div>
 
         <Reveal delay={0.2} className="mt-8">
-          {/* AUTH-SLOT: rewired to useAuth() in Phase 5 */}
-          <BtnGhost to="/login">Compare plans →</BtnGhost>
+          <BtnGhost to="/premium">Compare plans →</BtnGhost>
         </Reveal>
       </div>
     </section>

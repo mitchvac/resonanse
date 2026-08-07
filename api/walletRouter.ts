@@ -75,9 +75,26 @@ export const walletRouter = createRouter({
 
   /** The user's sales (buy or sell), newest first, 20/page. */
   history: authedQuery
-    .input(z.object({ cursor: z.number().int().min(0).optional() }))
+    // Cursor is an opaque offset string (client contract: string | null).
+    .input(z.object({ cursor: z.string().optional() }))
     .query(({ ctx, input }) =>
-      run(() => getHistory(ctx.user.id, input.cursor)),
+      run(async () => {
+        const parsed = input.cursor === undefined ? NaN : Number(input.cursor);
+        const offset = Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : 0;
+        const page = await getHistory(ctx.user.id, offset);
+        return {
+          items: page.items.map((item) => ({
+            id: item.saleId,
+            kind: item.direction === "buy" ? ("BOUGHT" as const) : ("SUPPLIED" as const),
+            coins: item.amount,
+            /** micro-USD per coin (client formats with formatPriceMicro) */
+            pricePerCoin: item.pricePerCoinMicro,
+            asset: item.paidWith,
+            at: item.createdAt,
+          })),
+          nextCursor: page.nextCursor === null ? null : String(page.nextCursor),
+        };
+      }),
     ),
 
   /** Informational buy quote at the current price. */
@@ -106,7 +123,8 @@ export const walletRouter = createRouter({
   /** Server-side on-chain verification + atomic settlement (idempotent). */
   paymentStatus: authedQuery
     .input(z.object({ intentId: z.string().min(1) }))
-    .mutation(({ ctx, input }) =>
+    // Polled via useQuery (GET) from the checkout sheet — must be a query.
+    .query(({ ctx, input }) =>
       run(() => confirmPayment(ctx.user.id, input.intentId)),
     ),
 

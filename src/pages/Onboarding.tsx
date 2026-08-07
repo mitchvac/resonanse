@@ -290,7 +290,14 @@ export default function Onboarding() {
             )}
             {step === 1 && <AboutYouStep draft={draft} update={update} />}
             {step === 2 && <IntentStep draft={draft} update={update} />}
-            {step === 3 && <VerifyStep onVerified={handleVerified} />}
+            {step === 3 && (
+              <VerifyStep
+                onVerified={handleVerified}
+                /* camera unavailable → advance unverified (no badge); the
+                   Profile page carries the "Verify your ID" re-entry point */
+                onSkip={() => goTo(4)}
+              />
+            )}
             {step === 4 && (
               <PermissionsStep draft={draft} update={update} onSkip={() => goTo(5)} />
             )}

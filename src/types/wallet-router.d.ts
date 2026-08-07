@@ -81,7 +81,8 @@ export type PaymentStatusKind = 'pending' | 'confirmed' | 'underpaid' | 'expired
 
 export type PaymentStatus = {
   status: PaymentStatusKind;
-  receivedAmountText?: string;
+  /** Actual received amount when underpaid; null when unknown/not applicable. */
+  receivedAmountText?: string | null;
   expectedAmountText?: string;
   expiresAt?: string | Date;
 } & Record<string, unknown>;

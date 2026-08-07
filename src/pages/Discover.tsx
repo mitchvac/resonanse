@@ -8,6 +8,8 @@ import BrandMark from '@/components/BrandMark';
 import GlassCard from '@/components/GlassCard';
 import GlassSheet from '@/components/GlassSheet';
 import LightTrail from '@/components/LightTrail';
+import AppToast from '@/components/AppToast';
+import type { ToastPayload } from '@/components/AppToast';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import QueueCard from '@/components/discover/QueueCard';
 import ActionDock from '@/components/discover/ActionDock';
@@ -109,6 +111,7 @@ export default function Discover() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [travelOpen, setTravelOpen] = useState(false);
   const [lockedFilterGate, setLockedFilterGate] = useState(false);
+  const [toast, setToast] = useState<ToastPayload | null>(null);
 
   /* Deep link from Settings: /discover?filters=1 opens the FilterSheet */
   useEffect(() => {
@@ -134,6 +137,22 @@ export default function Discover() {
   };
 
   const entries = useMemo(() => queueQuery.data?.entries ?? [], [queueQuery.data]);
+
+  /* Deep link from a shared profile: /discover?profile=<id> opens the
+     ProfileSheet for that queue entry once the queue has loaded; a stale id
+     gets an honest toast. The param is cleaned either way (same pattern as
+     ?filters=1 above). */
+  const profileParam = searchParams.get('profile');
+  useEffect(() => {
+    if (!profileParam || queueQuery.isLoading || queueQuery.isError) return;
+    const entry = entries.find((e) => e.profile.id === Number(profileParam));
+    if (entry) {
+      setSheetEntry(entry);
+    } else {
+      setToast({ id: Date.now(), message: "That profile isn't in your queue anymore" });
+    }
+    setSearchParams({}, { replace: true });
+  }, [profileParam, queueQuery.isLoading, queueQuery.isError, entries, setSearchParams]);
   const swipeEntries = useMemo(
     () => entries.filter((e) => !swipedIds.has(e.profile.id)),
     [entries, swipedIds],
@@ -532,6 +551,9 @@ export default function Discover() {
         matchId={match?.matchId ?? null}
         onClose={() => setMatch(null)}
       />
+
+      {/* stale shared-profile link toast */}
+      <AppToast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

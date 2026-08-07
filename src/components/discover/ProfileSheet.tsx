@@ -7,6 +7,7 @@ import AppToast from '@/components/AppToast';
 import type { ToastPayload } from '@/components/AppToast';
 import VerifiedBadge from '@/components/discover/VerifiedBadge';
 import Chip from '@/components/discover/Chip';
+import { BtnGlass } from '@/components/ui/buttons';
 import CompatibilityArc from '@/components/discover/CompatibilityArc';
 import { trpc } from '@/providers/trpc';
 import { cn } from '@/lib/utils';
@@ -294,15 +295,27 @@ export default function ProfileSheet({
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={submitReport}
-            disabled={!reason || report.isPending}
-            className="t-button mt-3 h-11 min-h-[44px] w-full rounded-full disabled:opacity-50"
-            style={{ color: 'var(--danger)', boxShadow: 'inset 0 0 0 1px var(--danger)' }}
-          >
-            {report.isPending ? 'Sending…' : 'Send report'}
-          </button>
+          <div className="mt-3 flex items-center gap-3">
+            <BtnGlass
+              onClick={() => {
+                setSafetyOpen(false);
+                setReason(null);
+              }}
+              disabled={report.isPending}
+              className="h-11 flex-1"
+            >
+              Cancel
+            </BtnGlass>
+            <button
+              type="button"
+              onClick={submitReport}
+              disabled={!reason || report.isPending}
+              className="t-button h-11 min-h-[44px] flex-1 rounded-full disabled:opacity-50"
+              style={{ color: 'var(--danger)', boxShadow: 'inset 0 0 0 1px var(--danger)' }}
+            >
+              {report.isPending ? 'Sending…' : 'Send report'}
+            </button>
+          </div>
         </section>
         <section className="mt-5 border-t pt-4" style={{ borderColor: 'var(--ring-stroke)' }}>
           <p className="t-caption font-bold" style={{ color: 'var(--text)' }}>

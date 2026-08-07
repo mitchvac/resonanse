@@ -427,6 +427,11 @@ export type ConfirmPaymentResult = {
   status: (typeof schema.DC_INTENT_STATUS)[number];
   txHash?: string | null;
   sale?: SettledSale;
+  /**
+   * Actual received amount text when the payment came in under the expected
+   * amount (from the chain verifier when it reports one); otherwise null.
+   */
+  receivedAmountText: string | null;
 };
 
 /**
@@ -452,10 +457,10 @@ export async function confirmPayment(
 
   // Idempotent: already confirmed → return current state, no re-settlement.
   if (intent.status === "confirmed") {
-    return { status: "confirmed", txHash: intent.txHash };
+    return { status: "confirmed", txHash: intent.txHash, receivedAmountText: null };
   }
   if (intent.status === "expired") {
-    return { status: "expired" };
+    return { status: "expired", receivedAmountText: null };
   }
 
   // Expiry sweep.
@@ -472,7 +477,7 @@ export async function confirmPayment(
         );
       await audit(tx, actorFor(userId), "INTENT_EXPIRED", { intentId });
     });
-    return { status: "expired" };
+    return { status: "expired", receivedAmountText: null };
   }
 
   // Server-side on-chain verification (never trust the client).
@@ -484,9 +489,14 @@ export async function confirmPayment(
   });
 
   if (outcome.status === "pending") {
-    return { status: "pending" };
+    return { status: "pending", receivedAmountText: null };
   }
   if (outcome.status === "underpaid") {
+    // The verifier may report the actual received amount text; fall back to
+    // null so the client can show its generic underpaid copy.
+    const receivedAmountText =
+      (outcome as { receivedAmountText?: string | null }).receivedAmountText ??
+      null;
     await db.transaction(async (tx) => {
       await tx
         .update(schema.dcCryptoIntents)
@@ -499,7 +509,7 @@ export async function confirmPayment(
         );
       await audit(tx, actorFor(userId), "INTENT_UNDERPAID", { intentId });
     });
-    return { status: "underpaid" };
+    return { status: "underpaid", receivedAmountText };
   }
 
   // Confirmed → settle atomically in ONE transaction (fail closed).
@@ -575,7 +585,12 @@ export async function confirmPayment(
     return { sale, already: false };
   });
 
-  return { status: "confirmed", txHash: outcome.txHash ?? null, sale: settled.sale ?? undefined };
+  return {
+    status: "confirmed",
+    txHash: outcome.txHash ?? null,
+    sale: settled.sale ?? undefined,
+    receivedAmountText: null,
+  };
 }
 
 export type AdminTreasury = {

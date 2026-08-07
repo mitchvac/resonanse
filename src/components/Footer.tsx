@@ -1,13 +1,56 @@
 import { Link } from 'react-router';
-import { Instagram, Twitter, Youtube } from 'lucide-react';
+import type { CSSProperties } from 'react';
 import BrandMark from '@/components/BrandMark';
 
-const COLUMNS: { title: string; links: string[] }[] = [
-  { title: 'Product', links: ['Daily Queue', 'Modes', 'Events', 'Resonance+'] },
-  { title: 'Company', links: ['About', 'Careers', 'Press', 'Contact'] },
-  { title: 'Legal', links: ['Privacy', 'Terms', 'Cookies', 'Data requests'] },
-  { title: 'Safety', links: ['Verification', 'Community rules', 'Report', 'Consent tools'] },
+type FooterLink = { label: string; to: string; external?: boolean };
+
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'Daily Queue', to: '/#philosophy' },
+      { label: 'Modes', to: '/#modes' },
+      { label: 'Events', to: '/#philosophy' },
+      { label: 'Resonance+', to: '/#pricing' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', to: '/#philosophy' },
+      { label: 'Careers', to: 'mailto:press@resonanse.app', external: true },
+      { label: 'Press', to: 'mailto:press@resonanse.app', external: true },
+      { label: 'Contact', to: 'mailto:hello@resonanse.app', external: true },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Privacy', to: '/privacy' },
+      { label: 'Terms', to: '/terms' },
+      { label: 'Cookies', to: '/cookies' },
+      { label: 'Data requests', to: '/data' },
+    ],
+  },
+  {
+    title: 'Safety',
+    links: [
+      { label: 'Verification', to: '/#safety' },
+      { label: 'Community rules', to: '/guidelines' },
+      { label: 'Report', to: '/report' },
+      { label: 'Consent tools', to: '/report' },
+    ],
+  },
 ];
+
+const linkClass = 't-caption transition-colors duration-fast';
+const linkStyle: CSSProperties = { color: 'var(--text-secondary)' };
+const linkHover = {
+  onMouseEnter: (e: React.MouseEvent<HTMLElement>) =>
+    (e.currentTarget.style.color = 'var(--text)'),
+  onMouseLeave: (e: React.MouseEvent<HTMLElement>) =>
+    (e.currentTarget.style.color = 'var(--text-secondary)'),
+};
 
 /**
  * Marketing footer — home.md "Global page furniture"
@@ -37,21 +80,6 @@ export default function Footer() {
                 A daily queue of people who match your intent — and the tools to
                 turn a match into a first date.
               </p>
-              <div className="mt-5 flex items-center gap-3">
-                {[Instagram, Twitter, Youtube].map((Icon, i) => (
-                  <a
-                    key={i}
-                    href="#"
-                    className="flex h-10 min-h-[44px] w-10 min-w-[44px] items-center justify-center rounded-full bg-field transition-colors duration-fast"
-                    style={{ color: 'var(--text-secondary)' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-                    aria-label="Social link"
-                  >
-                    <Icon size={18} aria-hidden="true" />
-                  </a>
-                ))}
-              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
@@ -62,16 +90,16 @@ export default function Footer() {
                   </h3>
                   <ul className="mt-3 space-y-2.5">
                     {col.links.map((link) => (
-                      <li key={link}>
-                        <a
-                          href="#"
-                          className="t-caption transition-colors duration-fast"
-                          style={{ color: 'var(--text-secondary)' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-                        >
-                          {link}
-                        </a>
+                      <li key={link.label}>
+                        {link.external ? (
+                          <a href={link.to} className={linkClass} style={linkStyle} {...linkHover}>
+                            {link.label}
+                          </a>
+                        ) : (
+                          <Link to={link.to} className={linkClass} style={linkStyle} {...linkHover}>
+                            {link.label}
+                          </Link>
+                        )}
                       </li>
                     ))}
                   </ul>
