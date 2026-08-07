@@ -529,8 +529,8 @@
 .dc-card {
   position: relative;
   overflow: hidden;
-  width: min(400px, 100%);
-  height: 560px;
+  width: min(360px, 100%);
+  height: 504px;
   border-radius: 24px;
   color: #fff;
   background:
@@ -627,6 +627,14 @@
   letter-spacing: -0.01em;
 }
 @media (max-width: 480px) {
-  .dc-card { height: 540px; }
-  .dc-card__title { font-size: 38px; }
+  .dc-card { height: 490px; }
+  .dc-card__title { font-size: 36px; }
+}
+
+/* ---- Contrast fix: the design system's .text-secondary must beat Tailwind's
+   theme utility of the same name (hsl(var(--secondary)) — near-invisible in
+   both themes). Doubled class wins on specificity without !important. ---- */
+.text-secondary.text-secondary,
+.text-ink-secondary.text-ink-secondary {
+  color: var(--text-secondary);
 }
