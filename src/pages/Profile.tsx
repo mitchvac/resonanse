@@ -30,6 +30,7 @@ import CountUp from '@/components/CountUp';
 import { BtnGlass, BtnPrimary, BtnGhost } from '@/components/ui/buttons';
 import { LockChip, Chip, ToastHost, useToasts } from '@/components/settings/controls';
 import { trpc } from '@/providers/trpc';
+import { formatCoins } from '@/lib/walletTrpc';
 import { useAuth } from '@/hooks/useAuth';
 import { fileToPhotoDataUrl } from '@/lib/photoFile';
 
@@ -176,6 +177,8 @@ export default function Profile() {
   const { toasts, push } = useToasts();
   const likesQuery = trpc.likes.received.useQuery();
   const matchesQuery = trpc.matches.list.useQuery();
+  const walletQuery = trpc.wallet.state.useQuery(undefined, { staleTime: 60_000, retry: 1 });
+  const walletSecQuery = trpc.walletSecurity.status.useQuery(undefined, { staleTime: 60_000, retry: 1 });
   const upsertProfile = trpc.profile.upsert.useMutation({
     onSuccess: () => void utils.profile.me.invalidate(),
   });
@@ -782,6 +785,34 @@ export default function Profile() {
                 value={`${pulses} left`}
                 onClick={() => navigate('/premium')}
                 delay={0.04}
+              />
+              <QuickRow
+                label="Wallet"
+                value={
+                  walletQuery.data
+                    ? walletQuery.data.hasWallet
+                      ? `${formatCoins(walletQuery.data.balance)} DC`
+                      : 'Set up Date-Coin'
+                    : undefined
+                }
+                right={
+                  walletSecQuery.data?.hasWallet ? (
+                    walletSecQuery.data.delegation?.status === 'active' ? (
+                      <span className="t-caption font-bold" style={{ color: 'var(--ok)' }}>
+                        Ecosystem on
+                      </span>
+                    ) : (
+                      <span
+                        className="t-caption font-bold"
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        Ecosystem off
+                      </span>
+                    )
+                  ) : undefined
+                }
+                onClick={() => navigate('/wallet')}
+                delay={0.06}
               />
               <QuickRow
                 label="Verification status"

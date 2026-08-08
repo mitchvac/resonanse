@@ -20,6 +20,7 @@ import {
   BadgeCheck,
   ExternalLink,
   PauseCircle,
+  Wallet,
 } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import GlassSheet from '@/components/GlassSheet';
@@ -931,6 +932,13 @@ export default function Settings() {
                     </span>
                   ) : undefined
                 }
+              />
+              <SettingRow
+                icon={<Wallet size={16} aria-hidden="true" />}
+                title="Wallet"
+                caption="Date-Coin balance, keys and ecosystem switch."
+                chevron
+                onClick={() => navigate('/wallet')}
               />
               <SettingRow
                 title="Restore purchases"
