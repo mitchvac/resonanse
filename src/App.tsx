@@ -11,6 +11,8 @@ import Events from '@/pages/Events'
 import Community from '@/pages/Community'
 import Concentration from '@/pages/Concentration'
 import Spades from '@/pages/Spades'
+import Chess from '@/pages/Chess'
+import LiarsDice from '@/pages/LiarsDice'
 import Premium from '@/pages/Premium'
 import Wallet from '@/pages/Wallet'
 import Profile from '@/pages/Profile'
@@ -71,6 +73,8 @@ export default function App() {
         <Route path="/community" element={<Community />} />
         <Route path="/community/concentration" element={<Concentration />} />
         <Route path="/community/spades" element={<Spades />} />
+        <Route path="/community/chess" element={<Chess />} />
+        <Route path="/community/liars-dice" element={<LiarsDice />} />
         <Route path="/premium" element={<Premium />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/profile" element={<Profile />} />

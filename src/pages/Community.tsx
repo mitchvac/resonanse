@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   Bot,
   Brain,
+  ChessKnight,
   Crown,
   Dices,
   ImageIcon,
@@ -339,6 +340,80 @@ export default function Community() {
               </div>
             </GlassCard>
           </motion.div>
+
+          <motion.div {...rise(0.2)}>
+            <GlassCard className="p-5" ringX={34}>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <div>
+                    <p className="t-eyebrow">STRATEGY · LIVE</p>
+                    <h2 className="t-title mt-1" style={{ color: 'var(--text)' }}>
+                      Chess
+                    </h2>
+                  </div>
+                  <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
+                    You vs BOT · Riley
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-end gap-2.5">
+                    <span className="flex w-[54px] flex-col items-center gap-1">
+                      <SeatAvatar seat={{ kind: 'open' }} />
+                      <span className="t-micro text-center" style={{ color: 'var(--text-secondary)' }}>
+                        your seat
+                      </span>
+                    </span>
+                    <span className="flex w-[54px] flex-col items-center gap-1">
+                      <SeatAvatar seat={{ kind: 'bot', handle: 'BOT · Riley' }} />
+                      <span className="t-micro text-center" style={{ color: 'var(--text-secondary)' }}>
+                        BOT · Riley
+                      </span>
+                    </span>
+                  </div>
+                  <BtnPrimary className="h-11 px-5" onClick={() => navigate('/community/chess')}>
+                    <ChessKnight size={16} aria-hidden="true" />
+                    Play
+                  </BtnPrimary>
+                </div>
+              </div>
+            </GlassCard>
+          </motion.div>
+
+          <motion.div {...rise(0.24)}>
+            <GlassCard className="p-5" ringX={48}>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <div>
+                    <p className="t-eyebrow">DICE · LIVE</p>
+                    <h2 className="t-title mt-1" style={{ color: 'var(--text)' }}>
+                      Liar's Dice
+                    </h2>
+                  </div>
+                  <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
+                    You + 3 labelled bots
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-end gap-2">
+                    {(['you', 'BOT · Riley', 'BOT · Maya', 'BOT · Sam'] as const).map((s) => (
+                      <span key={s} className="flex w-[50px] flex-col items-center gap-1">
+                        <SeatAvatar
+                          seat={s === 'you' ? { kind: 'open' } : { kind: 'bot', handle: s }}
+                        />
+                        <span className="t-micro text-center" style={{ color: 'var(--text-secondary)' }}>
+                          {s === 'you' ? 'your seat' : s}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                  <BtnPrimary className="h-11 px-5" onClick={() => navigate('/community/liars-dice')}>
+                    <Dices size={16} aria-hidden="true" />
+                    Play
+                  </BtnPrimary>
+                </div>
+              </div>
+            </GlassCard>
+          </motion.div>
         </section>
 
         {/* ---- The game room (Stage 2 preview) ----------------------- */}
@@ -346,11 +421,11 @@ export default function Community() {
           <motion.div {...rise(0.2)}>
             <p className="t-eyebrow">THE ROOM</p>
             <h2 className="t-title mt-1.5" style={{ color: 'var(--text-ink)' }}>
-              Tables seating soon.
+              Every table is live.
             </h2>
             <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-              This is where the real tables live. Seating, spectating and hosting wire
-              up with Stage 2 — everything below is the actual room layout.
+              Take any seat below and the board opens. Real multiplayer seating,
+              spectating and hosting arrive with the Stage 2 community backend.
             </p>
           </motion.div>
 
@@ -367,14 +442,15 @@ export default function Community() {
                   <TableRoom
                     icon={<Spade size={18} aria-hidden="true" />}
                     title="Spades"
-                    status="Spectate · Stage 2"
+                    status="Playable now"
+                    live
                     seats={[
                       { kind: 'person', handle: 'ember line', photo: '/avatar-03.jpg', verified: true },
                       { kind: 'person', handle: 'low tide', photo: '/avatar-06.jpg', verified: true },
                       { kind: 'bot', handle: 'BOT · Sam' },
                       { kind: 'person', handle: 'paper crane', photo: '/avatar-09.jpg' },
                     ]}
-                    onSeat={() => setPreviewOpen(true)}
+                    onSeat={() => navigate('/community/spades')}
                   />
                 </div>
               </GlassCard>
@@ -392,12 +468,13 @@ export default function Community() {
                   <TableRoom
                     icon={<Brain size={18} aria-hidden="true" />}
                     title="Concentration"
-                    status="Take a seat · Stage 2"
+                    status="Take a seat"
+                    live
                     seats={[
                       { kind: 'person', handle: 'morning fog', photo: '/avatar-08.jpg', verified: true },
                       { kind: 'open' },
                     ]}
-                    onSeat={() => setPreviewOpen(true)}
+                    onSeat={() => navigate('/community/concentration')}
                   />
                 </div>
               </GlassCard>
@@ -408,22 +485,43 @@ export default function Community() {
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="t-eyebrow">TABLE 3 · LIAR'S DICE</p>
                   <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                    opens with Stage 2
+                    seating · your seat open
                   </span>
                 </div>
                 <div className="mt-4">
                   <TableRoom
                     icon={<Dices size={18} aria-hidden="true" />}
                     title="Liar's Dice"
-                    status="Locked · Stage 2"
+                    status="Take a seat"
+                    live
                     seats={[
-                      { kind: 'locked' },
-                      { kind: 'locked' },
-                      { kind: 'locked' },
-                      { kind: 'locked' },
-                      { kind: 'locked' },
+                      { kind: 'open' },
+                      { kind: 'bot', handle: 'BOT · Riley' },
+                      { kind: 'bot', handle: 'BOT · Maya' },
+                      { kind: 'bot', handle: 'BOT · Sam' },
                     ]}
-                    onSeat={() => setPreviewOpen(true)}
+                    onSeat={() => navigate('/community/liars-dice')}
+                  />
+                </div>
+              </GlassCard>
+            </motion.div>
+
+            <motion.div {...rise(0.44)}>
+              <GlassCard className="p-5" ringX={76}>
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="t-eyebrow">TABLE 4 · CHESS</p>
+                  <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
+                    seating · your seat open
+                  </span>
+                </div>
+                <div className="mt-4">
+                  <TableRoom
+                    icon={<ChessKnight size={18} aria-hidden="true" />}
+                    title="Chess"
+                    status="Take a seat"
+                    live
+                    seats={[{ kind: 'open' }, { kind: 'bot', handle: 'BOT · Riley' }]}
+                    onSeat={() => navigate('/community/chess')}
                   />
                 </div>
               </GlassCard>
