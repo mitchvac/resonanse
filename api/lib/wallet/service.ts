@@ -38,7 +38,8 @@ export type WalletErrorCode =
   | "INTENT_NOT_FOUND"
   | "FORBIDDEN"
   | "QUOTE_TOO_SMALL"
-  | "POOL_EXHAUSTED";
+  | "POOL_EXHAUSTED"
+  | "ASSET_UNAVAILABLE";
 
 export class WalletError extends Error {
   code: WalletErrorCode;
@@ -51,6 +52,16 @@ export class WalletError extends Error {
 }
 
 const actorFor = (userId: number) => `user:${userId}`;
+
+/** Mainnet BTC address: bech32 (bc1…) or legacy base58 (1…/3…). */
+export function isValidBtcAddress(address: string): boolean {
+  return /^(bc1[a-z0-9]{25,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/.test(address);
+}
+
+/** XRPL classic address (r…). */
+export function isValidXrplAddress(address: string): boolean {
+  return /^r[1-9A-HJ-NP-Za-km-z]{25,34}$/.test(address);
+}
 
 function isDupEntry(err: unknown): boolean {
   return (
@@ -322,6 +333,20 @@ export async function createPaymentIntent(
       : PURPOSE_USD_MICRO[purpose];
   const address =
     asset === "BTC" ? env.merchantBtcAddress : env.merchantXrpAddress;
+
+  // Never hand a customer an unconfigured/placeholder deposit address.
+  if (asset === "BTC" && !isValidBtcAddress(address)) {
+    throw new WalletError(
+      "ASSET_UNAVAILABLE",
+      "BTC payments are temporarily unavailable — please pay with XRP or RLUSD.",
+    );
+  }
+  if (asset !== "BTC" && !isValidXrplAddress(address)) {
+    throw new WalletError(
+      "ASSET_UNAVAILABLE",
+      "This payment method is temporarily unavailable.",
+    );
+  }
 
   let memoOrTag: string | null = null;
   let expectedAmountText: string;

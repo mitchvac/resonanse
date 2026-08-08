@@ -167,14 +167,28 @@ export default function CryptoCheckoutSheet({
     { enabled: open && purpose === 'TOP_UP' && step !== 'payment', retry: 1 },
   );
 
+  /* — Only offer assets whose deposit address is really configured — */
+  const assetsQuery = walletTrpc.wallet.paymentAssets.useQuery(undefined, {
+    enabled: open,
+    retry: 1,
+    staleTime: 300_000,
+  });
+  const availableAssets = useMemo(
+    () =>
+      ASSETS.filter((a) =>
+        assetsQuery.data ? assetsQuery.data.assets.includes(a.key) : a.key !== 'BTC',
+      ),
+    [assetsQuery.data],
+  );
+
   /* — Create the payment intent — */
   const createPayment = walletTrpc.wallet.createPayment.useMutation({
     onSuccess: (data) => {
       setIntent(data);
       setStep('payment');
     },
-    onError: () => {
-      showToast("Couldn't start the payment — try again.");
+    onError: (err) => {
+      showToast(err.message || "Couldn't start the payment — try again.");
       setAsset(null);
     },
   });
@@ -335,7 +349,7 @@ export default function CryptoCheckoutSheet({
                   Pay with crypto — pick the asset you&rsquo;re sending.
                 </p>
                 <div className="mt-4 flex flex-col gap-2.5" role="radiogroup" aria-label="Crypto asset">
-                  {ASSETS.map((a) => {
+                  {availableAssets.map((a) => {
                     const busy = createPayment.isPending && asset === a.key;
                     return (
                       <button

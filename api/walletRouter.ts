@@ -10,6 +10,8 @@ import {
   getHistory,
   getWalletState,
   grantAuthority,
+  isValidBtcAddress,
+  isValidXrplAddress,
   setSwitch,
   WalletError,
 } from "./lib/wallet/service";
@@ -21,6 +23,7 @@ const WALLET_ERROR_CODE: Record<WalletError["code"], TRPCError["code"]> = {
   FORBIDDEN: "FORBIDDEN",
   QUOTE_TOO_SMALL: "BAD_REQUEST",
   POOL_EXHAUSTED: "CONFLICT",
+  ASSET_UNAVAILABLE: "PRECONDITION_FAILED",
 };
 
 /** Run a wallet service call, translating domain errors into tRPC errors. */
@@ -101,6 +104,15 @@ export const walletRouter = createRouter({
   buyQuote: authedQuery
     .input(z.object({ usdMicro: z.number().int().min(0) }))
     .query(({ input }) => run(() => getBuyQuote(input.usdMicro))),
+
+  /** Which crypto assets are actually configured for checkout (never expose placeholders). */
+  paymentAssets: authedQuery.query(() => {
+    const xrplOk = isValidXrplAddress(env.merchantXrpAddress);
+    const assets: Array<"XRP" | "RLUSD" | "BTC"> = [];
+    if (xrplOk) assets.push("XRP", "RLUSD");
+    if (isValidBtcAddress(env.merchantBtcAddress)) assets.push("BTC");
+    return { assets };
+  }),
 
   /** Create a watch-only payment intent (30-min expiry). */
   createPayment: authedQuery
