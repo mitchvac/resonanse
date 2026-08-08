@@ -739,6 +739,8 @@ export const walletKeys = mysqlTable(
     walletId: varchar("walletId", { length: 64 }).notNull(),
     /** Classic XRPL address (r…) — public, safe to store plaintext. */
     xrplAddress: varchar("xrplAddress", { length: 64 }).notNull(),
+    /** Pseudonymous customer number (RC-XXXX-XXXX-XXXX) — HMAC, no PII. */
+    customerRef: varchar("customerRef", { length: 32 }),
     /** AES-GCM ciphertext of the XRPL seed, base64. Never plaintext. */
     ciphertext: text("ciphertext").notNull(),
     /** PBKDF2 salt, base64 (16 bytes). */
@@ -752,7 +754,10 @@ export const walletKeys = mysqlTable(
       .notNull()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("wallet_keys_userId_unique").on(table.userId)],
+  (table) => [
+    uniqueIndex("wallet_keys_userId_unique").on(table.userId),
+    uniqueIndex("wallet_keys_customerRef_unique").on(table.customerRef),
+  ],
 );
 
 export type WalletKey = typeof walletKeys.$inferSelect;

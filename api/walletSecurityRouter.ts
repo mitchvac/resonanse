@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { walletDelegations, walletKeys } from "@db/schema";
 import { createRouter, authedQuery } from "./middleware";
+import { computeCustomerRef } from "./lib/wallet/customerRef";
 import { getDb } from "./queries/connection";
 
 /**
@@ -92,6 +93,7 @@ export const walletSecurityRouter = createRouter({
       .select({
         walletId: walletKeys.walletId,
         xrplAddress: walletKeys.xrplAddress,
+        customerRef: walletKeys.customerRef,
         delegationStatus: walletDelegations.status,
         grantedAt: walletDelegations.grantedAt,
         revokedAt: walletDelegations.revokedAt,
@@ -106,6 +108,7 @@ export const walletSecurityRouter = createRouter({
         hasWallet: false as const,
         xrplAddress: null,
         walletId: null,
+        customerRef: null,
         delegation: { status: null, grantedAt: null, revokedAt: null },
       };
     }
@@ -113,6 +116,7 @@ export const walletSecurityRouter = createRouter({
       hasWallet: true as const,
       xrplAddress: row.xrplAddress,
       walletId: row.walletId,
+      customerRef: row.customerRef ?? computeCustomerRef(ctx.user.id, row.xrplAddress),
       delegation: {
         status: row.delegationStatus ?? null,
         grantedAt: row.grantedAt ?? null,
@@ -146,6 +150,7 @@ export const walletSecurityRouter = createRouter({
           userId: ctx.user.id,
           walletId: input.walletId,
           xrplAddress: input.xrplAddress,
+          customerRef: computeCustomerRef(ctx.user.id, input.xrplAddress),
           ciphertext: input.ciphertext,
           salt: input.salt,
           iv: input.iv,

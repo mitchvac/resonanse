@@ -19,6 +19,8 @@ export const env = {
   // Smart Custody Wallet — merchant deposit addresses (watch-only; we hold no keys).
   merchantXrpAddress: process.env.MERCHANT_XRP_ADDRESS ?? "",
   merchantXlmAddress: process.env.MERCHANT_XLM_ADDRESS ?? "",
+  // Pseudonymous customer numbers (HMAC key — server-only, never shipped).
+  customerRefSecret: process.env.CUSTOMER_REF_SECRET ?? "",
   // Owner gate for the treasury admin view.
   adminEmail: process.env.ADMIN_EMAIL ?? "",
   // Public base URL of the app (e.g. https://resonance.example.com). Used to

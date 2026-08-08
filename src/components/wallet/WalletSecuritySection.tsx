@@ -586,6 +586,37 @@ export default function WalletSecuritySection({
             </div>
           )}
 
+          {/* Customer number — the ONLY identifier Resonance stores for this wallet */}
+          {status?.customerRef && (
+            <div className="mt-3">
+              <div
+                className="flex items-center gap-1 rounded-[16px] py-1 pl-4 pr-1"
+                style={{ background: 'var(--field)' }}
+              >
+                <span className="min-w-0 flex-1">
+                  <span
+                    className="t-micro block"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    CUSTOMER NUMBER
+                  </span>
+                  <span
+                    className="t-caption block font-mono font-bold"
+                    style={{ color: 'var(--text)' }}
+                  >
+                    {status.customerRef}
+                  </span>
+                </span>
+                <CopyButton text={status.customerRef} ariaLabel="Copy customer number" />
+              </div>
+              <p className="t-micro mt-1.5 px-1" style={{ color: 'var(--text-secondary)' }}>
+                This number is how Resonance recognizes your wallet. No name, email or
+                personal details are attached to it — your identity documents stay with
+                the verification provider, not with us.
+              </p>
+            </div>
+          )}
+
           {/* Participation: status pill + switch */}
           <div className="mt-4 flex items-center gap-3">
             <span
