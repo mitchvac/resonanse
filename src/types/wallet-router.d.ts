@@ -15,7 +15,7 @@
  * these declarations so the frontend compiles standalone.
  */
 
-export type WalletAsset = 'XRP' | 'RLUSD';
+export type WalletAsset = 'XRP' | 'RLUSD' | 'XLM';
 
 export type WalletPurpose = 'SUBSCRIPTION_PLUS' | 'SUBSCRIPTION_X' | 'TOP_UP';
 

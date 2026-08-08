@@ -16,7 +16,7 @@ export type VerifyOutcome = {
 };
 
 export type PaymentIntentLike = {
-  asset: "XRP" | "RLUSD";
+  asset: "XRP" | "RLUSD" | "XLM";
   address: string;
   memoOrTag: string | null;
   expectedAmountText: string;
@@ -27,6 +27,11 @@ export interface ChainVerifier {
 }
 
 const XRPL_RPC_URL = "https://s1.ripple.com:51234";
+/** Official Horizon first, LOBSTR's public Horizon as fallback. */
+const HORIZON_URLS = [
+  "https://horizon.stellar.org",
+  "https://horizon.stellar.lobstr.co",
+];
 const FETCH_TIMEOUT_MS = 12_000;
 
 async function fetchJson(url: string, init?: RequestInit): Promise<unknown> {
@@ -122,9 +127,71 @@ async function verifyXrpl(
   return { status: sawUnderpaid ? "underpaid" : "pending" };
 }
 
+
+/** Stellar Horizon payment operation (subset). */
+type HorizonPayment = {
+  type?: string;
+  asset_type?: string;
+  to?: string;
+  amount?: string;
+  transaction_hash?: string;
+};
+
+type HorizonTx = {
+  memo_type?: string;
+  memo?: string;
+};
+
+async function horizonJson(path: string): Promise<unknown> {
+  let lastErr: unknown = null;
+  for (const base of HORIZON_URLS) {
+    try {
+      return await fetchJson(`${base}${path}`);
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr;
+}
+
+/**
+ * XLM — match a native payment to the merchant address carrying the intent's
+ * exact text memo (wallets like LOBSTR prompt for a memo on send).
+ */
+async function verifyXlm(intent: PaymentIntentLike): Promise<VerifyOutcome> {
+  const expectedStroops = decimalStringToSubUnits(intent.expectedAmountText, 7);
+  const page = (await horizonJson(
+    `/accounts/${intent.address}/payments?order=desc&limit=50&include_failed=false`,
+  )) as { _embedded?: { records?: HorizonPayment[] } };
+  const payments = (page._embedded?.records ?? []).filter(
+    (rec) =>
+      rec.type === "payment" &&
+      rec.asset_type === "native" &&
+      rec.to === intent.address,
+  );
+
+  let sawUnderpaid = false;
+  for (const rec of payments) {
+    if (intent.memoOrTag) {
+      if (!rec.transaction_hash) continue;
+      const tx = (await horizonJson(
+        `/transactions/${rec.transaction_hash}`,
+      )) as HorizonTx;
+      if (tx.memo_type !== "text" || tx.memo !== intent.memoOrTag) continue;
+    }
+    const stroops = decimalStringToSubUnits(rec.amount ?? "0", 7);
+    if (expectedStroops > 0 && stroops >= expectedStroops) {
+      return { status: "confirmed", txHash: rec.transaction_hash ?? null };
+    }
+    if (stroops > 0) sawUnderpaid = true;
+  }
+  return { status: sawUnderpaid ? "underpaid" : "pending" };
+}
+
 export class LiveChainVerifier implements ChainVerifier {
   async verify(intent: PaymentIntentLike): Promise<VerifyOutcome> {
     try {
+      if (intent.asset === "XLM") return await verifyXlm(intent);
       return await verifyXrpl(intent, intent.asset === "RLUSD");
     } catch {
       // Network / parse failures fail closed toward "not yet confirmed".

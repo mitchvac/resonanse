@@ -865,7 +865,7 @@ export default function Premium() {
               disabled={processing}
               onClick={() => setCryptoOpen(true)}
             >
-              Pay with crypto — XRP · RLUSD
+              Pay with crypto — XRP · RLUSD · XLM
             </BtnGlass>
           )}
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4">
@@ -952,7 +952,7 @@ export default function Premium() {
         </div>
       </GlassSheet>
 
-      {/* — Pay with crypto (XRP / RLUSD) — */}
+      {/* — Pay with crypto (XRP / RLUSD / XLM) — */}
       <CryptoCheckoutSheet
         open={cryptoOpen}
         onClose={() => setCryptoOpen(false)}

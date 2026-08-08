@@ -608,7 +608,7 @@ export const dcPriceState = mysqlTable("dc_price_state", {
 export type DcPriceStateRow = typeof dcPriceState.$inferSelect;
 export type InsertDcPriceStateRow = typeof dcPriceState.$inferInsert;
 
-export const DC_PAID_WITH = ["XRP", "RLUSD", "BTC"] as const;
+export const DC_PAID_WITH = ["XRP", "RLUSD", "BTC", "XLM"] as const;
 
 export const dcSales = mysqlTable(
   "dc_sales",
@@ -700,7 +700,7 @@ export const dcCryptoIntents = mysqlTable(
     purpose: mysqlEnum("purpose", DC_INTENT_PURPOSE).notNull(),
     asset: mysqlEnum("asset", DC_PAID_WITH).notNull(),
     address: varchar("address", { length: 128 }).notNull(),
-    /** Destination tag (XRP/RLUSD). NULL for BTC (matched by exact amount). */
+    /** Destination tag (XRP/RLUSD) or text memo (XLM). NULL for BTC. */
     memoOrTag: varchar("memoOrTag", { length: 64 }),
     /** Exact on-chain amount expected, as a decimal string. */
     expectedAmountText: varchar("expectedAmountText", { length: 64 }).notNull(),

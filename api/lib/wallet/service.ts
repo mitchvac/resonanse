@@ -58,6 +58,11 @@ export function isValidXrplAddress(address: string): boolean {
   return /^r[1-9A-HJ-NP-Za-km-z]{25,34}$/.test(address);
 }
 
+/** Stellar public key (G…, 56 chars, base32 alphabet). */
+export function isValidXlmAddress(address: string): boolean {
+  return /^G[A-Z2-7]{55}$/.test(address);
+}
+
 function isDupEntry(err: unknown): boolean {
   return (
     typeof err === "object" &&
@@ -326,30 +331,32 @@ export async function createPaymentIntent(
     purpose === "TOP_UP" && opts?.usdMicro
       ? opts.usdMicro
       : PURPOSE_USD_MICRO[purpose];
-  const address = env.merchantXrpAddress;
+  const address =
+    asset === "XLM" ? env.merchantXlmAddress : env.merchantXrpAddress;
 
-  // BTC was removed from checkout — only XRP/RLUSD intents can be created.
+  // BTC was removed from checkout — only XRP/RLUSD/XLM intents can be created.
   if (asset === "BTC") {
     throw new WalletError(
       "ASSET_UNAVAILABLE",
-      "BTC payments are no longer accepted — please pay with XRP or RLUSD.",
+      "BTC payments are no longer accepted — please pay with XRP, RLUSD or XLM.",
     );
   }
 
   // Never hand a customer an unconfigured/placeholder deposit address.
-  if (!isValidXrplAddress(address)) {
+  if (asset === "XLM" ? !isValidXlmAddress(address) : !isValidXrplAddress(address)) {
     throw new WalletError(
       "ASSET_UNAVAILABLE",
       "This payment method is temporarily unavailable.",
     );
   }
 
-  // XRP / RLUSD use a unique destination tag (random uint32).
+  // XRP / RLUSD use a destination tag; XLM uses the same random uint32 as a
+  // Stellar text memo (≤28 bytes — fits). Matched on-chain in both cases.
   const memoOrTag: string | null = String(randomInt(0, 2 ** 32));
   const expectedAmountText = usdMicroToAssetText(
     quotedUsdMicro,
     ASSET_USD_MICRO[asset],
-    6,
+    asset === "XLM" ? 7 : 6,
   );
 
   const intentId = randomUUID();

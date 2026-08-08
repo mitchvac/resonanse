@@ -7,6 +7,7 @@ import {
   Copy,
   DollarSign,
   Loader2,
+  Rocket,
   TriangleAlert,
 } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
@@ -27,7 +28,7 @@ import { cn } from '@/lib/utils';
 /**
  * CryptoCheckoutSheet — wallet payment flow (design.md §8.3 sheet).
  *
- * Steps: amount (TOP_UP only, live buyQuote) → asset picker (XRP/RLUSD)
+ * Steps: amount (TOP_UP only, live buyQuote) → asset picker (XRP/RLUSD/XLM)
  * → payment (address + memo/tag as large copyable text — no QR lib in the
  * dependency set — exact amount, 30-min countdown from expiresAt, polls
  * paymentStatus every 5s). Statuses: waiting (pulsing) → confirmed
@@ -40,6 +41,7 @@ type Step = 'amount' | 'asset' | 'payment';
 const ASSETS: { key: WalletAsset; label: string; caption: string; icon: typeof Coins }[] = [
   { key: 'XRP', label: 'XRP', caption: 'XRP Ledger · destination tag required', icon: Coins },
   { key: 'RLUSD', label: 'RLUSD', caption: 'USD stablecoin on the XRP Ledger', icon: DollarSign },
+  { key: 'XLM', label: 'XLM', caption: 'Stellar · memo required', icon: Rocket },
 ];
 
 const AMOUNT_PRESETS = [10, 25, 50, 100] as const;
@@ -251,7 +253,7 @@ export default function CryptoCheckoutSheet({
     });
   };
 
-  const requiredBit = intent?.memoOrTag ? 'destination tag' : 'exact amount';
+  const requiredBit = intent?.asset === 'XLM' ? 'memo' : intent?.memoOrTag ? 'destination tag' : 'exact amount';
 
   return (
     <>
@@ -426,7 +428,7 @@ export default function CryptoCheckoutSheet({
                       <CopyRow label="ADDRESS" value={intent.address} onCopy={handleCopy} />
                       {intent.memoOrTag && (
                         <CopyRow
-                          label="DESTINATION TAG"
+                          label={intent.asset === 'XLM' ? 'MEMO' : 'DESTINATION TAG'}
                           value={intent.memoOrTag}
                           required
                           onCopy={handleCopy}
