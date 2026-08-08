@@ -55,7 +55,6 @@ export const PURPOSE_USD_MICRO = {
 export const ASSET_USD_MICRO = {
   XRP: 500_000, // $0.50 / XRP
   RLUSD: 1_000_000, // $1.00 / RLUSD
-  BTC: 100_000_000_000, // $100,000 / BTC
 } as const;
 
 /** The platform's own sale identity in dc_sales.sellerWalletId. */

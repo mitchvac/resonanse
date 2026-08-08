@@ -53,11 +53,6 @@ export class WalletError extends Error {
 
 const actorFor = (userId: number) => `user:${userId}`;
 
-/** Mainnet BTC address: bech32 (bc1…) or legacy base58 (1…/3…). */
-export function isValidBtcAddress(address: string): boolean {
-  return /^(bc1[a-z0-9]{25,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/.test(address);
-}
-
 /** XRPL classic address (r…). */
 export function isValidXrplAddress(address: string): boolean {
   return /^r[1-9A-HJ-NP-Za-km-z]{25,34}$/.test(address);
@@ -331,41 +326,31 @@ export async function createPaymentIntent(
     purpose === "TOP_UP" && opts?.usdMicro
       ? opts.usdMicro
       : PURPOSE_USD_MICRO[purpose];
-  const address =
-    asset === "BTC" ? env.merchantBtcAddress : env.merchantXrpAddress;
+  const address = env.merchantXrpAddress;
 
-  // Never hand a customer an unconfigured/placeholder deposit address.
-  if (asset === "BTC" && !isValidBtcAddress(address)) {
+  // BTC was removed from checkout — only XRP/RLUSD intents can be created.
+  if (asset === "BTC") {
     throw new WalletError(
       "ASSET_UNAVAILABLE",
-      "BTC payments are temporarily unavailable — please pay with XRP or RLUSD.",
+      "BTC payments are no longer accepted — please pay with XRP or RLUSD.",
     );
   }
-  if (asset !== "BTC" && !isValidXrplAddress(address)) {
+
+  // Never hand a customer an unconfigured/placeholder deposit address.
+  if (!isValidXrplAddress(address)) {
     throw new WalletError(
       "ASSET_UNAVAILABLE",
       "This payment method is temporarily unavailable.",
     );
   }
 
-  let memoOrTag: string | null = null;
-  let expectedAmountText: string;
-  if (asset === "BTC") {
-    // BTC has no memos — match by a unique satoshi-tail exact amount.
-    const baseSats = Math.floor(
-      (quotedUsdMicro * 10 ** 8) / ASSET_USD_MICRO.BTC,
-    );
-    const uniqueTail = randomInt(0, 1000);
-    expectedAmountText = unitsToDecimalString(baseSats + uniqueTail, 8);
-  } else {
-    // XRP / RLUSD use a unique destination tag (random uint32).
-    memoOrTag = String(randomInt(0, 2 ** 32));
-    expectedAmountText = usdMicroToAssetText(
-      quotedUsdMicro,
-      ASSET_USD_MICRO[asset],
-      6,
-    );
-  }
+  // XRP / RLUSD use a unique destination tag (random uint32).
+  const memoOrTag: string | null = String(randomInt(0, 2 ** 32));
+  const expectedAmountText = usdMicroToAssetText(
+    quotedUsdMicro,
+    ASSET_USD_MICRO[asset],
+    6,
+  );
 
   const intentId = randomUUID();
   const expiresAt = new Date(Date.now() + INTENT_TTL_MS);
@@ -501,6 +486,24 @@ export async function confirmPayment(
           ),
         );
       await audit(tx, actorFor(userId), "INTENT_EXPIRED", { intentId });
+    });
+    return { status: "expired", receivedAmountText: null };
+  }
+
+  // BTC was removed from checkout — any legacy BTC intent can never settle;
+  // expire it honestly instead of verifying a chain we no longer watch.
+  if (intent.asset === "BTC") {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(schema.dcCryptoIntents)
+        .set({ status: "expired" })
+        .where(
+          and(
+            eq(schema.dcCryptoIntents.intentId, intentId),
+            eq(schema.dcCryptoIntents.status, "pending"),
+          ),
+        );
+      await audit(tx, actorFor(userId), "INTENT_EXPIRED_BTC_REMOVED", { intentId });
     });
     return { status: "expired", receivedAmountText: null };
   }

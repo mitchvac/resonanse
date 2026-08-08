@@ -10,7 +10,6 @@ import {
   getHistory,
   getWalletState,
   grantAuthority,
-  isValidBtcAddress,
   isValidXrplAddress,
   setSwitch,
   WalletError,
@@ -107,10 +106,9 @@ export const walletRouter = createRouter({
 
   /** Which crypto assets are actually configured for checkout (never expose placeholders). */
   paymentAssets: authedQuery.query(() => {
-    const xrplOk = isValidXrplAddress(env.merchantXrpAddress);
-    const assets: Array<"XRP" | "RLUSD" | "BTC"> = [];
-    if (xrplOk) assets.push("XRP", "RLUSD");
-    if (isValidBtcAddress(env.merchantBtcAddress)) assets.push("BTC");
+    const assets: Array<"XRP" | "RLUSD"> = isValidXrplAddress(env.merchantXrpAddress)
+      ? ["XRP", "RLUSD"]
+      : [];
     return { assets };
   }),
 
@@ -119,7 +117,7 @@ export const walletRouter = createRouter({
     .input(
       z.object({
         purpose: z.enum(["SUBSCRIPTION_PLUS", "SUBSCRIPTION_X", "TOP_UP"]),
-        asset: z.enum(["XRP", "RLUSD", "BTC"]),
+        asset: z.enum(["XRP", "RLUSD"]),
         /** TOP_UP only: chosen USD amount in micro-USD (defaults to the $10 pack) */
         usdMicro: z.number().int().min(1_000_000).max(10_000_000_000).optional(),
       }),

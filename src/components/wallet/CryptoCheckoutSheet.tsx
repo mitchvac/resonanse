@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
-  Bitcoin,
   Check,
   Clock,
   Coins,
@@ -28,7 +27,7 @@ import { cn } from '@/lib/utils';
 /**
  * CryptoCheckoutSheet — wallet payment flow (design.md §8.3 sheet).
  *
- * Steps: amount (TOP_UP only, live buyQuote) → asset picker (XRP/RLUSD/BTC)
+ * Steps: amount (TOP_UP only, live buyQuote) → asset picker (XRP/RLUSD)
  * → payment (address + memo/tag as large copyable text — no QR lib in the
  * dependency set — exact amount, 30-min countdown from expiresAt, polls
  * paymentStatus every 5s). Statuses: waiting (pulsing) → confirmed
@@ -41,7 +40,6 @@ type Step = 'amount' | 'asset' | 'payment';
 const ASSETS: { key: WalletAsset; label: string; caption: string; icon: typeof Coins }[] = [
   { key: 'XRP', label: 'XRP', caption: 'XRP Ledger · destination tag required', icon: Coins },
   { key: 'RLUSD', label: 'RLUSD', caption: 'USD stablecoin on the XRP Ledger', icon: DollarSign },
-  { key: 'BTC', label: 'BTC', caption: 'Bitcoin · exact amount required', icon: Bitcoin },
 ];
 
 const AMOUNT_PRESETS = [10, 25, 50, 100] as const;
@@ -176,7 +174,7 @@ export default function CryptoCheckoutSheet({
   const availableAssets = useMemo(
     () =>
       ASSETS.filter((a) =>
-        assetsQuery.data ? assetsQuery.data.assets.includes(a.key) : a.key !== 'BTC',
+        assetsQuery.data ? assetsQuery.data.assets.includes(a.key) : true,
       ),
     [assetsQuery.data],
   );
@@ -428,7 +426,7 @@ export default function CryptoCheckoutSheet({
                       <CopyRow label="ADDRESS" value={intent.address} onCopy={handleCopy} />
                       {intent.memoOrTag && (
                         <CopyRow
-                          label={intent.asset === 'BTC' ? 'MEMO' : 'DESTINATION TAG'}
+                          label="DESTINATION TAG"
                           value={intent.memoOrTag}
                           required
                           onCopy={handleCopy}

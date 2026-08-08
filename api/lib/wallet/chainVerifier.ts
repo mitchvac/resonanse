@@ -16,7 +16,7 @@ export type VerifyOutcome = {
 };
 
 export type PaymentIntentLike = {
-  asset: "XRP" | "RLUSD" | "BTC";
+  asset: "XRP" | "RLUSD";
   address: string;
   memoOrTag: string | null;
   expectedAmountText: string;
@@ -27,7 +27,6 @@ export interface ChainVerifier {
 }
 
 const XRPL_RPC_URL = "https://s1.ripple.com:51234";
-const BLOCKSTREAM_BASE = "https://blockstream.info/api";
 const FETCH_TIMEOUT_MS = 12_000;
 
 async function fetchJson(url: string, init?: RequestInit): Promise<unknown> {
@@ -123,40 +122,9 @@ async function verifyXrpl(
   return { status: sawUnderpaid ? "underpaid" : "pending" };
 }
 
-type BlockstreamTx = {
-  txid: string;
-  vout?: Array<{ scriptpubkey_address?: string; value?: number }>;
-  status?: { confirmed?: boolean };
-};
-
-async function verifyBtc(intent: PaymentIntentLike): Promise<VerifyOutcome> {
-  const expectedSats = decimalStringToSubUnits(intent.expectedAmountText, 8);
-  const txs = (await fetchJson(
-    `${BLOCKSTREAM_BASE}/address/${intent.address}/txs`,
-  )) as BlockstreamTx[];
-
-  let sawUnderpaid = false;
-  for (const tx of txs ?? []) {
-    const received = (tx.vout ?? [])
-      .filter((o) => o.scriptpubkey_address === intent.address)
-      .reduce((sum, o) => sum + (o.value ?? 0), 0);
-    if (received === 0) continue;
-    if (received === expectedSats) {
-      // Require at least one confirmation.
-      if (tx.status?.confirmed) {
-        return { status: "confirmed", txHash: tx.txid };
-      }
-      return { status: "pending" };
-    }
-    if (received < expectedSats) sawUnderpaid = true;
-  }
-  return { status: sawUnderpaid ? "underpaid" : "pending" };
-}
-
 export class LiveChainVerifier implements ChainVerifier {
   async verify(intent: PaymentIntentLike): Promise<VerifyOutcome> {
     try {
-      if (intent.asset === "BTC") return await verifyBtc(intent);
       return await verifyXrpl(intent, intent.asset === "RLUSD");
     } catch {
       // Network / parse failures fail closed toward "not yet confirmed".
