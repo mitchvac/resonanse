@@ -184,7 +184,9 @@ export default function CryptoCheckoutSheet({
   /* — Create the payment intent — */
   const createPayment = walletTrpc.wallet.createPayment.useMutation({
     onSuccess: (data) => {
-      setIntent(data);
+      // The server enum retains 'BTC' for legacy rows, but createPayment can
+      // no longer return it (BTC was removed in V65) — narrow for the client.
+      setIntent({ ...data, asset: data.asset as PaymentIntent['asset'] });
       setStep('payment');
     },
     onError: (err) => {

@@ -611,8 +611,8 @@ export default function WalletSecuritySection({
               </div>
               <p className="t-micro mt-1.5 px-1" style={{ color: 'var(--text-secondary)' }}>
                 This number is how Resonance recognizes your wallet. No name, email or
-                personal details are attached to it — your identity documents stay with
-                the verification provider, not with us.
+                personal details are attached to it — your identity details live in the
+                encrypted Identity Vault below, linked only by this number.
               </p>
             </div>
           )}

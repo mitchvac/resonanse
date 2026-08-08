@@ -21,6 +21,8 @@ export const env = {
   merchantXlmAddress: process.env.MERCHANT_XLM_ADDRESS ?? "",
   // Pseudonymous customer numbers (HMAC key — server-only, never shipped).
   customerRefSecret: process.env.CUSTOMER_REF_SECRET ?? "",
+  // Encrypted ID Vault (self-hosted KYC Phase 1) — AES-256-GCM key, 64 hex chars.
+  identityVaultKey: process.env.IDENTITY_VAULT_KEY ?? "",
   // Owner gate for the treasury admin view.
   adminEmail: process.env.ADMIN_EMAIL ?? "",
   // Public base URL of the app (e.g. https://resonance.example.com). Used to

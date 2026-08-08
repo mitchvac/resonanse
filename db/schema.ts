@@ -794,3 +794,105 @@ export const walletDelegations = mysqlTable(
 
 export type WalletDelegation = typeof walletDelegations.$inferSelect;
 export type InsertWalletDelegation = typeof walletDelegations.$inferInsert;
+
+/* ------------------------------------------------------------------------ */
+/* Self-hosted KYC Phase 1 — Encrypted ID Vault                              */
+/*                                                                           */
+/* Holds the customer's legal identity payload (name/DOB/address/TIN) as a   */
+/* single AES-256-GCM envelope (api/lib/identity/vaultCrypto.ts). Linked to  */
+/* users ONLY via the pseudonymous customerRef (RC-…) — no userId column,    */
+/* no display-name connection. The server key lives in IDENTITY_VAULT_KEY.   */
+/* ------------------------------------------------------------------------ */
+
+export const IDENTITY_VAULT_STATUS = ["unverified", "verified", "suspended"] as const;
+
+export const identityVault = mysqlTable(
+  "identity_vault",
+  {
+    id: serial("id").primaryKey(),
+    /** Pseudonymous customer number — the ONLY link to wallet_keys/users. */
+    customerRef: varchar("customerRef", { length: 32 }).notNull(),
+    /** AES-256-GCM envelope JSON {iv,tag,data} (base64 fields). Never plaintext. */
+    payload: mediumtext("payload").notNull(),
+    status: mysqlEnum("status", IDENTITY_VAULT_STATUS)
+      .notNull()
+      .default("unverified"),
+    /** Optional retention deadline (legal-track decision; NULL = keep). */
+    retentionUntil: timestamp("retentionUntil"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt")
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [uniqueIndex("identity_vault_customerRef_unique").on(table.customerRef)],
+);
+
+export type IdentityVault = typeof identityVault.$inferSelect;
+export type InsertIdentityVault = typeof identityVault.$inferInsert;
+
+export const identityVaultAudit = mysqlTable(
+  "identity_vault_audit",
+  {
+    id: serial("id").primaryKey(),
+    customerRef: varchar("customerRef", { length: 32 }).notNull(),
+    /** UPSERT | EXPORT | PURGE | STATUS_CHANGE */
+    action: varchar("action", { length: 32 }).notNull(),
+    actorUserId: bigint("actorUserId", { mode: "number", unsigned: true }),
+    meta: json("meta"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [index("identity_vault_audit_ref_idx").on(table.customerRef)],
+);
+
+export type IdentityVaultAudit = typeof identityVaultAudit.$inferSelect;
+export type InsertIdentityVaultAudit = typeof identityVaultAudit.$inferInsert;
+
+/* ------------------------------------------------------------------------ */
+/* Self-hosted KYC Phase 3 — Sanctions screening                             */
+/*                                                                           */
+/* sanctions_entries: cached watchlist rows (OFAC SDN/consolidated first).   */
+/* sanctions_results: screening verdicts keyed by customerRef; stores only a  */
+/* SHA-256 hash of the normalized query name — never plaintext PII at rest.  */
+/* ------------------------------------------------------------------------ */
+
+export const SANCTIONS_SOURCES = ["OFAC_SDN", "OFAC_CONS"] as const;
+
+export const sanctionsEntries = mysqlTable(
+  "sanctions_entries",
+  {
+    id: serial("id").primaryKey(),
+    source: mysqlEnum("source", SANCTIONS_SOURCES).notNull(),
+    /** Watchlist names are PUBLIC government data — plaintext is fine here. */
+    primaryName: varchar("primaryName", { length: 255 }).notNull(),
+    altNames: json("altNames"),
+    program: varchar("program", { length: 128 }),
+    listUpdatedAt: timestamp("listUpdatedAt"),
+    fetchedAt: timestamp("fetchedAt").defaultNow().notNull(),
+  },
+  (table) => [index("sanctions_entries_name_idx").on(table.primaryName)],
+);
+
+export type SanctionsEntry = typeof sanctionsEntries.$inferSelect;
+export type InsertSanctionsEntry = typeof sanctionsEntries.$inferInsert;
+
+export const SANCTIONS_VERDICTS = ["CLEAR", "REVIEW", "MATCH"] as const;
+
+export const sanctionsResults = mysqlTable(
+  "sanctions_results",
+  {
+    id: serial("id").primaryKey(),
+    customerRef: varchar("customerRef", { length: 32 }).notNull(),
+    /** SHA-256 hex of the normalized query name — PII-free at rest. */
+    queryNameHash: varchar("queryNameHash", { length: 64 }).notNull(),
+    matchedEntryId: bigint("matchedEntryId", { mode: "number", unsigned: true }),
+    /** 0–100 match score. */
+    score: int("score").notNull().default(0),
+    verdict: mysqlEnum("verdict", SANCTIONS_VERDICTS).notNull().default("CLEAR"),
+    screenedAt: timestamp("screenedAt").defaultNow().notNull(),
+  },
+  (table) => [index("sanctions_results_ref_idx").on(table.customerRef)],
+);
+
+export type SanctionsResult = typeof sanctionsResults.$inferSelect;
+export type InsertSanctionsResult = typeof sanctionsResults.$inferInsert;
