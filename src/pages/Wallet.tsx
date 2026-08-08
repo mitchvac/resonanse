@@ -18,6 +18,7 @@ import type { ToastPayload } from '@/components/AppToast';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import { Toggle } from '@/components/settings/controls';
 import CryptoCheckoutSheet from '@/components/wallet/CryptoCheckoutSheet';
+import WalletSecuritySection from '@/components/wallet/WalletSecuritySection';
 import { useAuth } from '@/hooks/useAuth';
 import { useWalletUtils, walletTrpc, formatCoins, formatPriceMicro } from '@/lib/walletTrpc';
 import { LOGIN_PATH } from '@/const';
@@ -430,6 +431,16 @@ export default function Wallet() {
                   the platform&rsquo;s treasury. You can turn this off anytime.
                 </p>
               </GlassCard>
+            </motion.section>
+
+            {/* Your keys, your wallet — customer-controlled wallet keys */}
+            <motion.section
+              className="mt-4 px-5"
+              initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.32, delay: reduced ? 0 : 0.15, ease: EASE_OUT }}
+            >
+              <WalletSecuritySection onToast={showToast} onError={showError} />
             </motion.section>
 
             {/* XRP rewards pending */}

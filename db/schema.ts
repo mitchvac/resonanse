@@ -719,3 +719,73 @@ export const dcCryptoIntents = mysqlTable(
 
 export type DcCryptoIntent = typeof dcCryptoIntents.$inferSelect;
 export type InsertDcCryptoIntent = typeof dcCryptoIntents.$inferInsert;
+
+/* ------------------------------------------------------------------------ */
+/* Customer-controlled wallet keys (Date-Coin ecosystem)                     */
+/*                                                                           */
+/* The wallet password IS the customer's secret key: it derives (client-side */
+/* only, PBKDF2) the AES-GCM key that seals the XRPL wallet seed. The server */
+/* stores ONLY ciphertext + salt + iv + kdf params — it must never receive   */
+/* the password or a plaintext seed (enforced in api/walletSecurityRouter).  */
+/* ------------------------------------------------------------------------ */
+
+export const walletKeys = mysqlTable(
+  "wallet_keys",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    walletId: varchar("walletId", { length: 64 }).notNull(),
+    /** Classic XRPL address (r…) — public, safe to store plaintext. */
+    xrplAddress: varchar("xrplAddress", { length: 64 }).notNull(),
+    /** AES-GCM ciphertext of the XRPL seed, base64. Never plaintext. */
+    ciphertext: text("ciphertext").notNull(),
+    /** PBKDF2 salt, base64 (16 bytes). */
+    salt: varchar("salt", { length: 64 }).notNull(),
+    /** AES-GCM iv, base64 (12 bytes). */
+    iv: varchar("iv", { length: 32 }).notNull(),
+    kdf: varchar("kdf", { length: 32 }).notNull().default("PBKDF2-250000"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt")
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [uniqueIndex("wallet_keys_userId_unique").on(table.userId)],
+);
+
+export type WalletKey = typeof walletKeys.$inferSelect;
+export type InsertWalletKey = typeof walletKeys.$inferInsert;
+
+export const WALLET_DELEGATION_STATUS = ["active", "revoked"] as const;
+
+export const walletDelegations = mysqlTable(
+  "wallet_delegations",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    walletId: varchar("walletId", { length: 64 }).notNull(),
+    /** Wallets start 'revoked' — non-participating until the customer opts in. */
+    status: mysqlEnum("status", WALLET_DELEGATION_STATUS)
+      .notNull()
+      .default("revoked"),
+    delegateKeyId: varchar("delegateKeyId", { length: 64 }),
+    grantedAt: timestamp("grantedAt"),
+    revokedAt: timestamp("revokedAt"),
+    /** On-ledger SetRegularKey tx — populated once the DC issuer exists. */
+    grantTxHash: varchar("grantTxHash", { length: 128 }),
+    revokeTxHash: varchar("revokeTxHash", { length: 128 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt")
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [uniqueIndex("wallet_delegations_userId_unique").on(table.userId)],
+);
+
+export type WalletDelegation = typeof walletDelegations.$inferSelect;
+export type InsertWalletDelegation = typeof walletDelegations.$inferInsert;

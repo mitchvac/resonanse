@@ -11,6 +11,7 @@ import { safetyRouter } from "./safetyRouter";
 import { translateRouter } from "./translateRouter";
 import { videoCallRouter } from "./videoCallRouter";
 import { walletRouter } from "./walletRouter";
+import { walletSecurityRouter } from "./walletSecurityRouter";
 import { createRouter, publicQuery } from "./middleware";
 
 export const appRouter = createRouter({
@@ -29,6 +30,7 @@ export const appRouter = createRouter({
   translate: translateRouter,
   videoCall: videoCallRouter,
   wallet: walletRouter,
+  walletSecurity: walletSecurityRouter,
 });
 
 export type AppRouter = typeof appRouter;
