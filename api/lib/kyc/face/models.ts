@@ -1,11 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import * as ort from "onnxruntime-node";
+import * as ort from "onnxruntime-web";
 
 /**
  * kyc/face/models — vendored ONNX face models (YuNet detection + SFace
  * recognition), loaded as lazy CPU inference-session singletons.
+ *
+ * Uses onnxruntime-web (pure WASM, bundlable) instead of onnxruntime-node
+ * (native .node binaries) because the production deploy ships dist/boot.js
+ * with no node_modules. The WASM runtime files are vendored at
+ * <assets>/models/ort/ and their directory is handed to ort.env.wasm.wasmPaths
+ * exactly once before the first session is created.
  *
  * Model buffers are read from disk by onnxruntime at session-creation time;
  * this module itself never persists anything.
@@ -44,13 +50,34 @@ export function resolveModelsDir(): string {
   );
 }
 
+let wasmEnvConfigured = false;
+
+/**
+ * Point onnxruntime-web at the vendored WASM runtime files
+ * (<modelsDir>/ort/*.wasm) and pin it to a single thread — exactly once,
+ * before any session is created. The production deploy has no node_modules,
+ * so the default CDN-relative wasm paths would resolve nowhere.
+ */
+function configureWasmEnv(): string {
+  const modelsDir = resolveModelsDir();
+  if (!wasmEnvConfigured) {
+    // onnxruntime-web resolves runtime files by plain concatenation —
+    // the directory MUST end in a separator.
+    ort.env.wasm.wasmPaths = path.join(modelsDir, "ort") + path.sep;
+    ort.env.wasm.numThreads = 1;
+    wasmEnvConfigured = true;
+  }
+  return modelsDir;
+}
+
 let yunetSession: Promise<ort.InferenceSession> | null = null;
 let sfaceSession: Promise<ort.InferenceSession> | null = null;
 
 /** Lazy singleton YuNet detection session (CPU execution provider). */
 export function getYunetSession(): Promise<ort.InferenceSession> {
+  const modelsDir = configureWasmEnv();
   yunetSession ??= ort.InferenceSession.create(
-    path.join(resolveModelsDir(), YUNET_MODEL_FILE),
+    path.join(modelsDir, YUNET_MODEL_FILE),
     { executionProviders: ["cpu"] },
   );
   return yunetSession;
@@ -58,8 +85,9 @@ export function getYunetSession(): Promise<ort.InferenceSession> {
 
 /** Lazy singleton SFace recognition session (CPU execution provider). */
 export function getSfaceSession(): Promise<ort.InferenceSession> {
+  const modelsDir = configureWasmEnv();
   sfaceSession ??= ort.InferenceSession.create(
-    path.join(resolveModelsDir(), SFACE_MODEL_FILE),
+    path.join(modelsDir, SFACE_MODEL_FILE),
     { executionProviders: ["cpu"] },
   );
   return sfaceSession;

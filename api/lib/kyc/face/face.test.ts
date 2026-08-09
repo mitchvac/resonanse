@@ -15,6 +15,9 @@ import {
   invertSimilarity,
   meanEmbedding,
 } from "./embed";
+import { PNG } from "pngjs";
+import jpeg from "jpeg-js";
+import { decodeImage, resizeRgb } from "./decode";
 
 /**
  * Pure KYC Phase 2b unit tests — no ONNX, no sharp, no files.
@@ -220,5 +223,98 @@ describe("similarity transform", () => {
         ],
       ),
     ).toThrow();
+  });
+});
+
+describe("resizeRgb", () => {
+  /** 2×2 RGB test image: red, green / blue, white. */
+  const src2x2 = new Uint8Array([
+    255, 0, 0, 0, 255, 0,
+    0, 0, 255, 255, 255, 255,
+  ]);
+
+  it("is the identity when dimensions are unchanged", () => {
+    const out = resizeRgb(src2x2, 2, 2, 2, 2);
+    expect(Array.from(out)).toEqual(Array.from(src2x2));
+  });
+
+  it("downscales a known 4×4 pattern 2x by averaging 2×2 blocks", () => {
+    // 4×4 where each 2×2 block is constant: block values 10, 20 / 30, 40
+    // in the red channel; green/blue track red so all channels agree.
+    const src = new Uint8Array(4 * 4 * 3);
+    const block = (bx: number, by: number, v: number) => {
+      for (let dy = 0; dy < 2; dy++) {
+        for (let dx = 0; dx < 2; dx++) {
+          const base = ((by * 2 + dy) * 4 + bx * 2 + dx) * 3;
+          src[base] = v;
+          src[base + 1] = v;
+          src[base + 2] = v;
+        }
+      }
+    };
+    block(0, 0, 10);
+    block(1, 0, 20);
+    block(0, 1, 30);
+    block(1, 1, 40);
+    const out = resizeRgb(src, 4, 4, 2, 2);
+    // Each output pixel samples the center of its 2×2 block, which is the
+    // block's constant value.
+    expect(Array.from(out)).toEqual([
+      10, 10, 10, 20, 20, 20,
+      30, 30, 30, 40, 40, 40,
+    ]);
+  });
+
+  it("clamps sampling at the edges (no wraparound)", () => {
+    // 1×2 image: black, white. Upscale to 4 wide — the leftmost sample
+    // coordinate lands left of pixel 0 and must clamp to black, not wrap.
+    const src = new Uint8Array([0, 0, 0, 255, 255, 255]);
+    const out = resizeRgb(src, 2, 1, 4, 1);
+    const reds = [out[0], out[3], out[6], out[9]];
+    // Coordinates: sx = (x+0.5)*0.5 - 0.5 → -0.25, 0.25, 0.75, 1.25
+    // clamped bilinear: 0, 0.25*255≈64, 0.75*255≈191, 255
+    expect(reds[0]).toBe(0);
+    expect(reds[1]).toBe(64);
+    expect(reds[2]).toBe(191);
+    expect(reds[3]).toBe(255);
+  });
+});
+
+describe("decodeImage", () => {
+  /** 2×1 RGBA pixels: red, cyan. */
+  const rgba = new Uint8Array([255, 0, 0, 255, 0, 255, 255, 255]);
+
+  it("round-trips a PNG to RGB", () => {
+    const png = new PNG({ width: 2, height: 1 });
+    rgba.forEach((v, i) => (png.data[i] = v));
+    const buf = PNG.sync.write(png);
+    const img = decodeImage(buf);
+    expect(img.width).toBe(2);
+    expect(img.height).toBe(1);
+    expect(Array.from(img.data)).toEqual([255, 0, 0, 0, 255, 255]);
+  });
+
+  it("round-trips a JPEG to RGB (lossy tolerance, alpha dropped)", () => {
+    const encoded = jpeg.encode(
+      { data: Buffer.from(rgba), width: 2, height: 1 },
+      100,
+    );
+    const img = decodeImage(encoded.data);
+    expect(img.width).toBe(2);
+    expect(img.height).toBe(1);
+    expect(img.data.length).toBe(6);
+    // Pixel 0 ≈ red, pixel 1 ≈ cyan (JPEG is lossy — wide tolerance).
+    expect(img.data[0]).toBeGreaterThan(200);
+    expect(img.data[1]).toBeLessThan(60);
+    expect(img.data[2]).toBeLessThan(60);
+    expect(img.data[3]).toBeLessThan(60);
+    expect(img.data[4]).toBeGreaterThan(200);
+    expect(img.data[5]).toBeGreaterThan(200);
+  });
+
+  it("throws a clear error on garbage input", () => {
+    expect(() => decodeImage(Buffer.from("not an image at all"))).toThrow(
+      /JPEG or PNG/,
+    );
   });
 });

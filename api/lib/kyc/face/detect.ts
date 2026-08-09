@@ -1,13 +1,14 @@
-import * as ort from "onnxruntime-node";
-import sharp from "sharp";
+import * as ort from "onnxruntime-web";
+import { decodeImage, resizeRgb } from "./decode";
 import { getYunetSession } from "./models";
 
 /**
  * kyc/face/detect — YuNet face detection on an in-memory image Buffer.
  *
  * Pipeline (proven contract, do not deviate):
- * - Decode ANY input (jpeg/png) with sharp, stretch-resize to exactly
- *   640×640 (no letterbox), raw RGB pixels, Float32Array NCHW with values
+ * - Decode ANY input (jpeg/png) with decodeImage (pngjs/jpeg-js),
+ *   stretch-resize to exactly 640×640 (no letterbox) with resizeRgb,
+ *   raw RGB pixels, Float32Array NCHW with values
  *   0–255 RAW (no normalization, no mean subtraction).
  * - YuNet outputs per stride s ∈ {8,16,32}: cls_s / obj_s [1,N,1],
  *   bbox_s [1,N,4], kps_s [1,N,10], N = (640/s)².
@@ -65,19 +66,12 @@ function nms(faces: Face[]): Face[] {
  * by score descending. Throws if the image cannot be decoded.
  */
 export async function detectFaces(imageBuffer: Buffer): Promise<Face[]> {
-  const metadata = await sharp(imageBuffer).metadata();
-  const w0 = metadata.width ?? 0;
-  const h0 = metadata.height ?? 0;
+  const { data: srcData, width: w0, height: h0 } = decodeImage(imageBuffer);
   if (w0 <= 0 || h0 <= 0) {
     throw new Error("Could not decode image dimensions");
   }
 
-  const { data } = await sharp(imageBuffer)
-    .resize(INPUT_SIZE, INPUT_SIZE, { fit: "fill" })
-    .removeAlpha()
-    .toColourspace("srgb")
-    .raw()
-    .toBuffer({ resolveWithObject: true });
+  const data = resizeRgb(srcData, w0, h0, INPUT_SIZE, INPUT_SIZE);
 
   // NCHW float32, raw 0–255 values (no normalization).
   const pixels = INPUT_SIZE * INPUT_SIZE;

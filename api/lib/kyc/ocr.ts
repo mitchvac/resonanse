@@ -25,21 +25,32 @@ const TRAINEDDATA_FILE = "eng.traineddata.gz";
  * error when the data is missing everywhere.
  */
 export function resolveTessdataDir(): string {
+  return path.join(resolveAssetsDir(), "tessdata");
+}
+
+/**
+ * Locate the KYC assets root (<root>/api/assets). It holds both the vendored
+ * tessdata (<assets>/tessdata) and the self-contained tesseract worker script
+ * (<assets>/tesseract/worker.cjs) — the latter is REQUIRED because the
+ * production deploy ships dist/boot.js with no node_modules, so tesseract.js
+ * cannot resolve its own worker script at runtime.
+ */
+export function resolveAssetsDir(): string {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
-    path.join(process.cwd(), "api", "assets", "tessdata"),
-    path.join(here, "..", "..", "assets", "tessdata"),
-    path.join(here, "..", "assets", "tessdata"),
+    path.join(process.cwd(), "api", "assets"),
+    path.join(here, "..", "..", "assets"),
+    path.join(here, "..", "assets"),
   ];
   for (const dir of candidates) {
-    if (fs.existsSync(path.join(dir, TRAINEDDATA_FILE))) {
+    if (fs.existsSync(path.join(dir, "tessdata", TRAINEDDATA_FILE))) {
       return dir;
     }
   }
   throw new Error(
-    `Tesseract language data (${TRAINEDDATA_FILE}) not found. Looked in: ${candidates.join(
-      ", ",
-    )}`,
+    `Tesseract language data (${TRAINEDDATA_FILE}) not found. Looked in: ${candidates
+      .map((dir) => path.join(dir, "tessdata"))
+      .join(", ")}`,
   );
 }
 
@@ -61,7 +72,14 @@ export function resolveTessdataDir(): string {
  */
 export async function ocrMrzRegion(imageBuffer: Buffer): Promise<string> {
   const langPath = resolveTessdataDir();
+  // Bundled, self-contained worker script — the deploy has no node_modules.
+  const workerPath = path.join(
+    resolveAssetsDir(),
+    "tesseract",
+    "worker.cjs",
+  );
   const worker = await createWorker("eng", OEM.LSTM_ONLY, {
+    workerPath,
     langPath,
     cacheMethod: "none",
     gzip: true,

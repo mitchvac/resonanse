@@ -1,5 +1,5 @@
-import * as ort from "onnxruntime-node";
-import sharp from "sharp";
+import * as ort from "onnxruntime-web";
+import { decodeImage } from "./decode";
 import type { Face } from "./detect";
 import { getSfaceSession } from "./models";
 
@@ -10,9 +10,9 @@ import { getSfaceSession } from "./models";
  * - Align the detected face to 112×112 with a similarity transform
  *   (rotation + uniform scale + translation, NO reflection) mapping the 5
  *   YuNet keypoints to the SFace reference points below.
- * - sharp cannot affine-warp, so we compute the INVERSE transform and
- *   bilinear-sample every 112×112 output pixel from the original-resolution
- *   RGB source (edge-clamped).
+ * - We compute the INVERSE transform and bilinear-sample every 112×112
+ *   output pixel from the original-resolution RGB source (edge-clamped);
+ *   source pixels come from decodeImage (pngjs/jpeg-js, no sharp).
  * - NCHW float32, RGB, values 0–255 RAW. Input tensor name is read from
  *   session.inputNames[0] at runtime.
  * - Output: 128-d vector, L2-normalized. cosine(a,b) = dot of normalized
@@ -171,21 +171,14 @@ export async function alignAndEmbed(
   const forward = fitSimilarity(srcPoints, SFACE_REF_POINTS);
   const inverse = invertSimilarity(forward); // 112-space → original-image space
 
-  const { data, info } = await sharp(imageBuffer)
-    .removeAlpha()
-    .toColourspace("srgb")
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  const srcW = info.width;
-  const srcH = info.height;
-  const channels = info.channels;
+  const { data, width: srcW, height: srcH } = decodeImage(imageBuffer);
 
   const readPixel = (x: number, y: number, c: number): number => {
     const cx = Math.min(Math.max(x, 0), srcW - 1);
     const cy = Math.min(Math.max(y, 0), srcH - 1);
-    const base = (cy * srcW + cx) * channels;
-    // channels is 1 (grey) or 3 (srgb) after removeAlpha; replicate grey.
-    return channels >= 3 ? data[base + c] : data[base];
+    const base = (cy * srcW + cx) * 3;
+    // decodeImage always returns interleaved RGB (3 channels).
+    return data[base + c];
   };
 
   // Bilinear-sample every output pixel from the source (edge-clamped).
