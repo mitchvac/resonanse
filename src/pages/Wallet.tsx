@@ -22,6 +22,7 @@ import WalletSecuritySection from '@/components/wallet/WalletSecuritySection';
 import EarnRewardsSection from '@/components/wallet/EarnRewardsSection';
 import IdentityVerificationSection from '@/components/wallet/IdentityVerificationSection';
 import IdCaptureSection from '@/components/kyc/IdCaptureSection';
+import FaceVerifySection from '@/components/kyc/FaceVerifySection';
 import ReferEarnSection from '@/components/wallet/ReferEarnSection';
 import BountyAdminSection from '@/components/admin/BountyAdminSection';
 import { useAuth } from '@/hooks/useAuth';
@@ -451,6 +452,7 @@ export default function Wallet() {
               <ReferEarnSection onToast={showToast} onError={showError} />
               <IdentityVerificationSection onToast={showToast} onError={showError} />
               <IdCaptureSection onToast={showToast} onError={showError} />
+              <FaceVerifySection onToast={showToast} onError={showError} />
               {user?.role === 'admin' && (
                 <BountyAdminSection onToast={showToast} onError={showError} />
               )}

@@ -819,6 +819,12 @@ export const identityVault = mysqlTable(
       .default("unverified"),
     /** Optional retention deadline (legal-track decision; NULL = keep). */
     retentionUntil: timestamp("retentionUntil"),
+    /**
+     * KYC Phase 2b: set when the document-photo face matched a live
+     * multi-frame selfie (YuNet+SFace, zero-retention). NULL = face not
+     * verified. Only the timestamp is stored — never images or embeddings.
+     */
+    faceVerifiedAt: timestamp("faceVerifiedAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt")
       .defaultNow()
