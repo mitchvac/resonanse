@@ -896,3 +896,37 @@ export const sanctionsResults = mysqlTable(
 
 export type SanctionsResult = typeof sanctionsResults.$inferSelect;
 export type InsertSanctionsResult = typeof sanctionsResults.$inferInsert;
+
+/* ------------------------------------------------------------------------ */
+/* Earn-DC engagement rewards (V70 Layer 2)                                  */
+/*                                                                           */
+/* Members EARN closed-loop Date-Coin for engagement (check-ins, identity    */
+/* verification, …). Airline-miles model: promotional in-app credit issuance */
+/* — not a sale (no price ratchet, no dc_sales row) and never redeemable.    */
+/* UNIQUE(userId, eventType) makes one-time awards idempotent; repeatable    */
+/* events (daily check-in) update lastAwardedAt on the same row.             */
+/* ------------------------------------------------------------------------ */
+
+export const walletEarnEvents = mysqlTable(
+  "wallet_earn_events",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    /** 'daily_checkin' | 'identity_vault' | future event types. */
+    eventType: varchar("eventType", { length: 48 }).notNull(),
+    /** Coins awarded on the latest grant. */
+    amount: int("amount").notNull(),
+    /** Repeatable events: last grant time (cooldown basis). */
+    lastAwardedAt: timestamp("lastAwardedAt").defaultNow().notNull(),
+    meta: json("meta"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("wallet_earn_events_user_event_unique").on(table.userId, table.eventType),
+  ],
+);
+
+export type WalletEarnEvent = typeof walletEarnEvents.$inferSelect;
+export type InsertWalletEarnEvent = typeof walletEarnEvents.$inferInsert;

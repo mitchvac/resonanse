@@ -13,6 +13,7 @@ import { sanctionsRouter } from "./sanctionsRouter";
 import { translateRouter } from "./translateRouter";
 import { videoCallRouter } from "./videoCallRouter";
 import { walletRouter } from "./walletRouter";
+import { walletEarnRouter } from "./walletEarnRouter";
 import { walletSecurityRouter } from "./walletSecurityRouter";
 import { createRouter, publicQuery } from "./middleware";
 
@@ -32,6 +33,7 @@ export const appRouter = createRouter({
   translate: translateRouter,
   videoCall: videoCallRouter,
   wallet: walletRouter,
+  walletEarn: walletEarnRouter,
   walletSecurity: walletSecurityRouter,
   identityVault: identityVaultRouter,
   sanctions: sanctionsRouter,

@@ -19,6 +19,7 @@ import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import { Toggle } from '@/components/settings/controls';
 import CryptoCheckoutSheet from '@/components/wallet/CryptoCheckoutSheet';
 import WalletSecuritySection from '@/components/wallet/WalletSecuritySection';
+import EarnRewardsSection from '@/components/wallet/EarnRewardsSection';
 import IdentityVerificationSection from '@/components/wallet/IdentityVerificationSection';
 import { useAuth } from '@/hooks/useAuth';
 import { useWalletUtils, walletTrpc, formatCoins, formatPriceMicro } from '@/lib/walletTrpc';
@@ -443,6 +444,7 @@ export default function Wallet() {
               transition={{ duration: 0.32, delay: reduced ? 0 : 0.15, ease: EASE_OUT }}
             >
               <WalletSecuritySection onToast={showToast} onError={showError} />
+              <EarnRewardsSection onToast={showToast} onError={showError} />
               <IdentityVerificationSection onToast={showToast} onError={showError} />
             </motion.section>
 

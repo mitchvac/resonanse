@@ -9,6 +9,7 @@ import {
 import { createRouter, authedQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import { screenCustomerRef } from "./lib/sanctions/screener";
+import { awardDc, EVENT_IDENTITY_VAULT, VAULT_BONUS_AMOUNT } from "./lib/wallet/earn";
 
 /**
  * identityVaultRouter — Encrypted ID Vault (self-hosted KYC Phase 1)
@@ -97,6 +98,12 @@ export const identityVaultRouter = createRouter({
       // sanctions lists. Fire-and-forget — a screening outage must never
       // block a vault write; failures surface via sanctions.status instead.
       void screenCustomerRef(customerRef, input.legalName).catch(() => {});
+      // V70 earn hook: one-time +VAULT_BONUS_AMOUNT DC for completing the
+      // Identity Vault. Idempotent (unique key) — re-submissions don't
+      // double-award. Fire-and-forget like screening; never blocks the write.
+      void awardDc(ctx.user.id, EVENT_IDENTITY_VAULT, VAULT_BONUS_AMOUNT).catch(
+        () => {},
+      );
       return { ok: true as const };
     }),
 
