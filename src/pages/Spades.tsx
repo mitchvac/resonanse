@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, RotateCcw, Send } from 'lucide-react';
+import { ArrowLeft, Clapperboard, RotateCcw, Send, Ticket } from 'lucide-react';
+import AdWatchModal from '@/components/AdWatchModal';
 import GlassCard from '@/components/GlassCard';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import { trpc } from '@/providers/trpc';
@@ -176,9 +177,31 @@ export default function Spades() {
   });
   const entitlement = entitlementsQuery.data?.entitlement ?? null;
   const trial = entitlementsQuery.data?.trial ?? null;
-  const accessLoading = authLoading || (isAuthenticated && entitlementsQuery.isLoading);
-  const allowed =
+  // Entitled members (trial / Resonance+ / X) play without ads.
+  const entitled =
     isAuthenticated && (trial?.active || (entitlement?.tier ?? 'free') !== 'free');
+
+  // Free members play on game passes earned by watching ads (V78).
+  const passesQuery = trpc.ads.passes.useQuery(undefined, {
+    enabled: isAuthenticated && !entitled,
+  });
+  const passes = passesQuery.data?.passes ?? 0;
+  const maxBanked = passesQuery.data?.maxBanked ?? 5;
+  // matchUnlocked keeps an in-progress match playable after its pass is spent
+  // (passes drop to 0 at first bid, but the match runs to completion).
+  const [matchUnlocked, setMatchUnlocked] = useState(false);
+  const canPlay = entitled || passes > 0 || matchUnlocked;
+
+  const accessLoading =
+    authLoading ||
+    (isAuthenticated && entitlementsQuery.isLoading) ||
+    (isAuthenticated && !entitled && passesQuery.isLoading);
+
+  const [adOpen, setAdOpen] = useState(false);
+  // A pass is consumed once per match (first bid). "Next hand" stays free;
+  // "New game" / "Restart" starts a new match and needs a fresh pass.
+  const passConsumed = useRef(false);
+  const consumeMut = trpc.ads.consumePass.useMutation();
 
   const game = useRef<Game>(freshGame());
   const timers = useRef<number[]>([]);
@@ -336,12 +359,43 @@ export default function Spades() {
     if (resetScores) {
       g.score = { us: 0, them: 0 };
       g.bags = { us: 0, them: 0 };
+      passConsumed.current = false; // new match → first bid consumes a fresh pass
+      setMatchUnlocked(false);
     }
     dealInto(g);
     if (resetScores) botSayLater(randomBot(), pick(BOT_GREETS), 1000);
     renderNow();
     later(step, 0);
   }, [clearTimers, later, renderNow, step, botSayLater]);
+
+  // First bid of a match spends one game pass for free members.
+  const placeBid = useCallback(
+    (i: number) => {
+      const g = game.current;
+      const commit = () => {
+        g.bids[0] = i;
+        g.bidTurn = 1;
+        step();
+      };
+      if (entitled || passConsumed.current) {
+        commit();
+        return;
+      }
+      consumeMut.mutate(undefined, {
+        onSuccess: () => {
+          passConsumed.current = true;
+          setMatchUnlocked(true);
+          void passesQuery.refetch();
+          commit();
+        },
+        onError: () => {
+          // Passes ran out elsewhere — refetch drops the table back to the gate.
+          void passesQuery.refetch();
+        },
+      });
+    },
+    [entitled, consumeMut, passesQuery, step],
+  );
 
   useEffect(() => {
     newTable(true);
@@ -422,23 +476,49 @@ export default function Spades() {
           </section>
         )}
 
-        {!accessLoading && isAuthenticated && !allowed && (
+        {!accessLoading && isAuthenticated && !canPlay && (
           <section className="mt-6 px-5">
             <GlassCard edge="amber" className="p-5">
-              <p className="t-eyebrow">SEATING LOCKED</p>
-              <h2 className="t-title-sm mt-1">Your free trial has ended.</h2>
+              <p className="t-eyebrow">OUT OF GAMES</p>
+              <h2 className="t-title-sm mt-1">Watch an ad, take a seat.</h2>
               <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                Taking a seat needs Resonance+ or X. Dating core stays free.
+                One short ad earns one game pass — or go ad-free with Resonance+ or X.
+                Dating core stays free, always.
               </p>
-              <BtnPrimary to="/premium" className="mt-4 w-full">
-                See plans
+              <BtnPrimary className="mt-4 w-full" onClick={() => setAdOpen(true)}>
+                <Clapperboard size={16} aria-hidden="true" />
+                Watch ad · get 1 game
               </BtnPrimary>
+              <BtnGlass to="/premium" className="mt-2.5 w-full">
+                Go ad-free
+              </BtnGlass>
             </GlassCard>
           </section>
         )}
 
-        {!accessLoading && isAuthenticated && allowed && (
+        {!accessLoading && isAuthenticated && canPlay && (
           <section className="mt-6 px-3" aria-label="Spades game">
+            {!entitled && (
+              <div
+                className="mb-3 flex items-center justify-between gap-3 rounded-[16px] px-4 py-3"
+                style={{ background: 'var(--field)', boxShadow: 'inset 0 0 0 1px var(--border)' }}
+              >
+                <p className="t-caption flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
+                  <Ticket size={15} style={{ color: '#FFD88F' }} aria-hidden="true" />
+                  {passes === 1 ? '1 game pass left' : `${passes} game passes left`} · one ad = one game
+                </p>
+                {passes < maxBanked && (
+                  <button
+                    type="button"
+                    onClick={() => setAdOpen(true)}
+                    className="t-caption min-h-[36px] shrink-0 rounded-full px-3 font-semibold"
+                    style={{ background: 'rgba(255,206,138,.14)', color: '#FFD88F' }}
+                  >
+                    Watch ad
+                  </button>
+                )}
+              </div>
+            )}
             <GlassCard className="relative h-[400px] overflow-hidden p-0" ringX={30}>
               <div
                 className="absolute inset-0"
@@ -660,11 +740,8 @@ export default function Spades() {
                     type="button"
                     className="t-caption min-h-[40px] min-w-[42px] rounded-[10px] px-3"
                     style={{ background: 'var(--field)', color: 'var(--text)' }}
-                    onClick={() => {
-                      g.bids[0] = i;
-                      g.bidTurn = 1;
-                      step();
-                    }}
+                    onClick={() => placeBid(i)}
+                    disabled={consumeMut.isPending}
                   >
                     {i === 0 ? 'Nil' : i}
                   </button>
@@ -713,6 +790,14 @@ export default function Spades() {
               </div>
             )}
           </section>
+        )}
+
+        {isAuthenticated && (
+          <AdWatchModal
+            open={adOpen}
+            onClose={() => setAdOpen(false)}
+            onGranted={() => void passesQuery.refetch()}
+          />
         )}
       </div>
     </div>

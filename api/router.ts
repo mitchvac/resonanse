@@ -1,4 +1,5 @@
 import { authRouter } from "./auth-router";
+import { adsRouter } from "./adsRouter";
 import { bountyRouter } from "./bountyRouter";
 import { chatRouter } from "./chatRouter";
 import { discoverRouter } from "./discoverRouter";
@@ -23,6 +24,7 @@ export const appRouter = createRouter({
   ping: publicQuery.query(() => ({ ok: true, ts: Date.now() })),
   auth: authRouter,
   passwordAuth: passwordAuthRouter,
+  ads: adsRouter,
   bounty: bountyRouter,
 
   profile: profileRouter,

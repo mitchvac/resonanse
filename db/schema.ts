@@ -1012,3 +1012,42 @@ export const bountyObligations = mysqlTable(
 
 export type BountyObligation = typeof bountyObligations.$inferSelect;
 export type InsertBountyObligation = typeof bountyObligations.$inferInsert;
+
+/**
+ * V78 rewarded-ad game passes. One completed, server-verified ad watch grants
+ * one community game (e.g. a Spades table). Passes are game ACCESS only —
+ * never Date-Coin, never cash value, unrelated to the DC economy.
+ */
+export const adWatchSessions = mysqlTable(
+  "ad_watch_sessions",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    startedAt: timestamp("startedAt").defaultNow().notNull(),
+    grantedAt: timestamp("grantedAt"),
+  },
+  (table) => [index("ad_watch_sessions_user_idx").on(table.userId)],
+);
+
+export type AdWatchSession = typeof adWatchSessions.$inferSelect;
+export type InsertAdWatchSession = typeof adWatchSessions.$inferInsert;
+
+export const gamePasses = mysqlTable(
+  "game_passes",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    /** 'ad' (rewarded watch) — v1 only source. */
+    source: varchar("source", { length: 16 }).notNull().default("ad"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    consumedAt: timestamp("consumedAt"),
+  },
+  (table) => [index("game_passes_user_open_idx").on(table.userId, table.consumedAt)],
+);
+
+export type GamePass = typeof gamePasses.$inferSelect;
+export type InsertGamePass = typeof gamePasses.$inferInsert;
