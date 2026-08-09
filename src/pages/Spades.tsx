@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Send } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import { trpc } from '@/providers/trpc';
@@ -36,6 +36,16 @@ const ISBOT = [false, true, true, true]; // local table: every non-user seat is 
 // Bot seat portraits — every bot seat keeps an unmistakable BOT badge + "BOT · Name" label.
 // These are AI-generated avatars, never photos of real members.
 const BOT_HEADS: (string | null)[] = [null, '/bot-heads/riley.png', '/bot-heads/maya.png', '/bot-heads/sam.png'];
+
+// ---- Table chat (local table: you + labelled bots) ----
+type ChatMsg = { id: number; p: number; text: string };
+const CANNED = ['Good job', 'Perfect hand', "You're the best", 'Good luck', 'Well played', 'Thanks', 'Good game'];
+const BOT_GREETS = ['Good luck, have fun!', 'GL HF — may the best hand win.', 'Good luck out there!'];
+const BOT_PRAISE = ['Good job', 'Perfect hand', "You're the best", 'Nice one!', 'Well played'];
+const BOT_REPLIES = ['Thanks!', 'You too!', 'Appreciate it', 'Right back at you', 'Thanks, good luck to you too'];
+const BOT_GG = ['Good game!', 'GG — well played.', 'Good game! Rematch?'];
+const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+const randomBot = () => 1 + Math.floor(Math.random() * 3);
 const rankOf = (c: CardT) => FACE[c.r] ?? String(c.r);
 const isRed = (c: CardT) => c.s === 1 || c.s === 2;
 const teamOf = (p: number): Side => (p % 2 === 0 ? 'us' : 'them');
@@ -185,6 +195,39 @@ export default function Spades() {
 
   const renderNow = useCallback(() => bump(), []);
 
+  // ---- Table chat state ----
+  const [chat, setChat] = useState<ChatMsg[]>([]);
+  const [draft, setDraft] = useState('');
+  const chatId = useRef(0);
+  const chatListRef = useRef<HTMLDivElement | null>(null);
+
+  const say = useCallback((p: number, text: string) => {
+    setChat((c) => [...c.slice(-29), { id: ++chatId.current, p, text }]);
+  }, []);
+
+  const botSayLater = useCallback(
+    (p: number, text: string, ms: number) => later(() => say(p, text), ms),
+    [later, say],
+  );
+
+  const sendChat = useCallback(
+    (text: string) => {
+      const t = text.trim().slice(0, 120);
+      if (!t) return;
+      say(0, t);
+      setDraft('');
+      // Local table: a random labelled bot replies. Stage 2 backend will carry
+      // real player-to-player messages.
+      botSayLater(randomBot(), pick(BOT_REPLIES), 900 + Math.random() * 900);
+    },
+    [say, botSayLater],
+  );
+
+  useEffect(() => {
+    const el = chatListRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [chat]);
+
   const endHand = useCallback(() => {
     const g = game.current;
     for (const side of ['us', 'them'] as const) {
@@ -212,13 +255,15 @@ export default function Spades() {
     }
     g.phase = 'over';
     g.gameOver = g.score.us >= 250 || g.score.them >= 250;
+    if (g.bids[0] === 0 && g.tricks[0] === 0) botSayLater(2, "You're the best — nil made!", 900);
+    if (g.gameOver) botSayLater(randomBot(), pick(BOT_GG), 1700);
     g.msg = g.gameOver
       ? g.score.us > g.score.them
         ? 'You and BOT Maya take the game.'
         : 'BOT Riley and BOT Sam take the game.'
       : 'Hand over.';
     renderNow();
-  }, [renderNow]);
+  }, [renderNow, botSayLater]);
 
   const step = useCallback(() => {
     const g = game.current;
@@ -266,6 +311,7 @@ export default function Spades() {
         renderNow();
         later(() => {
           g.tricks[w]++;
+          if (w === 0 && Math.random() < 0.35) botSayLater(2, pick(BOT_PRAISE), 500);
           g.leader = w;
           g.turn = w;
           g.trick = [];
@@ -281,7 +327,7 @@ export default function Spades() {
         later(step, 500);
       }
     },
-    [endHand, later, renderNow, step],
+    [endHand, later, renderNow, step, botSayLater],
   );
 
   const newTable = useCallback((resetScores: boolean) => {
@@ -292,9 +338,10 @@ export default function Spades() {
       g.bags = { us: 0, them: 0 };
     }
     dealInto(g);
+    if (resetScores) botSayLater(randomBot(), pick(BOT_GREETS), 1000);
     renderNow();
     later(step, 0);
-  }, [clearTimers, later, renderNow, step]);
+  }, [clearTimers, later, renderNow, step, botSayLater]);
 
   useEffect(() => {
     newTable(true);
@@ -514,6 +561,92 @@ export default function Spades() {
                 <p className="t-micro mt-1" style={{ color: 'var(--text-secondary)' }}>{teamInfo('them')}</p>
               </GlassCard>
             </div>
+
+            <GlassCard className="mt-4 p-4">
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="t-micro">TABLE CHAT</p>
+                <p className="t-micro text-right" style={{ color: 'var(--text-secondary)' }}>
+                  local table — bot messages are labelled
+                </p>
+              </div>
+              <div
+                ref={chatListRef}
+                className="mt-3 flex max-h-44 flex-col gap-2.5 overflow-y-auto pr-1"
+                aria-live="polite"
+              >
+                {chat.length === 0 && (
+                  <p className="t-caption" style={{ color: 'var(--text-secondary)' }}>
+                    Say hi — tap a quick message below or type your own.
+                  </p>
+                )}
+                {chat.map((m) => (
+                  <div key={m.id} className="flex items-start gap-2">
+                    {m.p === 0 ? (
+                      <span
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white"
+                        style={{ background: 'radial-gradient(120% 120% at 30% 20%, #7C93DE, #2C3970)' }}
+                      >
+                        YOU
+                      </span>
+                    ) : (
+                      <span className="relative h-7 w-7 shrink-0">
+                        <img src={BOT_HEADS[m.p] ?? ''} alt="" className="h-full w-full rounded-full object-cover" />
+                        <span
+                          className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full px-1 text-[6px] font-extrabold tracking-wide"
+                          style={{ background: '#16161C', color: '#FFD88F', boxShadow: '0 0 0 1px rgba(255,206,138,.8)' }}
+                        >
+                          BOT
+                        </span>
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <p className="t-micro" style={{ color: m.p === 0 ? 'var(--text-secondary)' : '#B07A2A' }}>
+                        {m.p === 0 ? 'You' : `BOT · ${NAMES[m.p]}`}
+                      </p>
+                      <p
+                        className="t-caption mt-0.5 inline-block whitespace-pre-wrap break-words rounded-[10px] px-2.5 py-1.5"
+                        style={{ background: 'var(--field)', color: 'var(--text)' }}
+                      >
+                        {m.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Quick messages">
+                {CANNED.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="t-caption min-h-[36px] rounded-full px-3"
+                    style={{ background: 'var(--field)', color: 'var(--text)' }}
+                    onClick={() => sendChat(c)}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+              <form
+                className="mt-2.5 flex gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  sendChat(draft);
+                }}
+              >
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  maxLength={120}
+                  placeholder="Type a message…"
+                  aria-label="Type a table message"
+                  className="t-caption h-11 min-w-0 flex-1 rounded-[12px] px-3 outline-none"
+                  style={{ background: 'var(--field)', color: 'var(--text)' }}
+                />
+                <BtnPrimary type="submit" className="h-11 min-h-[44px] min-w-[44px] px-3.5" ariaLabel="Send message">
+                  <Send size={16} aria-hidden="true" />
+                </BtnPrimary>
+              </form>
+            </GlassCard>
 
             <p className="t-body mt-4 min-h-[44px] text-center" style={{ color: 'var(--text)' }} aria-live="polite">
               {g.msg}
