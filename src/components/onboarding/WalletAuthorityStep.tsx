@@ -21,10 +21,10 @@ import { useWalletUtils, walletTrpc } from '@/lib/walletTrpc';
 
 const TERMS = [
   'The platform creates a wallet for you.',
-  'While your switch is ON, your wallet may automatically supply Date-Coin tokens to new users.',
-  'You receive rewards only in XRP.',
-  'The system never takes your balance below 2,000 Date-Coin.',
-  'You can turn the switch OFF at any time.',
+  'Date-Coin is an in-app credit: you can buy it and spend it on features inside Resonance.',
+  'Date-Coin has no cash value and cannot be converted to XRP, money, or anything outside the app.',
+  'Your coins are never taken, lent, or supplied to anyone else.',
+  'You can turn the ecosystem switch OFF at any time.',
 ];
 
 type Phase = 'terms' | 'declined' | 'airdrop';

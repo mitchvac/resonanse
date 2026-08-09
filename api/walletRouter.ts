@@ -15,7 +15,6 @@ import {
   setSwitch,
   WalletError,
 } from "./lib/wallet/service";
-import { SupplierPoolExhaustedError } from "./lib/wallet/engine";
 
 const WALLET_ERROR_CODE: Record<WalletError["code"], TRPCError["code"]> = {
   WALLET_NOT_FOUND: "NOT_FOUND",
@@ -36,9 +35,6 @@ async function run<T>(fn: () => Promise<T>): Promise<T> {
         code: WALLET_ERROR_CODE[err.code] ?? "INTERNAL_SERVER_ERROR",
         message: err.message,
       });
-    }
-    if (err instanceof SupplierPoolExhaustedError) {
-      throw new TRPCError({ code: "CONFLICT", message: err.message });
     }
     throw err;
   }

@@ -17,7 +17,7 @@ import { getDb } from "../../queries/connection";
 import { env } from "../env";
 import { audit, ensurePriceState, getCurrentPriceMicro, type Db, type Tx } from "./db";
 import { burn as ledgerBurn, getBalance, type SettledSale } from "./ledger";
-import { fulfillMarketplaceTx, platformTopUpTx } from "./engine";
+import { platformTopUpTx } from "./engine";
 import { getChainVerifier } from "./chainVerifier";
 import {
   AIRDROP_AMOUNT,
@@ -176,25 +176,6 @@ export async function setSwitch(
   });
 }
 
-/** rewardsPending for a supplier wallet, summed as a decimal XRP string. */
-async function sumPendingRewardsXrp(
-  db: DbOrTx,
-  supplierWalletId: string,
-): Promise<string> {
-  const rows = await db
-    .select({ amountXrpText: schema.dcRewards.amountXrpText })
-    .from(schema.dcRewards)
-    .where(
-      and(
-        eq(schema.dcRewards.supplierWalletId, supplierWalletId),
-        eq(schema.dcRewards.status, "pending"),
-      ),
-    );
-  let micro = 0;
-  for (const r of rows) micro += decimalStringToSubUnits(r.amountXrpText, 6);
-  return unitsToDecimalString(micro, 6);
-}
-
 export type WalletState = {
   hasWallet: boolean;
   walletId?: string;
@@ -203,7 +184,6 @@ export type WalletState = {
   isOriginalHundredK?: boolean;
   price: number;
   totalSalesCount: number;
-  rewardsPendingText: string;
 };
 
 /** state — current wallet + system price snapshot. */
@@ -216,11 +196,9 @@ export async function getWalletState(userId: number): Promise<WalletState> {
       hasWallet: false,
       price: priceState.currentPriceMicro,
       totalSalesCount: priceState.totalSalesCount,
-      rewardsPendingText: "0.000000",
     };
   }
   const balance = await getBalance(db, wallet.walletId);
-  const rewardsPendingText = await sumPendingRewardsXrp(db, wallet.walletId);
   return {
     hasWallet: true,
     walletId: wallet.walletId,
@@ -229,7 +207,6 @@ export async function getWalletState(userId: number): Promise<WalletState> {
     isOriginalHundredK: wallet.isOriginalHundredK,
     price: priceState.currentPriceMicro,
     totalSalesCount: priceState.totalSalesCount,
-    rewardsPendingText,
   };
 }
 
@@ -592,11 +569,12 @@ export async function confirmPayment(
         actor,
       });
     } else {
-      // Subscription → grant entitlement tier + marketplace fulfillment of
-      // the 10,000-coin subscriber allocation (with supplier reward).
+      // Subscription → grant entitlement tier + PLATFORM sale of the
+      // 10,000-coin subscriber allocation. V69 closed loop: the platform is
+      // the sole seller — no member supplies coins, no XRP reward accrues.
       const tier = cur.purpose === "SUBSCRIPTION_PLUS" ? "plus" : "x";
       await grantEntitlementInTx(tx, userId, tier);
-      sale = await fulfillMarketplaceTx(tx, {
+      sale = await platformTopUpTx(tx, {
         buyerWalletId: wallet.walletId,
         amount: SUBSCRIBER_ALLOCATION,
         paidWith: cur.asset,
@@ -615,7 +593,6 @@ export async function confirmPayment(
       amount: sale.amount,
       pricePerCoinMicro: sale.pricePerCoinMicro,
       sellerWalletId: sale.sellerWalletId,
-      rewardAmountXrpText: sale.rewardAmountXrpText,
     });
     return { sale, already: false };
   });

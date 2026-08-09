@@ -32,7 +32,7 @@ export type WalletState = {
   price: number | string;
   totalSalesCount: number;
   /** Human-readable pending XRP rewards, e.g. "0.42 XRP pending" */
-  rewardsPendingText: string;
+
 };
 
 export type WalletSale = {

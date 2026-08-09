@@ -185,10 +185,10 @@ function WalletGrantGate({
       <h2 className="t-title-sm mt-1">Smart Custody Wallet</h2>
       <ul className="t-caption mt-3 flex flex-col gap-2" style={{ color: 'var(--text-secondary)' }}>
         <li>· The platform creates a wallet for you.</li>
-        <li>· While your switch is ON, your wallet may automatically supply Date-Coin tokens to new users.</li>
-        <li>· You receive rewards only in XRP.</li>
-        <li>· The system never takes your balance below 2,000 Date-Coin.</li>
-        <li>· You can turn the switch OFF at any time.</li>
+        <li>· Date-Coin is an in-app credit: you can buy it and spend it on features inside Resonance.</li>
+        <li>· Date-Coin has no cash value and cannot be converted to XRP, money, or anything outside the app.</li>
+        <li>· Your coins are never taken, lent, or supplied to anyone else.</li>
+        <li>· You can turn the ecosystem switch OFF at any time.</li>
       </ul>
       <label className="mt-4 flex min-h-[44px] cursor-pointer items-center gap-3">
         <input
@@ -359,7 +359,7 @@ export default function Wallet() {
                   </span>
                 </p>
                 <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-                  Smart Custody switch is {state.switchOn ? 'ON — earning XRP rewards' : 'OFF'}.
+                  Smart Custody switch is {state.switchOn ? 'ON — Date-Coin ecosystem active' : 'OFF'}.
                 </p>
                 <div className="mt-5">
                   <BtnPrimary className="w-full" onClick={() => setCheckoutOpen(true)}>
@@ -428,8 +428,9 @@ export default function Wallet() {
                   />
                 </div>
                 <p className="t-caption mt-2.5" style={{ color: 'var(--text-secondary)' }}>
-                  ON = your wallet can supply Date-Coin to new members and earn XRP rewards from
-                  the platform&rsquo;s treasury. You can turn this off anytime.
+                  ON = your wallet is active in the Date-Coin ecosystem — buy, hold and spend
+                  in-app credits on Resonance features. Date-Coin has no cash value and never
+                  leaves the app. You can turn this off anytime.
                 </p>
               </GlassCard>
             </motion.section>
@@ -443,26 +444,6 @@ export default function Wallet() {
             >
               <WalletSecuritySection onToast={showToast} onError={showError} />
               <IdentityVerificationSection onToast={showToast} onError={showError} />
-            </motion.section>
-
-            {/* XRP rewards pending */}
-            <motion.section
-              className="mt-4 px-5"
-              initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.32, delay: reduced ? 0 : 0.18, ease: EASE_OUT }}
-            >
-              <GlassCard className="p-5">
-                <p className="t-micro" style={{ color: 'var(--text)' }}>
-                  XRP REWARDS
-                </p>
-                <p className="t-title-sm mt-1" style={{ color: 'var(--text)' }}>
-                  {state.rewardsPendingText}
-                </p>
-                <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                  Rewards are paid only in XRP, straight from the platform treasury.
-                </p>
-              </GlassCard>
             </motion.section>
 
             {/* Sales history */}

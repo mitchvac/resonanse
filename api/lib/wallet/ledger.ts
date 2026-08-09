@@ -4,22 +4,19 @@
  *
  * Invariants enforced here:
  *  - Price is up-only: every sale ratchets +PRICE_INCREMENT_MICRO.
- *  - A supplier can never be pushed below MINIMUM_DATE_COIN_BALANCE.
  *  - PLATFORM sales credit the buyer exactly once (the prototype's
  *    mint()+executeSale() double-credit bug is fixed by settling once).
  *  - All multi-write operations run inside ONE transaction (fail closed).
+ *
+ * V69 CLOSED LOOP: Date-Coin is a strictly in-app credit (see Legal.tsx).
+ * The marketplace/supplier path and XRP supplier rewards were removed —
+ * the platform is the sole seller, and no code path converts Date-Coin
+ * into XRP or any other value outside the app.
  */
 import { and, eq, gte, sql } from "drizzle-orm";
 import * as schema from "@db/schema";
 import { audit, ensurePriceState, type DbOrTx } from "./db";
-import {
-  ASSET_USD_MICRO,
-  MINIMUM_DATE_COIN_BALANCE,
-  PLATFORM_SELLER,
-  PRICE_INCREMENT_MICRO,
-  SUPPLIER_BONUS_PERCENT,
-} from "./constants";
-import { percentOfMicro, usdMicroToAssetText } from "./util";
+import { PRICE_INCREMENT_MICRO } from "./constants";
 
 function affectedRows(result: unknown): number {
   if (Array.isArray(result)) {
@@ -52,29 +49,6 @@ export async function creditBalance(
     });
 }
 
-/**
- * Atomically debit a supplier, enforcing the hard minimum. Returns true when
- * the debit happened; false when the wallet cannot supply `amount` while
- * keeping at least MINIMUM_DATE_COIN_BALANCE (the Marketplace must then fall
- * back to the next eligible wallet).
- */
-export async function debitSupplierGuarded(
-  db: DbOrTx,
-  walletId: string,
-  amount: number,
-): Promise<boolean> {
-  const result = await db
-    .update(schema.dcLedger)
-    .set({ balance: sql`${schema.dcLedger.balance} - ${amount}` })
-    .where(
-      and(
-        eq(schema.dcLedger.walletId, walletId),
-        gte(schema.dcLedger.balance, amount + MINIMUM_DATE_COIN_BALANCE),
-      ),
-    );
-  return affectedRows(result) === 1;
-}
-
 /** Debit any wallet, throwing (fail closed) if the balance is insufficient. */
 export async function debitBalanceOrThrow(
   db: DbOrTx,
@@ -104,8 +78,6 @@ export type SettleSaleParams = {
   paidWith: (typeof schema.DC_PAID_WITH)[number];
   totalPaidText: string;
   cryptoIntentId?: string | null;
-  /** Marketplace sales set this to record the supplier XRP reward obligation. */
-  withSupplierReward?: boolean;
   actor: string;
 };
 
@@ -116,15 +88,14 @@ export type SettledSale = {
   amount: number;
   pricePerCoinMicro: number;
   priceAfterSaleMicro: number;
-  /** XRP reward obligation text (marketplace sales only), else null. */
+  /** Always null since V69 — supplier XRP rewards were removed (closed loop). */
   rewardAmountXrpText: string | null;
 };
 
 /**
  * Settle a sale in one shot: credit the buyer, ratchet the price up, record
- * the sale (+ optional supplier reward obligation) and audit. The supplier
- * debit, when applicable, is performed separately via debitSupplierGuarded so
- * the Marketplace can fall back across suppliers before committing.
+ * the sale and audit. Since V69 every sale is a PLATFORM sale — the platform
+ * is the sole seller of this closed-loop in-app credit.
  *
  * MUST be called inside a transaction.
  */
@@ -161,27 +132,9 @@ export async function settleSale(
     cryptoIntentId: params.cryptoIntentId ?? null,
   });
 
-  // Supplier reward obligation (platform treasury pays XRP; never broadcast).
-  // Reward = 6% of the coin value at the pre-ratchet price, quoted in XRP.
-  let rewardAmountXrpText: string | null = null;
-  if (params.sellerWalletId !== PLATFORM_SELLER && params.withSupplierReward) {
-    const coinValueUsdMicro = params.amount * priceBefore;
-    const rewardUsdMicro = percentOfMicro(
-      coinValueUsdMicro,
-      SUPPLIER_BONUS_PERCENT,
-    );
-    rewardAmountXrpText = usdMicroToAssetText(
-      rewardUsdMicro,
-      ASSET_USD_MICRO.XRP,
-      6,
-    );
-    await db.insert(schema.dcRewards).values({
-      supplierWalletId: params.sellerWalletId,
-      saleId: params.saleId,
-      amountXrpText: rewardAmountXrpText,
-      status: "pending",
-    });
-  }
+  // V69 CLOSED LOOP: no supplier reward is recorded. Date-Coin never
+  // converts to XRP (or anything else) — it is spent only inside the app.
+  const rewardAmountXrpText: string | null = null;
 
   await audit(db, params.actor, "SALE", {
     saleId: params.saleId,

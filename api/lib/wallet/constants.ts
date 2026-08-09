@@ -15,24 +15,15 @@ export const AIRDROP_AMOUNT = 10_000;
 
 /**
  * New paid subscribers (post-airdrop users) receive this many Date-Coin via
- * marketplace fulfillment. Exported per the contract.
+ * a PLATFORM sale (V69 closed loop: platform is the sole seller).
  */
 export const SUBSCRIBER_ALLOCATION = 10_000;
-
-/** Hard minimum balance the Marketplace can never push a supplier below. */
-export const MINIMUM_DATE_COIN_BALANCE = 2_000;
 
 /** Up-only price increment per sale, in micro-USD (0.005 USD). */
 export const PRICE_INCREMENT_MICRO = 5_000;
 
 /** Starting system price, in micro-USD (0.10 USD). */
 export const INITIAL_PRICE_MICRO = 100_000;
-
-/** All supplier rewards are paid (as obligations) only in XRP. */
-export const REWARD_ASSET = "XRP" as const;
-
-/** Supplier reward bonus percentage (platform pays from its own treasury). */
-export const SUPPLIER_BONUS_PERCENT = 0.06;
 
 /** Payment intents expire after this long. */
 export const INTENT_TTL_MS = 30 * 60 * 1000; // 30 minutes
