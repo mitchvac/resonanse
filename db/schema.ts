@@ -930,3 +930,79 @@ export const walletEarnEvents = mysqlTable(
 
 export type WalletEarnEvent = typeof walletEarnEvents.$inferSelect;
 export type InsertWalletEarnEvent = typeof walletEarnEvents.$inferInsert;
+
+/* ------------------------------------------------------------------------ */
+/* Bounty program v1 (V71) — referrals + payout ledger                       */
+/*                                                                           */
+/* Flat, one-time, single-level referral bounties (see                       */
+/* resonance-bounty-program-v1.md). Verified conversion = referred member    */
+/* subscribed + kept 30 days. Payouts are executed by the OWNER from his     */
+/* self-custody wallet — this ledger records obligations + tx hashes; the    */
+/* software never moves money.                                               */
+/* ------------------------------------------------------------------------ */
+
+export const REFERRAL_STATUSES = ["pending", "qualified", "void"] as const;
+
+export const referralAttributions = mysqlTable(
+  "referral_attributions",
+  {
+    id: serial("id").primaryKey(),
+    referrerUserId: bigint("referrerUserId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    referredUserId: bigint("referredUserId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    /** 'claim' (new member entered a code) — v1 only source. */
+    source: varchar("source", { length: 16 }).notNull().default("claim"),
+    status: mysqlEnum("status", REFERRAL_STATUSES).notNull().default("pending"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    qualifiedAt: timestamp("qualifiedAt"),
+  },
+  (table) => [
+    uniqueIndex("referral_attributions_referred_unique").on(table.referredUserId),
+    index("referral_attributions_referrer_idx").on(table.referrerUserId),
+  ],
+);
+
+export type ReferralAttribution = typeof referralAttributions.$inferSelect;
+export type InsertReferralAttribution = typeof referralAttributions.$inferInsert;
+
+export const BOUNTY_STATUSES = [
+  "pending",
+  "qualified",
+  "approved",
+  "paid",
+  "void",
+  "clawedback",
+] as const;
+
+export const bountyObligations = mysqlTable(
+  "bounty_obligations",
+  {
+    id: serial("id").primaryKey(),
+    /** The member who EARNED the bounty. */
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    /** 'referral_conversion' | future types (merchant, event, …). */
+    bountyType: varchar("bountyType", { length: 48 }).notNull(),
+    amountUsdMicro: int("amountUsdMicro").notNull(),
+    status: mysqlEnum("status", BOUNTY_STATUSES).notNull().default("pending"),
+    /** Loose link to the source record (e.g. referral_attributions.id). */
+    refType: varchar("refType", { length: 32 }),
+    refId: bigint("refId", { mode: "number", unsigned: true }),
+    meta: json("meta"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    qualifiedAt: timestamp("qualifiedAt"),
+    paidAt: timestamp("paidAt"),
+    /** On-chain tx hash of the owner-executed payout (XRP), when paid. */
+    paidTxHash: varchar("paidTxHash", { length: 128 }),
+    /** Who recorded the payout (owner email/id). */
+    paidBy: varchar("paidBy", { length: 128 }),
+  },
+  (table) => [index("bounty_obligations_user_idx").on(table.userId)],
+);
+
+export type BountyObligation = typeof bountyObligations.$inferSelect;
+export type InsertBountyObligation = typeof bountyObligations.$inferInsert;
