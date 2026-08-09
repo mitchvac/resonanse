@@ -3,6 +3,7 @@ import { chatRouter } from "./chatRouter";
 import { discoverRouter } from "./discoverRouter";
 import { eventsRouter } from "./eventsRouter";
 import { identityVaultRouter } from "./identityVaultRouter";
+import { kycRouter } from "./kycRouter";
 import { likesRouter } from "./likesRouter";
 import { matchesRouter } from "./matchesRouter";
 import { passwordAuthRouter } from "./passwordAuthRouter";
@@ -36,6 +37,7 @@ export const appRouter = createRouter({
   walletEarn: walletEarnRouter,
   walletSecurity: walletSecurityRouter,
   identityVault: identityVaultRouter,
+  kyc: kycRouter,
   sanctions: sanctionsRouter,
 });
 

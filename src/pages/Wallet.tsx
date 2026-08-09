@@ -21,6 +21,7 @@ import CryptoCheckoutSheet from '@/components/wallet/CryptoCheckoutSheet';
 import WalletSecuritySection from '@/components/wallet/WalletSecuritySection';
 import EarnRewardsSection from '@/components/wallet/EarnRewardsSection';
 import IdentityVerificationSection from '@/components/wallet/IdentityVerificationSection';
+import IdCaptureSection from '@/components/kyc/IdCaptureSection';
 import { useAuth } from '@/hooks/useAuth';
 import { useWalletUtils, walletTrpc, formatCoins, formatPriceMicro } from '@/lib/walletTrpc';
 import { LOGIN_PATH } from '@/const';
@@ -446,6 +447,7 @@ export default function Wallet() {
               <WalletSecuritySection onToast={showToast} onError={showError} />
               <EarnRewardsSection onToast={showToast} onError={showError} />
               <IdentityVerificationSection onToast={showToast} onError={showError} />
+              <IdCaptureSection onToast={showToast} onError={showError} />
             </motion.section>
 
             {/* Sales history */}
