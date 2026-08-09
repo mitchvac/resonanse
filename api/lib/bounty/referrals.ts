@@ -19,12 +19,13 @@ export const BOUNTY_TYPE_REFERRAL_CONVERSION = "referral_conversion";
 /** bounty_obligations.refType pointing back at referral_attributions.id. */
 export const REF_TYPE_REFERRAL_ATTRIBUTION = "referral_attribution";
 
-function isDupEntry(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    (err as { code?: string }).code === "ER_DUP_ENTRY"
-  );
+function isDupEntry(err: unknown, depth = 0): boolean {
+  if (typeof err !== "object" || err === null || depth > 4) return false;
+  const e = err as { code?: string; cause?: unknown };
+  if (e.code === "ER_DUP_ENTRY") return true;
+  // drizzle wraps driver errors ("Failed query: …") with the original
+  // mysql2 error on .cause — walk the chain.
+  return isDupEntry(e.cause, depth + 1);
 }
 
 /**

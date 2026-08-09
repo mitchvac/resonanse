@@ -1,4 +1,5 @@
 import { authRouter } from "./auth-router";
+import { bountyRouter } from "./bountyRouter";
 import { chatRouter } from "./chatRouter";
 import { discoverRouter } from "./discoverRouter";
 import { eventsRouter } from "./eventsRouter";
@@ -22,6 +23,7 @@ export const appRouter = createRouter({
   ping: publicQuery.query(() => ({ ok: true, ts: Date.now() })),
   auth: authRouter,
   passwordAuth: passwordAuthRouter,
+  bounty: bountyRouter,
 
   profile: profileRouter,
   discover: discoverRouter,
