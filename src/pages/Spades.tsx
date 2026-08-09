@@ -33,6 +33,9 @@ const SUIT_NAME = ['spades', 'hearts', 'diamonds', 'clubs'];
 const FACE: Record<number, string> = { 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
 const NAMES = ['You', 'Riley', 'Maya', 'Sam'];
 const ISBOT = [false, true, true, true]; // local table: every non-user seat is labelled BOT
+// Bot seat portraits — every bot seat keeps an unmistakable BOT badge + "BOT · Name" label.
+// These are AI-generated avatars, never photos of real members.
+const BOT_HEADS: (string | null)[] = [null, '/bot-heads/riley.png', '/bot-heads/maya.png', '/bot-heads/sam.png'];
 const rankOf = (c: CardT) => FACE[c.r] ?? String(c.r);
 const isRed = (c: CardT) => c.s === 1 || c.s === 2;
 const teamOf = (p: number): Side => (p % 2 === 0 ? 'us' : 'them');
@@ -139,7 +142,7 @@ function botCard(g: Game, p: number) {
 
 function CardFace({ card, mini = false }: { card: CardT; mini?: boolean }) {
   return (
-    <span className={cn('relative block h-full w-full bg-[#FBFAF6] text-[#16161C]', isRed(card) && 'text-[#B32626]')}>
+    <span className={cn('relative block h-full w-full rounded-[inherit] bg-white text-[#16161C] ring-1 ring-black/10', isRed(card) && 'text-[#B32626]')}>
       <span className={cn('absolute left-1 top-1 font-bold leading-none', mini ? 'text-[12px]' : 'text-[13px]')}>
         {rankOf(card)}
       </span>
@@ -427,19 +430,35 @@ export default function Spades() {
                           boxShadow: active ? '0 0 0 2px rgba(255,206,138,.75), 0 0 18px rgba(255,190,110,.45)' : undefined,
                         }}
                       >
-                        <span
-                          className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-[60%] items-center justify-center rounded-full"
-                          style={{
-                            background:
-                              p === 0
-                                ? 'radial-gradient(120% 120% at 30% 20%, #7C93DE, #2C3970)'
-                                : 'radial-gradient(120% 120% at 30% 20%, #B98BC9, #422C4D)',
-                          }}
-                        >
+                        <span className="absolute left-1/2 top-1/2 block h-11 w-11 -translate-x-1/2 -translate-y-[60%]">
                           {ISBOT[p] ? (
-                            <span className="t-micro font-bold text-white/85">BOT</span>
+                            <>
+                              <img
+                                src={BOT_HEADS[p] ?? ''}
+                                alt=""
+                                className="h-full w-full rounded-full object-cover"
+                                style={{ boxShadow: '0 0 0 2px rgba(255,255,255,.28), 0 2px 8px rgba(0,0,0,.45)' }}
+                              />
+                              <span
+                                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 rounded-full px-1.5 py-px text-[8px] font-extrabold tracking-[0.08em]"
+                                style={{
+                                  background: '#16161C',
+                                  color: '#FFD88F',
+                                  boxShadow: '0 0 0 1.5px rgba(255,206,138,.8)',
+                                }}
+                              >
+                                BOT
+                              </span>
+                            </>
                           ) : (
-                            <span className="t-caption font-bold text-white">YOU</span>
+                            <span
+                              className="flex h-full w-full items-center justify-center rounded-full"
+                              style={{
+                                background: 'radial-gradient(120% 120% at 30% 20%, #7C93DE, #2C3970)',
+                              }}
+                            >
+                              <span className="t-caption font-bold text-white">YOU</span>
+                            </span>
                           )}
                         </span>
                       </div>
@@ -531,10 +550,10 @@ export default function Spades() {
                     onClick={() => play(0, card)}
                     aria-label={`${rankOf(card)} of ${SUIT_NAME[card.s]}`}
                     className={cn(
-                      'relative h-[62px] w-[44px] shrink-0 rounded-[6px] shadow-xl transition-transform duration-fast',
-                      i > 0 && '-ml-[24px]',
+                      'relative h-[66px] w-[47px] shrink-0 rounded-[6px] shadow-xl transition-transform duration-fast',
+                      i > 0 && '-ml-[18px]',
                       enabled && 'hover:-translate-y-3 focus-visible:-translate-y-3',
-                      !enabled && 'brightness-[0.62] saturate-[0.5]',
+                      !enabled && g.phase === 'play' && 'brightness-[0.7] saturate-[0.6]',
                     )}
                     style={{ zIndex: i }}
                   >
