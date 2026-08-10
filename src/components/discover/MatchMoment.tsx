@@ -19,7 +19,8 @@ export default function MatchMoment({
   onClose,
 }: {
   open: boolean;
-  theirPhoto: string;
+  /** Their first profile photo; null renders an initial disc (never a stock face). */
+  theirPhoto: string | null;
   theirName: string;
   /** Caller's own first profile photo. Null when they have none — we render
       an initial disc instead. NEVER default this to a stock face: showing a
@@ -78,15 +79,34 @@ export default function MatchMoment({
                   </span>
                 </motion.div>
               )}
-              <motion.img
-                src={theirPhoto}
-                alt={`Photo of ${theirName}`}
-                className="h-24 w-24 rounded-full object-cover ring-4"
-                style={{ ['--tw-ring-color' as string]: 'rgba(255,255,255,0.8)' }}
-                initial={{ x: reduced ? 0 : 60, opacity: 0 }}
-                animate={{ x: 14, opacity: 1 }}
-                transition={spring}
-              />
+              {theirPhoto ? (
+                <motion.img
+                  src={theirPhoto}
+                  alt={`Photo of ${theirName}`}
+                  className="h-24 w-24 rounded-full object-cover ring-4"
+                  style={{ ['--tw-ring-color' as string]: 'rgba(255,255,255,0.8)' }}
+                  initial={{ x: reduced ? 0 : 60, opacity: 0 }}
+                  animate={{ x: 14, opacity: 1 }}
+                  transition={spring}
+                />
+              ) : (
+                /* photo-less match: violet initial disc — NEVER a stock face */
+                <motion.div
+                  aria-label={theirName}
+                  className="flex h-24 w-24 items-center justify-center rounded-full ring-4"
+                  style={{
+                    ['--tw-ring-color' as string]: 'rgba(255,255,255,0.8)',
+                    background: 'linear-gradient(135deg, var(--violet), var(--violet-deep, var(--violet)))',
+                  }}
+                  initial={{ x: reduced ? 0 : 60, opacity: 0 }}
+                  animate={{ x: 14, opacity: 1 }}
+                  transition={spring}
+                >
+                  <span className="t-heading text-white" aria-hidden="true">
+                    {(theirName.trim()[0] ?? '♥').toUpperCase()}
+                  </span>
+                </motion.div>
+              )}
               {/* brand-mark overlap flash at contact */}
               <motion.div
                 className="absolute"

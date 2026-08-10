@@ -559,7 +559,7 @@ export default function Discover() {
 
       <MatchMoment
         open={!!match}
-        theirPhoto={match?.entry.profile.photos?.[0] ?? '/avatar-01.jpg'}
+        theirPhoto={match?.entry.profile.photos?.[0] ?? null}
         theirName={match?.entry.profile.displayName ?? ''}
         myPhoto={meQuery.data?.profile?.photos?.filter(Boolean)[0] ?? null}
         myName={meQuery.data?.profile?.displayName ?? ''}

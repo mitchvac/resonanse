@@ -8,6 +8,7 @@ import GlassSheet from '@/components/GlassSheet';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import PulseCard from '@/components/likes/PulseCard';
 import LikeTile from '@/components/likes/LikeTile';
+import GestureRow from '@/components/likes/GestureRow';
 import SortSheet, { type SortMode } from '@/components/likes/SortSheet';
 import GateCard from '@/components/discover/GateCard';
 import ProfileSheet from '@/components/discover/ProfileSheet';
@@ -84,7 +85,7 @@ export default function Likes() {
   const [collapsingIds, setCollapsingIds] = useState<Set<number>>(new Set());
   const [passedIds, setPassedIds] = useState<Set<number>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
-  const [match, setMatch] = useState<{ name: string; photo: string; matchId: number | null } | null>(null);
+  const [match, setMatch] = useState<{ name: string; photo: string | null; matchId: number | null } | null>(null);
 
   const likes = useMemo(() => {
     const visible = likesAll.filter((l) => !passedIds.has(l.id));
@@ -113,13 +114,21 @@ export default function Likes() {
     onSuccess: async (result, input) => {
       await utils.likes.invalidate();
       if (result.matched) {
-        const like = likesAll.find((l) => l.liker?.id === input.toProfileId);
+        // the matching gesture may live in ANY rail (a wave-back matches a wave)
+        const like = [...pulses, ...flowers, ...waves, ...likesAll].find(
+          (l) => l.liker?.id === input.toProfileId,
+        );
         setMatch({
           name: like?.liker?.displayName ?? 'Them',
-          photo: like?.liker?.photos?.[0] ?? '/avatar-01.jpg',
+          // null → MatchMoment renders their initial disc; NEVER a stock face
+          photo: like?.liker?.photos?.[0] ?? null,
           matchId: result.matchId,
         });
+        return;
       }
+      // quick-gesture feedback (§8.13 toast) — matches take the MatchMoment instead
+      if (input.action === 'wave') setToast('Wave sent — they’ll see you said hi.');
+      else if (input.action === 'flower') setToast('Flower sent — that one’s special.');
     },
   });
 
@@ -149,6 +158,25 @@ export default function Likes() {
     if (!like.liker) return;
     swipeMutation.mutate({ toProfileId: like.liker.id, action: 'like' });
   };
+
+  // Quick-response gestures straight from a card — wave back at a wave is a
+  // match (reciprocation is kind-agnostic), so the MatchMoment may fire here.
+  const gestureBack = (like: ReceivedLike, action: 'wave' | 'flower' | 'like') => {
+    if (!like.liker) return;
+    swipeMutation.mutate({ toProfileId: like.liker.id, action });
+  };
+
+  const gesturesFor = (like: ReceivedLike) =>
+    like.liker ? (
+      <GestureRow
+        flowersLeft={flowersLeft}
+        pending={swipeMutation.isPending}
+        name={like.liker.displayName.split(' ')[0]}
+        onWave={() => gestureBack(like, 'wave')}
+        onFlower={() => gestureBack(like, 'flower')}
+        onLike={() => gestureBack(like, 'like')}
+      />
+    ) : null;
 
   const switchPreview = (v: 'Auto' | 'Free' | '+') => {
     const nextBlurred = v === 'Auto' ? serverBlurred : v === 'Free';
@@ -254,6 +282,7 @@ export default function Likes() {
                         setViewedPulses((prev) => new Set(prev).add(pulse.id));
                         if (pulse.liker) setSheetLike(pulse);
                       }}
+                      gestures={gesturesFor(pulse)}
                     />
                   ))}
                 </div>
@@ -275,6 +304,7 @@ export default function Likes() {
                       onOpen={() => {
                         if (flower.liker) setSheetLike(flower);
                       }}
+                      gestures={gesturesFor(flower)}
                     />
                   ))}
                 </div>
@@ -296,6 +326,7 @@ export default function Likes() {
                       onOpen={() => {
                         if (wave.liker) setSheetLike(wave);
                       }}
+                      gestures={gesturesFor(wave)}
                     />
                   ))}
                 </div>
@@ -326,6 +357,7 @@ export default function Likes() {
                           contextLabel={contextLabel(like)}
                           onTap={() => (blurred ? setTeaser(like) : like.liker && setSheetLike(like))}
                           onLongPress={() => !blurred && setQuickAction(like)}
+                          gestures={blurred ? undefined : gesturesFor(like)}
                         />
                       );
                     })}
@@ -558,7 +590,7 @@ export default function Likes() {
 
       <MatchMoment
         open={!!match}
-        theirPhoto={match?.photo ?? '/avatar-01.jpg'}
+        theirPhoto={match?.photo ?? null}
         theirName={match?.name ?? ''}
         myPhoto={meQuery.data?.profile?.photos?.filter(Boolean)[0] ?? null}
         myName={meQuery.data?.profile?.displayName ?? ''}
@@ -583,6 +615,7 @@ function LongPressTile({
   contextLabel: string;
   onTap: () => void;
   onLongPress: () => void;
+  gestures?: React.ReactNode;
 }) {
   const timer = useRef<number | null>(null);
   const fired = useRef(false);

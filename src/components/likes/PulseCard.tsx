@@ -19,6 +19,7 @@ export default function PulseCard({
   onOpen,
   label = 'PULSE',
   accent = 'var(--violet)',
+  gestures,
 }: {
   pulse: ReceivedLike;
   hero?: boolean;
@@ -27,6 +28,8 @@ export default function PulseCard({
   /** 'FLOWER' + rose accent for the flower rail */
   label?: string;
   accent?: string;
+  /** quick-response gesture row (wave/flower/like-back) under the card body */
+  gestures?: React.ReactNode;
 }) {
   const [expanded, setExpanded] = useState(false);
   const liker = pulse.liker;
@@ -100,6 +103,7 @@ export default function PulseCard({
             {expanded ? 'Less' : 'More'}
           </button>
         )}
+        {gestures}
       </GlassCard>
     </motion.div>
   );

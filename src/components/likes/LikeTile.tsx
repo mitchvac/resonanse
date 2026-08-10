@@ -21,6 +21,7 @@ export default function LikeTile({
   collapsing = false,
   contextLabel,
   onTap,
+  gestures,
 }: {
   like: ReceivedLike;
   blurred: boolean;
@@ -30,9 +31,14 @@ export default function LikeTile({
   collapsing?: boolean;
   contextLabel: string;
   onTap: () => void;
+  /** quick-response gesture row (wave/flower/like-back), rendered under the
+      context label — unblurred tiles only */
+  gestures?: React.ReactNode;
 }) {
   const liker = like.liker;
-  const photo = liker?.photos?.[0] ?? '/avatar-02.jpg';
+  // Never a stock face: a photo-less liker gets a violet initial disc —
+  // a stranger's photo here reads as "this is who liked you" (V83 bug class).
+  const photo = liker?.photos?.[0] ?? null;
   const intent = liker?.desires?.[0] ?? liker?.relationshipGoal ?? null;
   const reduced = useReducedMotion();
   const blurDuration = reduced ? 0.2 : 0.6;
@@ -68,12 +74,24 @@ export default function LikeTile({
             transition={{ delay: unlocking ? unlockDelay : 0, duration: blurDuration, ease: [0.22, 1, 0.36, 1] }}
             style={{ transform: 'scale(1.12)' /* hide blur fringe */ }}
           >
-            <img
-              src={photo}
-              alt={blurred ? '' : `Photo of ${liker?.displayName ?? 'member'}`}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
+            {photo ? (
+              <img
+                src={photo}
+                alt={blurred ? '' : `Photo of ${liker?.displayName ?? 'member'}`}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className="t-heading flex h-full w-full items-center justify-center text-white"
+                style={{ background: 'linear-gradient(150deg, var(--violet), var(--violet-deep, var(--violet)))' }}
+                aria-label={blurred ? '' : `${liker?.displayName ?? 'member'} (no photo)`}
+              >
+                <span aria-hidden="true">
+                  {(liker?.displayName?.trim()[0] ?? '♥').toUpperCase()}
+                </span>
+              </div>
+            )}
           </motion.div>
           {/* scrim — fades out with the unblur wave */}
           <motion.div
@@ -114,12 +132,15 @@ export default function LikeTile({
             </div>
           )}
         </div>
-        {!blurred && (
+      </button>
+      {!blurred && (
+        <>
           <p className="t-micro mt-1.5 truncate" style={{ color: 'var(--text-secondary)' }}>
             {contextLabel}
           </p>
-        )}
-      </button>
+          {gestures}
+        </>
+      )}
     </motion.div>
   );
 }
