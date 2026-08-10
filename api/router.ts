@@ -15,6 +15,7 @@ import { safetyRouter } from "./safetyRouter";
 import { sanctionsRouter } from "./sanctionsRouter";
 import { translateRouter } from "./translateRouter";
 import { videoCallRouter } from "./videoCallRouter";
+import { voiceRouter } from "./voiceRouter";
 import { walletRouter } from "./walletRouter";
 import { walletEarnRouter } from "./walletEarnRouter";
 import { walletSecurityRouter } from "./walletSecurityRouter";
@@ -37,6 +38,7 @@ export const appRouter = createRouter({
   safety: safetyRouter,
   translate: translateRouter,
   videoCall: videoCallRouter,
+  voice: voiceRouter,
   wallet: walletRouter,
   walletEarn: walletEarnRouter,
   walletSecurity: walletSecurityRouter,

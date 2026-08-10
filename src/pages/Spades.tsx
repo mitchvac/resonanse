@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { ArrowLeft, Clapperboard, RotateCcw, Send, Ticket } from 'lucide-react';
 import AdWatchModal from '@/components/AdWatchModal';
 import WinFireworks from '@/components/games/WinFireworks';
+import VoiceDock from '@/components/games/voice/VoiceDock';
 import GlassCard from '@/components/GlassCard';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import { trpc } from '@/providers/trpc';
@@ -452,11 +453,14 @@ export default function Spades() {
               <ArrowLeft size={20} aria-hidden="true" />
             </button>
             <span
-              className="t-value flex-1 pr-11 text-center font-bold"
+              className="t-value flex-1 text-center font-bold"
               style={{ color: 'var(--text)', position: 'relative', zIndex: 1 }}
             >
               Spades
             </span>
+            {/* V88 — LiveKit voice. Bot table → disabled state; a human table
+                passes its matchId and the mic pill goes live (consent = tap). */}
+            <VoiceDock matchId={null} game="spades" />
           </div>
         </div>
 

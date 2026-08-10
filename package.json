@@ -67,6 +67,8 @@
     "jose": "6.1.3",
     "jpeg-js": "^0.4.4",
     "lenis": "^1.3.25",
+    "livekit-client": "^2.21.0",
+    "livekit-server-sdk": "^2.17.0",
     "lucide-react": "^0.562.0",
     "mrz": "^5.0.2",
     "mysql2": "^3.14.1",
