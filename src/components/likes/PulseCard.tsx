@@ -30,7 +30,10 @@ export default function PulseCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const liker = pulse.liker;
-  const photo = liker?.photos?.[0] ?? '/avatar-01.jpg';
+  // Never fall back to a stock face: a blurred (free-tier) or photo-less
+  // liker gets a violet initial disc — a random stranger's photo here reads
+  // as "this is who waved at you", which is a lie (same V83/V84 bug class).
+  const photo = liker?.photos?.[0] ?? null;
 
   return (
     <motion.div
@@ -45,11 +48,24 @@ export default function PulseCard({
         onClick={onOpen}
       >
         <div className="flex items-center gap-3">
-          <img
-            src={photo}
-            alt={liker ? `Photo of ${liker.displayName}` : ''}
-            className="h-16 w-16 shrink-0 rounded-full object-cover"
-          />
+          {photo ? (
+            <img
+              src={photo}
+              alt={liker ? `Photo of ${liker.displayName}` : ''}
+              className="h-16 w-16 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <span
+              role="img"
+              aria-label={liker ? `${liker.displayName} (photo hidden)` : 'Someone'}
+              className="t-title flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-white"
+              style={{ background: 'var(--violet)' }}
+            >
+              <span aria-hidden="true">
+                {(liker?.displayName?.trim()[0] ?? '♥').toUpperCase()}
+              </span>
+            </span>
+          )}
           <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="t-micro" style={{ color: accent }}>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flag, Heart, Share2, Sparkle, X } from 'lucide-react';
+import { Flag, Flower2, Handshake, Heart, Share2, Sparkle, X } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
 import GlassCard from '@/components/GlassCard';
 import AppToast from '@/components/AppToast';
@@ -20,7 +20,8 @@ const REPORT_REASONS = ['Spam', 'Abuse', 'Fake', 'Under 18', 'Other'];
  * Full-height GlassSheet: photo pager (dots, crossfade 240ms), name+age+
  * VerifiedBadge, intent/status chips, prompt GlassCards (stagger 70ms),
  * lifestyle/values chips, distance + "Active today" (--ok dot).
- * Sticky footer: Pass ghost · Like (violet) · Pulse (glass w/ violet spark).
+ * Sticky footer: Pass ghost · Wave (glass, "say hi") · Flower (glass, count
+ * badge) · Like (violet) · Pulse (glass w/ violet spark).
  * Safety row: share profile, report/block.
  */
 export default function ProfileSheet({
@@ -29,9 +30,12 @@ export default function ProfileSheet({
   compatibility,
   distance,
   pending,
+  flowersLeft = null,
   onPass,
   onLike,
   onPulse,
+  onFlower,
+  onWave,
   onClose,
 }: {
   open: boolean;
@@ -39,9 +43,12 @@ export default function ProfileSheet({
   compatibility: number;
   distance?: string;
   pending?: boolean;
+  flowersLeft?: number | null;
   onPass: () => void;
   onLike: () => void;
   onPulse: () => void;
+  onFlower: () => void;
+  onWave: () => void;
   onClose: () => void;
 }) {
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -229,16 +236,16 @@ export default function ProfileSheet({
           </div>
         </div>
 
-        {/* sticky footer */}
+        {/* sticky footer — every gesture lives here: Pass · Wave · Flower · Like · Pulse */}
         <div
-          className="flex items-center gap-3 border-t px-5 py-4"
+          className="flex items-center gap-2 border-t px-4 py-4"
           style={{ borderColor: 'var(--ring-stroke)' }}
         >
           <button
             type="button"
             disabled={pending}
             onClick={onPass}
-            className="t-button flex items-center gap-1.5 px-3 transition-opacity duration-fast active:opacity-70 disabled:opacity-50"
+            className="t-button flex items-center gap-1.5 px-2 transition-opacity duration-fast active:opacity-70 disabled:opacity-50"
             style={{ color: 'var(--text)' }}
           >
             <X size={16} aria-hidden="true" /> Pass
@@ -246,8 +253,41 @@ export default function ProfileSheet({
           <button
             type="button"
             disabled={pending}
+            onClick={onWave}
+            aria-label="Wave — say hi"
+            title="Wave — say hi"
+            className="glass flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
+          >
+            <span className="glass-content flex items-center justify-center">
+              <Handshake size={20} style={{ color: 'var(--violet)' }} aria-hidden="true" />
+            </span>
+          </button>
+          <button
+            type="button"
+            disabled={pending || flowersLeft === 0}
+            onClick={onFlower}
+            aria-label={flowersLeft === null ? 'Send a flower' : `Send a flower — ${flowersLeft} left today`}
+            title="Send a flower"
+            className="glass relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
+          >
+            <span className="glass-content flex items-center justify-center">
+              <Flower2 size={20} style={{ color: '#e35d7c' }} aria-hidden="true" />
+            </span>
+            {flowersLeft !== null && (
+              <span
+                className="t-micro absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-white"
+                style={{ background: '#e35d7c' }}
+                aria-hidden="true"
+              >
+                {flowersLeft}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            disabled={pending}
             onClick={onLike}
-            className="shadow-violet-glow t-button flex h-[52px] flex-1 items-center justify-center gap-2 rounded-full bg-violet text-white transition-transform duration-fast active:scale-[0.97] disabled:opacity-50"
+            className="shadow-violet-glow t-button flex h-[52px] min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-violet text-white transition-transform duration-fast active:scale-[0.97] disabled:opacity-50"
           >
             <Heart size={18} fill="currentColor" strokeWidth={0} aria-hidden="true" /> Like
           </button>
@@ -256,6 +296,7 @@ export default function ProfileSheet({
             disabled={pending}
             onClick={onPulse}
             aria-label="Send Pulse"
+            title="Send Pulse"
             className="glass flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
           >
             <span className="glass-content flex items-center justify-center">

@@ -131,6 +131,7 @@ function winnerOf(t: TrickPlay[]) {
 }
 
 function lowest(a: CardT[]) {
+  if (!a.length) return null; // empty hand at hand-end — never throw
   return a.reduce((x, y) =>
     (x.s === 0) !== (y.s === 0) ? (x.s === 0 ? y : x) : x.r < y.r ? x : y,
   );
@@ -138,6 +139,7 @@ function lowest(a: CardT[]) {
 
 function botCard(g: Game, p: number) {
   const L = legal(g, p);
+  if (!L.length) return null; // hand over — a scheduled bot tick must not crash
   if (!g.trick.length) {
     const ace = L.find((c) => c.r === 14 && c.s !== 0);
     return ace || lowest(L);
@@ -259,7 +261,7 @@ export default function Spades() {
       const nils = ps.filter((p) => g.bids[p] === 0);
       const contract = ps
         .filter((p) => (g.bids[p] ?? 0) > 0)
-        .reduce((sum, p) => sum + (g.bids[p] ?? 0), 0);
+        .reduce((sum, p) => sum + (g.bids[p] ?? 0), 0); // initial 0: double-nil side must not throw
       const won = ps.reduce((sum, p) => sum + g.tricks[p], 0);
       for (const p of nils) g.score[side] += g.tricks[p] === 0 ? 100 : -100;
       const fc = won - nils.reduce((sum, p) => sum + g.tricks[p], 0);
@@ -314,7 +316,10 @@ export default function Spades() {
     }
     if (g.phase === 'play' && g.turn !== 0) {
       const p = g.turn;
-      later(() => play(p, botCard(g, p)), 560);
+      later(() => {
+        const c = botCard(g, p);
+        if (c) play(p, c); // null = hand already over; skip silently
+      }, 560);
     }
     renderNow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -324,6 +329,12 @@ export default function Spades() {
     (p: number, c: CardT) => {
       const g = game.current;
       if (g.phase !== 'play') return;
+      // Stale/duplicate bot timers must be no-ops: a fast human click can leave
+      // a second step() timer pending, which would otherwise let a bot play
+      // twice in one trick and corrupt the whole hand (this was the root cause
+      // of the end-of-game hang — no win banner, no fireworks).
+      if (p !== g.turn) return;
+      if (g.trick.length === 4) return; // trick is resolving — never push a 5th card
       g.hands[p] = g.hands[p].filter((x) => x !== c);
       if (c.s === 0) g.broken = true;
       g.trick.push({ p, c });

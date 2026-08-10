@@ -200,7 +200,7 @@ export const likes = mysqlTable(
     toProfileId: bigint("toProfileId", { mode: "number", unsigned: true })
       .notNull()
       .references(() => profiles.id),
-    kind: mysqlEnum("kind", ["like", "pulse", "flower"]).notNull().default("like"),
+    kind: mysqlEnum("kind", ["like", "pulse", "flower", "wave"]).notNull().default("like"),
     comment: text("comment"),
     targetType: mysqlEnum("targetType", ["profile", "prompt", "photo"])
       .notNull()

@@ -18,4 +18,4 @@ export type Entitlements = RouterOutputs['premium']['entitlements']['entitlement
 
 export type LikesRemaining = RouterOutputs['likes']['remaining'];
 
-export type SwipeAction = 'like' | 'pass' | 'pulse' | 'flower';
+export type SwipeAction = 'like' | 'pass' | 'pulse' | 'flower' | 'wave';

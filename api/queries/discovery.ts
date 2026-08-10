@@ -277,6 +277,25 @@ export async function countFlowersToday(userId: number): Promise<number> {
   return rows.length;
 }
 
+/** Waves are the low-stakes "say hi" — generous cap, same for every tier. */
+export const FREE_DAILY_WAVES = 10;
+
+export async function countWavesToday(userId: number): Promise<number> {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const rows = await getDb()
+    .select({ id: likes.id })
+    .from(likes)
+    .where(
+      and(
+        eq(likes.fromUserId, userId),
+        eq(likes.kind, "wave"),
+        gte(likes.createdAt, startOfDay),
+      ),
+    );
+  return rows.length;
+}
+
 export async function recordPass(
   fromUserId: number,
   toProfileId: number,

@@ -4,9 +4,11 @@ import { createRouter, authedQuery } from "./middleware";
 import {
   countFlowersToday,
   countLikesToday,
+  countWavesToday,
   dismissIncomingLikesFrom,
   findExistingLike,
   FREE_DAILY_FLOWERS,
+  FREE_DAILY_WAVES,
   getDiscoveryQueue,
   getOrCreateMatch,
   recordLike,
@@ -54,7 +56,7 @@ export const discoverRouter = createRouter({
     .input(
       z.object({
         toProfileId: z.number().int().positive(),
-        action: z.enum(["like", "pass", "pulse", "flower"]),
+        action: z.enum(["like", "pass", "pulse", "flower", "wave"]),
         comment: z.string().max(500).optional(),
         targetType: z.enum(["profile", "prompt", "photo"]).optional(),
         targetRef: z.string().max(255).optional(),
@@ -104,7 +106,7 @@ export const discoverRouter = createRouter({
             message: "You're out of Pulses",
           });
         }
-      } else {
+      } else if (input.action === "flower") {
         // flower — free tier: FREE_DAILY_FLOWERS/day; Resonance+ unlimited
         if (entitlement.tier === "free") {
           const flowersToday = await countFlowersToday(userId);
@@ -115,6 +117,15 @@ export const discoverRouter = createRouter({
             });
           }
         }
+      } else {
+        // wave — the low-stakes "say hi"; FREE_DAILY_WAVES/day for everyone
+        const wavesToday = await countWavesToday(userId);
+        if (wavesToday >= FREE_DAILY_WAVES) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You're out of waves for today",
+          });
+        }
       }
 
       const myProfile = await ensureProfile(userId, {
@@ -124,7 +135,7 @@ export const discoverRouter = createRouter({
       await recordLike({
         fromUserId: userId,
         toProfileId: input.toProfileId,
-        kind: input.action as "like" | "pulse" | "flower",
+        kind: input.action as "like" | "pulse" | "flower" | "wave",
         comment: input.comment ?? null,
         targetType: input.targetType ?? "profile",
         targetRef: input.targetRef ?? null,

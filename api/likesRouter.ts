@@ -4,7 +4,9 @@ import {
   countFlowersToday,
   countLikesToday,
   countMatchesForUser,
+  countWavesToday,
   FREE_DAILY_FLOWERS,
+  FREE_DAILY_WAVES,
   likesReceivedForProfile,
   seedIncomingLikes,
 } from "./queries/discovery";
@@ -16,7 +18,7 @@ export const likesRouter = createRouter({
     const entitlement = await ensureEntitlement(ctx.user.id);
     let myProfile = await findProfileByUserId(ctx.user.id);
     if (!myProfile) {
-      return { blurred: true, likes: [], pulses: [], flowers: [] };
+      return { blurred: true, likes: [], pulses: [], flowers: [], waves: [] };
     }
 
     // One-time lazy seed: a brand-new caller with zero likes and zero matches
@@ -57,9 +59,11 @@ export const likesRouter = createRouter({
 
     return {
       blurred,
-      // Pulses and flowers are never hidden and always pinned first.
+      // Pulses, flowers and waves are never hidden and always pinned first —
+      // a wave is an explicit "hi", hiding it defeats the gesture.
       pulses: decorated.filter((l) => l.kind === "pulse"),
       flowers: decorated.filter((l) => l.kind === "flower"),
+      waves: decorated.filter((l) => l.kind === "wave"),
       likes: decorated.filter((l) => l.kind === "like"),
     };
   }),
@@ -68,6 +72,7 @@ export const likesRouter = createRouter({
     const entitlement = await ensureEntitlement(ctx.user.id);
     const likesToday = await countLikesToday(ctx.user.id);
     const flowersToday = await countFlowersToday(ctx.user.id);
+    const wavesToday = await countWavesToday(ctx.user.id);
     return {
       likesLeftToday: Math.max(0, entitlement.dailyLikeLimit - likesToday),
       dailyLikeLimit: entitlement.dailyLikeLimit,
@@ -77,6 +82,7 @@ export const likesRouter = createRouter({
         entitlement.tier === "free"
           ? Math.max(0, FREE_DAILY_FLOWERS - flowersToday)
           : 99,
+      waves: Math.max(0, FREE_DAILY_WAVES - wavesToday),
     };
   }),
 });

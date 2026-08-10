@@ -386,6 +386,7 @@ export default function Discover() {
         compatibility={sheetEntry?.compatibility ?? 0}
         distance={sheetEntry ? distance(sheetEntry) : undefined}
         pending={swipeMutation.isPending}
+        flowersLeft={flowersLeft}
         onPass={() => {
           if (sheetEntry) doSwipe(sheetEntry, 'pass');
           setSheetEntry(null);
@@ -396,6 +397,14 @@ export default function Discover() {
         }}
         onPulse={() => {
           if (sheetEntry) doSwipe(sheetEntry, 'pulse');
+          setSheetEntry(null);
+        }}
+        onFlower={() => {
+          if (sheetEntry) doSwipe(sheetEntry, 'flower');
+          setSheetEntry(null);
+        }}
+        onWave={() => {
+          if (sheetEntry) doSwipe(sheetEntry, 'wave');
           setSheetEntry(null);
         }}
         onClose={() => setSheetEntry(null)}

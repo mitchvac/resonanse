@@ -26,6 +26,7 @@ import type { ReceivedLike } from '@/components/discover/types';
 const GRID_CAP = 6;
 
 function contextLabel(like: ReceivedLike): string {
+  if (like.kind === 'wave') return 'Waved to say hi';
   if (like.targetType === 'prompt' && like.targetRef) {
     const ref = like.targetRef.length > 22 ? `${like.targetRef.slice(0, 22)}…` : like.targetRef;
     return `Liked your answer '${ref}'`;
@@ -43,6 +44,8 @@ export default function Likes() {
   const utils = trpc.useUtils();
   const receivedQuery = trpc.likes.received.useQuery();
   const meQuery = trpc.profile.me.useQuery(); // V83 — own photo for the match moment
+  const remainingQuery = trpc.likes.remaining.useQuery(); // V85 — flower count for the sheet
+  const flowersLeft = remainingQuery.data?.flowers ?? null;
 
   const serverBlurred = receivedQuery.data?.blurred ?? true;
   // dev-style Free / + preview toggle (likes-you.md "States & edge cases")
@@ -67,6 +70,7 @@ export default function Likes() {
 
   const pulses = useMemo(() => receivedQuery.data?.pulses ?? [], [receivedQuery.data]);
   const flowers = useMemo(() => receivedQuery.data?.flowers ?? [], [receivedQuery.data]);
+  const waves = useMemo(() => receivedQuery.data?.waves ?? [], [receivedQuery.data]);
   const likesAll = useMemo(() => receivedQuery.data?.likes ?? [], [receivedQuery.data]);
 
   const [viewedPulses, setViewedPulses] = useState<Set<number>>(new Set());
@@ -155,7 +159,7 @@ export default function Likes() {
     setPreview(v);
   };
 
-  const totalCount = pulses.length + flowers.length + likesAll.length;
+  const totalCount = pulses.length + flowers.length + waves.length + likesAll.length;
   const shownLikes = blurred ? likes.slice(0, GRID_CAP) : likes;
   const collapsed = blurred ? likes.length - shownLikes.length : 0;
 
@@ -175,6 +179,7 @@ export default function Likes() {
           <p className="t-micro mt-1" style={{ color: 'var(--text-secondary)' }}>
             {totalCount} PEOPLE · {pulses.length} PULSES
             {flowers.length > 0 ? ` · ${flowers.length} FLOWERS` : ''}
+            {waves.length > 0 ? ` · ${waves.length} WAVES` : ''}
           </p>
         </div>
         {blurred ? (
@@ -269,6 +274,27 @@ export default function Likes() {
                       accent="#e35d7c"
                       onOpen={() => {
                         if (flower.liker) setSheetLike(flower);
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* §1c Waves received — the "say hi" gesture, never blurred */}
+            {waves.length > 0 && (
+              <section aria-label="Waves received" className="mt-6">
+                <p className="t-eyebrow mb-3">Waved to say hi</p>
+                <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
+                  {waves.map((wave, i) => (
+                    <PulseCard
+                      key={wave.id}
+                      pulse={wave}
+                      index={i}
+                      label="WAVE"
+                      accent="#c98a2d"
+                      onOpen={() => {
+                        if (wave.liker) setSheetLike(wave);
                       }}
                     />
                   ))}
@@ -431,6 +457,7 @@ export default function Likes() {
         compatibility={sheetLike?.compatibility ?? 0}
         distance={sheetLike ? `${pseudoKm(sheetLike)} km` : undefined}
         pending={swipeMutation.isPending}
+        flowersLeft={flowersLeft}
         onPass={() => {
           if (sheetLike) passQuietly(sheetLike);
           setSheetLike(null);
@@ -442,6 +469,18 @@ export default function Likes() {
         onPulse={() => {
           if (sheetLike?.liker) {
             swipeMutation.mutate({ toProfileId: sheetLike.liker.id, action: 'pulse' });
+          }
+          setSheetLike(null);
+        }}
+        onFlower={() => {
+          if (sheetLike?.liker) {
+            swipeMutation.mutate({ toProfileId: sheetLike.liker.id, action: 'flower' });
+          }
+          setSheetLike(null);
+        }}
+        onWave={() => {
+          if (sheetLike?.liker) {
+            swipeMutation.mutate({ toProfileId: sheetLike.liker.id, action: 'wave' });
           }
           setSheetLike(null);
         }}
