@@ -157,7 +157,12 @@ export default function ConversationRow({
         animate={{ x: open ? -196 : 0 }}
         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="relative flex h-[72px] w-full items-center gap-3 rounded-[20px] px-3 text-left"
-        style={{ background: 'var(--field)' }}
+        // Opaque composite: --field is translucent Warm Glass, so on its own
+        // the swipe-action buttons behind the row bleed through and look
+        // permanently visible. Layering --field over --stage-base keeps the
+        // exact same tint (the stage is behind every row anyway) while making
+        // the row opaque — actions appear only when the row slides left.
+        style={{ background: 'linear-gradient(var(--field), var(--field)), var(--stage-base)' }}
         aria-label={`Chat with ${name}`}
       >
         <span className="relative shrink-0">
