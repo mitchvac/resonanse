@@ -19,6 +19,7 @@ export default function PulseCard({
   onOpen,
   label = 'PULSE',
   accent = 'var(--violet)',
+  art,
   gestures,
 }: {
   pulse: ReceivedLike;
@@ -28,6 +29,8 @@ export default function PulseCard({
   /** 'FLOWER' + rose accent for the flower rail */
   label?: string;
   accent?: string;
+  /** realistic gesture art (rose / dozen roses PNG) shown at the card top */
+  art?: string;
   /** quick-response gesture row (wave/flower/like-back) under the card body */
   gestures?: React.ReactNode;
 }) {
@@ -50,6 +53,16 @@ export default function PulseCard({
         className="rounded-[24px] p-4"
         onClick={onOpen}
       >
+        {art && (
+          <div className="mb-3 flex justify-center">
+            <img
+              src={art}
+              alt=""
+              aria-hidden="true"
+              className="h-28 w-auto object-contain drop-shadow-[0_6px_14px_rgba(227,93,124,0.25)]"
+            />
+          </div>
+        )}
         <div className="flex items-center gap-3">
           {photo ? (
             <img

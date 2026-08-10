@@ -13,6 +13,8 @@ import type { ToastPayload } from '@/components/AppToast';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import QueueCard from '@/components/discover/QueueCard';
 import ActionDock from '@/components/discover/ActionDock';
+import RoseSheet, { type RoseVariant } from '@/components/gestures/RoseSheet';
+import { useGestureFly } from '@/components/gestures/GestureFly';
 import SwipeDeck from '@/components/discover/SwipeDeck';
 import NearbyFeed from '@/components/discover/NearbyFeed';
 import ProfileSheet from '@/components/discover/ProfileSheet';
@@ -108,6 +110,8 @@ export default function Discover() {
   const [outOfFlowers, setOutOfFlowers] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
   const [sheetEntry, setSheetEntry] = useState<QueueEntry | null>(null);
+  const [roseEntry, setRoseEntry] = useState<QueueEntry | null>(null); // RoseSheet target
+  const { fly, layer: flyLayer } = useGestureFly();
   const [composer, setComposer] = useState<{ entry: QueueEntry; question: string | null } | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [travelOpen, setTravelOpen] = useState(false);
@@ -166,6 +170,8 @@ export default function Discover() {
   const likesLeft = remainingQuery.data?.likesLeftToday ?? null;
   const pulsesLeft = remainingQuery.data?.pulses ?? null;
   const flowersLeft = remainingQuery.data?.flowers ?? null;
+  const kissesLeft = remainingQuery.data?.kisses ?? null;
+  const dozenLeft = remainingQuery.data?.dozenLeft ?? null;
   const tier = entitlementsQuery.data?.entitlement.tier;
   const isPremium = tier === 'plus' || tier === 'x';
   const likesBadge =
@@ -183,13 +189,38 @@ export default function Discover() {
       if (result.matched) {
         const entry = entries.find((e) => e.profile.id === input.toProfileId);
         if (entry) setMatch({ entry, matchId: result.matchId });
+        return;
+      }
+      // gestures must never feel dead — every send gets a confirmation
+      if (input.action === 'wave') {
+        setToast({ id: Date.now(), message: 'You waved — they’ll see it in their Likes.' });
+      } else if (input.action === 'flower') {
+        setToast({
+          id: Date.now(),
+          message:
+            input.targetRef === 'dozen'
+              ? 'A dozen roses are on their way, card and all.'
+              : 'Your rose is on its way — with the card attached.',
+        });
+      } else if (input.action === 'kiss') {
+        setToast({ id: Date.now(), message: 'Kiss sent — bold move. They’ll see it in their Likes.' });
       }
     },
     onError: (error, input) => {
-      if (error.data?.code !== 'FORBIDDEN') return;
+      if (error.data?.code !== 'FORBIDDEN') {
+        setToast({ id: Date.now(), message: "Couldn't send — check your connection and try again." });
+        return;
+      }
       if (input.action === 'pulse') setOutOfPulses(true);
-      else if (input.action === 'flower') setOutOfFlowers(true);
-      else setOutOfLikes(true);
+      else if (input.action === 'flower') {
+        if (input.targetRef === 'dozen') {
+          setToast({ id: Date.now(), message: 'One dozen a day — save it for someone who stops your heart.' });
+        } else setOutOfFlowers(true);
+      } else if (input.action === 'kiss') {
+        setToast({ id: Date.now(), message: "You're out of kisses for today — they reset at midnight." });
+      } else if (input.action === 'wave') {
+        setToast({ id: Date.now(), message: "That's a lot of hellos — waves reset at midnight." });
+      } else setOutOfLikes(true);
     },
   });
 
@@ -207,7 +238,8 @@ export default function Discover() {
       toProfileId: entry.profile.id,
       action,
       comment,
-      targetType: targetRef ? 'prompt' : 'profile',
+      // 'dozen' is a flower variant marker, NOT a prompt reference
+      targetType: targetRef && targetRef !== 'dozen' ? 'prompt' : 'profile',
       targetRef,
     });
   };
@@ -221,10 +253,10 @@ export default function Discover() {
     rail.scrollTo({ left: queueIndex * slideWidth, behavior: reduced ? 'auto' : 'smooth' });
   }, [queueIndex, mode, reduced]);
 
-  // keyboard: ← pass, → like, ↑ pulse, F flower, Enter open (design.md §9)
+  // keyboard: ← pass, → like, ↑ pulse, W wave, F rose popup, K kiss, Enter open (design.md §9)
   useEffect(() => {
     const anySheetOpen =
-      sheetEntry || composer || filtersOpen || travelOpen || outOfLikes || outOfPulses || outOfFlowers || match || lockedFilterGate;
+      sheetEntry || roseEntry || composer || filtersOpen || travelOpen || outOfLikes || outOfPulses || outOfFlowers || match || lockedFilterGate;
     if (anySheetOpen || (mode !== 'Queue' && mode !== 'Swipe')) return;
     const onKey = (e: KeyboardEvent) => {
       const entry = mode === 'Queue' ? activeEntry : swipeEntries[0];
@@ -232,7 +264,9 @@ export default function Discover() {
       if (e.key === 'ArrowLeft') doSwipe(entry, 'pass');
       else if (e.key === 'ArrowRight') doSwipe(entry, 'like');
       else if (e.key === 'ArrowUp') doSwipe(entry, 'pulse');
-      else if (e.key === 'f' || e.key === 'F') doSwipe(entry, 'flower');
+      else if (e.key === 'w' || e.key === 'W') doSwipe(entry, 'wave');
+      else if (e.key === 'k' || e.key === 'K') doSwipe(entry, 'kiss');
+      else if (e.key === 'f' || e.key === 'F') setRoseEntry(entry);
       else if (e.key === 'Enter') setSheetEntry(entry);
     };
     window.addEventListener('keydown', onKey);
@@ -314,8 +348,22 @@ export default function Discover() {
             likesLeft={likesLeft}
             pulsesLeft={pulsesLeft}
             flowersLeft={flowersLeft}
+            kissesLeft={kissesLeft}
             pending={swipeMutation.isPending}
             onAction={(action) => activeEntry && doSwipe(activeEntry, action)}
+            onWave={(e) => {
+              fly('wave', e);
+              if (activeEntry) doSwipe(activeEntry, 'wave');
+            }}
+            onRose={() => activeEntry && setRoseEntry(activeEntry)}
+            onLike={(e) => {
+              fly('like', e);
+              if (activeEntry) doSwipe(activeEntry, 'like');
+            }}
+            onKiss={(e) => {
+              fly('kiss', e);
+              if (activeEntry) doSwipe(activeEntry, 'kiss');
+            }}
             onTrySwipe={() => setMode('Swipe')}
             countdown={countdownToNoon()}
           />
@@ -335,11 +383,23 @@ export default function Discover() {
                     likesLeft={likesLeft}
                     pulsesLeft={pulsesLeft}
                     flowersLeft={flowersLeft}
+                    kissesLeft={kissesLeft}
                     disabled={swipeMutation.isPending}
                     onPass={() => doSwipe(swipeEntries[0], 'pass')}
-                    onLike={() => doSwipe(swipeEntries[0], 'like')}
+                    onWave={(e) => {
+                      fly('wave', e);
+                      doSwipe(swipeEntries[0], 'wave');
+                    }}
+                    onRose={() => setRoseEntry(swipeEntries[0])}
+                    onLike={(e) => {
+                      fly('like', e);
+                      doSwipe(swipeEntries[0], 'like');
+                    }}
+                    onKiss={(e) => {
+                      fly('kiss', e);
+                      doSwipe(swipeEntries[0], 'kiss');
+                    }}
                     onPulse={() => doSwipe(swipeEntries[0], 'pulse')}
-                    onFlower={() => doSwipe(swipeEntries[0], 'flower')}
                   />
                 </div>
               </>
@@ -387,11 +447,13 @@ export default function Discover() {
         distance={sheetEntry ? distance(sheetEntry) : undefined}
         pending={swipeMutation.isPending}
         flowersLeft={flowersLeft}
+        kissesLeft={kissesLeft}
         onPass={() => {
           if (sheetEntry) doSwipe(sheetEntry, 'pass');
           setSheetEntry(null);
         }}
-        onLike={() => {
+        onLike={(e) => {
+          fly('like', e);
           if (sheetEntry) doSwipe(sheetEntry, 'like');
           setSheetEntry(null);
         }}
@@ -399,16 +461,38 @@ export default function Discover() {
           if (sheetEntry) doSwipe(sheetEntry, 'pulse');
           setSheetEntry(null);
         }}
-        onFlower={() => {
-          if (sheetEntry) doSwipe(sheetEntry, 'flower');
+        onRose={() => {
+          if (sheetEntry) setRoseEntry(sheetEntry);
           setSheetEntry(null);
         }}
-        onWave={() => {
+        onKiss={(e) => {
+          fly('kiss', e);
+          if (sheetEntry) doSwipe(sheetEntry, 'kiss');
+          setSheetEntry(null);
+        }}
+        onWave={(e) => {
+          fly('wave', e);
           if (sheetEntry) doSwipe(sheetEntry, 'wave');
           setSheetEntry(null);
         }}
         onClose={() => setSheetEntry(null)}
       />
+
+      {/* the rose moment — one rose or a dozen, with a card */}
+      <RoseSheet
+        open={!!roseEntry}
+        name={roseEntry?.profile.displayName.split(' ')[0] ?? 'them'}
+        flowersLeft={flowersLeft}
+        dozenLeft={dozenLeft}
+        pending={swipeMutation.isPending}
+        onSend={(variant: RoseVariant) => {
+          if (roseEntry) doSwipe(roseEntry, 'flower', undefined, variant === 'dozen' ? 'dozen' : undefined);
+        }}
+        onClose={() => setRoseEntry(null)}
+      />
+
+      {/* flying gesture bursts — the instant "it sent" feedback */}
+      {flyLayer}
 
       <CommentComposer
         open={!!composer}
@@ -590,8 +674,13 @@ function QueueMode({
   likesLeft,
   pulsesLeft,
   flowersLeft,
+  kissesLeft,
   pending,
   onAction,
+  onWave,
+  onRose,
+  onLike,
+  onKiss,
   onTrySwipe,
   countdown,
 }: {
@@ -609,8 +698,13 @@ function QueueMode({
   likesLeft: number | null;
   pulsesLeft: number | null;
   flowersLeft: number | null;
+  kissesLeft: number | null;
   pending: boolean;
   onAction: (a: SwipeAction) => void;
+  onWave: (e?: React.MouseEvent) => void;
+  onRose: (e?: React.MouseEvent) => void;
+  onLike: (e?: React.MouseEvent) => void;
+  onKiss: (e?: React.MouseEvent) => void;
   onTrySwipe: () => void;
   countdown: string;
 }) {
@@ -748,11 +842,14 @@ function QueueMode({
               likesLeft={likesLeft}
               pulsesLeft={pulsesLeft}
               flowersLeft={flowersLeft}
+              kissesLeft={kissesLeft}
               disabled={pending}
               onPass={() => onAction('pass')}
-              onLike={() => onAction('like')}
+              onWave={onWave}
+              onRose={onRose}
+              onLike={onLike}
+              onKiss={onKiss}
               onPulse={() => onAction('pulse')}
-              onFlower={() => onAction('flower')}
             />
           </div>
         </>

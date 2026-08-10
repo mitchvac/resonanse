@@ -14,6 +14,8 @@ import GateCard from '@/components/discover/GateCard';
 import ProfileSheet from '@/components/discover/ProfileSheet';
 import MatchMoment from '@/components/discover/MatchMoment';
 import SegmentedControl from '@/components/discover/SegmentedControl';
+import RoseSheet, { type RoseVariant } from '@/components/gestures/RoseSheet';
+import { useGestureFly, type FlyKind } from '@/components/gestures/GestureFly';
 import type { ReceivedLike } from '@/components/discover/types';
 
 /**
@@ -28,6 +30,8 @@ const GRID_CAP = 6;
 
 function contextLabel(like: ReceivedLike): string {
   if (like.kind === 'wave') return 'Waved to say hi';
+  if (like.kind === 'kiss') return 'Sent you a kiss';
+  if (like.kind === 'flower') return like.targetRef === 'dozen' ? 'Sent you a dozen roses' : 'Sent you a rose';
   if (like.targetType === 'prompt' && like.targetRef) {
     const ref = like.targetRef.length > 22 ? `${like.targetRef.slice(0, 22)}…` : like.targetRef;
     return `Liked your answer '${ref}'`;
@@ -47,6 +51,9 @@ export default function Likes() {
   const meQuery = trpc.profile.me.useQuery(); // V83 — own photo for the match moment
   const remainingQuery = trpc.likes.remaining.useQuery(); // V85 — flower count for the sheet
   const flowersLeft = remainingQuery.data?.flowers ?? null;
+  const kissesLeft = remainingQuery.data?.kisses ?? null;
+  const dozenLeft = remainingQuery.data?.dozenLeft ?? null;
+  const { fly, layer: flyLayer } = useGestureFly();
 
   const serverBlurred = receivedQuery.data?.blurred ?? true;
   // dev-style Free / + preview toggle (likes-you.md "States & edge cases")
@@ -72,6 +79,7 @@ export default function Likes() {
   const pulses = useMemo(() => receivedQuery.data?.pulses ?? [], [receivedQuery.data]);
   const flowers = useMemo(() => receivedQuery.data?.flowers ?? [], [receivedQuery.data]);
   const waves = useMemo(() => receivedQuery.data?.waves ?? [], [receivedQuery.data]);
+  const kisses = useMemo(() => receivedQuery.data?.kisses ?? [], [receivedQuery.data]);
   const likesAll = useMemo(() => receivedQuery.data?.likes ?? [], [receivedQuery.data]);
 
   const [viewedPulses, setViewedPulses] = useState<Set<number>>(new Set());
@@ -85,6 +93,7 @@ export default function Likes() {
   const [collapsingIds, setCollapsingIds] = useState<Set<number>>(new Set());
   const [passedIds, setPassedIds] = useState<Set<number>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
+  const [roseLike, setRoseLike] = useState<ReceivedLike | null>(null); // RoseSheet target
   const [match, setMatch] = useState<{ name: string; photo: string | null; matchId: number | null } | null>(null);
 
   const likes = useMemo(() => {
@@ -115,7 +124,7 @@ export default function Likes() {
       await utils.likes.invalidate();
       if (result.matched) {
         // the matching gesture may live in ANY rail (a wave-back matches a wave)
-        const like = [...pulses, ...flowers, ...waves, ...likesAll].find(
+        const like = [...pulses, ...flowers, ...waves, ...kisses, ...likesAll].find(
           (l) => l.liker?.id === input.toProfileId,
         );
         setMatch({
@@ -127,8 +136,22 @@ export default function Likes() {
         return;
       }
       // quick-gesture feedback (§8.13 toast) — matches take the MatchMoment instead
-      if (input.action === 'wave') setToast('Wave sent — they’ll see you said hi.');
-      else if (input.action === 'flower') setToast('Flower sent — that one’s special.');
+      if (input.action === 'wave') setToast('You waved — they’ll see it in their Likes.');
+      else if (input.action === 'flower')
+        setToast(
+          input.targetRef === 'dozen'
+            ? 'A dozen roses are on their way, card and all.'
+            : 'Your rose is on its way — with the card attached.',
+        );
+      else if (input.action === 'kiss') setToast('Kiss sent — bold move. They’ll see it in their Likes.');
+    },
+    onError: (err) => {
+      // silent failures were the "does nothing" complaint — always say something
+      if (err.data?.code === 'FORBIDDEN') {
+        setToast(err.message || 'That one’s used up for today.');
+      } else {
+        setToast("Couldn't send — check your connection and try again.");
+      }
     },
   });
 
@@ -161,8 +184,15 @@ export default function Likes() {
 
   // Quick-response gestures straight from a card — wave back at a wave is a
   // match (reciprocation is kind-agnostic), so the MatchMoment may fire here.
-  const gestureBack = (like: ReceivedLike, action: 'wave' | 'flower' | 'like') => {
+  // Every tap gets the flying gesture burst so it never feels dead.
+  const gestureBack = (
+    like: ReceivedLike,
+    action: 'wave' | 'kiss' | 'like',
+    e?: { clientX: number; clientY: number },
+  ) => {
     if (!like.liker) return;
+    const kind: FlyKind = action === 'wave' ? 'wave' : action === 'kiss' ? 'kiss' : 'like';
+    fly(kind, e);
     swipeMutation.mutate({ toProfileId: like.liker.id, action });
   };
 
@@ -170,11 +200,13 @@ export default function Likes() {
     like.liker ? (
       <GestureRow
         flowersLeft={flowersLeft}
+        kissesLeft={kissesLeft}
         pending={swipeMutation.isPending}
         name={like.liker.displayName.split(' ')[0]}
-        onWave={() => gestureBack(like, 'wave')}
-        onFlower={() => gestureBack(like, 'flower')}
-        onLike={() => gestureBack(like, 'like')}
+        onWave={(e) => gestureBack(like, 'wave', e)}
+        onRose={() => setRoseLike(like)}
+        onKiss={(e) => gestureBack(like, 'kiss', e)}
+        onLike={(e) => gestureBack(like, 'like', e)}
       />
     ) : null;
 
@@ -187,7 +219,7 @@ export default function Likes() {
     setPreview(v);
   };
 
-  const totalCount = pulses.length + flowers.length + waves.length + likesAll.length;
+  const totalCount = pulses.length + flowers.length + waves.length + kisses.length + likesAll.length;
   const shownLikes = blurred ? likes.slice(0, GRID_CAP) : likes;
   const collapsed = blurred ? likes.length - shownLikes.length : 0;
 
@@ -206,8 +238,9 @@ export default function Likes() {
           </h1>
           <p className="t-micro mt-1" style={{ color: 'var(--text-secondary)' }}>
             {totalCount} PEOPLE · {pulses.length} PULSES
-            {flowers.length > 0 ? ` · ${flowers.length} FLOWERS` : ''}
+            {flowers.length > 0 ? ` · ${flowers.length} ROSES` : ''}
             {waves.length > 0 ? ` · ${waves.length} WAVES` : ''}
+            {kisses.length > 0 ? ` · ${kisses.length} KISSES` : ''}
           </p>
         </div>
         {blurred ? (
@@ -289,18 +322,20 @@ export default function Likes() {
               </section>
             )}
 
-            {/* §1b Flowers received — scarce gesture, never blurred */}
+            {/* §1b Roses received — scarce gesture, never blurred; the realistic
+                rose art sits on the card so a dozen looks like a dozen */}
             {flowers.length > 0 && (
-              <section aria-label="Flowers received" className="mt-6">
-                <p className="t-eyebrow mb-3">Flowers received</p>
+              <section aria-label="Roses received" className="mt-6">
+                <p className="t-eyebrow mb-3">Roses received</p>
                 <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
                   {flowers.map((flower, i) => (
                     <PulseCard
                       key={flower.id}
                       pulse={flower}
                       index={i}
-                      label="FLOWER"
+                      label={flower.targetRef === 'dozen' ? 'A DOZEN ROSES' : 'A ROSE'}
                       accent="#e35d7c"
+                      art={flower.targetRef === 'dozen' ? '/gestures/roses-dozen.png' : '/gestures/rose-single.png'}
                       onOpen={() => {
                         if (flower.liker) setSheetLike(flower);
                       }}
@@ -327,6 +362,28 @@ export default function Likes() {
                         if (wave.liker) setSheetLike(wave);
                       }}
                       gestures={gesturesFor(wave)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* §1d Kisses received — the bold gesture, never blurred */}
+            {kisses.length > 0 && (
+              <section aria-label="Kisses received" className="mt-6">
+                <p className="t-eyebrow mb-3">Kisses received</p>
+                <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
+                  {kisses.map((kiss, i) => (
+                    <PulseCard
+                      key={kiss.id}
+                      pulse={kiss}
+                      index={i}
+                      label="KISS"
+                      accent="#d64070"
+                      onOpen={() => {
+                        if (kiss.liker) setSheetLike(kiss);
+                      }}
+                      gestures={gesturesFor(kiss)}
                     />
                   ))}
                 </div>
@@ -490,12 +547,13 @@ export default function Likes() {
         distance={sheetLike ? `${pseudoKm(sheetLike)} km` : undefined}
         pending={swipeMutation.isPending}
         flowersLeft={flowersLeft}
+        kissesLeft={kissesLeft}
         onPass={() => {
           if (sheetLike) passQuietly(sheetLike);
           setSheetLike(null);
         }}
-        onLike={() => {
-          if (sheetLike) likeBack(sheetLike);
+        onLike={(e) => {
+          if (sheetLike) gestureBack(sheetLike, 'like', e);
           setSheetLike(null);
         }}
         onPulse={() => {
@@ -504,19 +562,40 @@ export default function Likes() {
           }
           setSheetLike(null);
         }}
-        onFlower={() => {
-          if (sheetLike?.liker) {
-            swipeMutation.mutate({ toProfileId: sheetLike.liker.id, action: 'flower' });
-          }
+        onRose={() => {
+          // open the rose popup (single vs dozen) — never sends directly
+          if (sheetLike) setRoseLike(sheetLike);
           setSheetLike(null);
         }}
-        onWave={() => {
-          if (sheetLike?.liker) {
-            swipeMutation.mutate({ toProfileId: sheetLike.liker.id, action: 'wave' });
-          }
+        onKiss={(e) => {
+          if (sheetLike) gestureBack(sheetLike, 'kiss', e);
+          setSheetLike(null);
+        }}
+        onWave={(e) => {
+          if (sheetLike) gestureBack(sheetLike, 'wave', e);
           setSheetLike(null);
         }}
         onClose={() => setSheetLike(null)}
+      />
+
+      {/* rose popup — one rose with a card, or a dozen with a card */}
+      <RoseSheet
+        open={!!roseLike}
+        name={roseLike?.liker?.displayName.split(' ')[0] ?? 'them'}
+        flowersLeft={flowersLeft}
+        dozenLeft={dozenLeft}
+        pending={swipeMutation.isPending}
+        onSend={(variant: RoseVariant) => {
+          if (roseLike?.liker) {
+            swipeMutation.mutate({
+              toProfileId: roseLike.liker.id,
+              action: 'flower',
+              targetType: 'profile',
+              targetRef: variant === 'dozen' ? 'dozen' : undefined,
+            });
+          }
+        }}
+        onClose={() => setRoseLike(null)}
       />
 
       {/* long-press quick actions (§3) */}
@@ -587,6 +666,9 @@ export default function Likes() {
         onChange={setSort}
         onClose={() => setSortOpen(false)}
       />
+
+      {/* flying gesture bursts — optimistic feedback on every tap */}
+      {flyLayer}
 
       <MatchMoment
         open={!!match}

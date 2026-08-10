@@ -1,11 +1,15 @@
 import { createRouter, authedQuery } from "./middleware";
 import {
   compatibilityScore,
+  countDozenToday,
   countFlowersToday,
+  countKissesToday,
   countLikesToday,
   countMatchesForUser,
   countWavesToday,
+  DAILY_DOZEN_LIMIT,
   FREE_DAILY_FLOWERS,
+  FREE_DAILY_KISSES,
   FREE_DAILY_WAVES,
   likesReceivedForProfile,
   seedIncomingLikes,
@@ -18,7 +22,7 @@ export const likesRouter = createRouter({
     const entitlement = await ensureEntitlement(ctx.user.id);
     let myProfile = await findProfileByUserId(ctx.user.id);
     if (!myProfile) {
-      return { blurred: true, likes: [], pulses: [], flowers: [], waves: [] };
+      return { blurred: true, likes: [], pulses: [], flowers: [], waves: [], kisses: [] };
     }
 
     // One-time lazy seed: a brand-new caller with zero likes and zero matches
@@ -64,6 +68,7 @@ export const likesRouter = createRouter({
       pulses: decorated.filter((l) => l.kind === "pulse"),
       flowers: decorated.filter((l) => l.kind === "flower"),
       waves: decorated.filter((l) => l.kind === "wave"),
+      kisses: decorated.filter((l) => l.kind === "kiss"),
       likes: decorated.filter((l) => l.kind === "like"),
     };
   }),
@@ -73,6 +78,8 @@ export const likesRouter = createRouter({
     const likesToday = await countLikesToday(ctx.user.id);
     const flowersToday = await countFlowersToday(ctx.user.id);
     const wavesToday = await countWavesToday(ctx.user.id);
+    const kissesToday = await countKissesToday(ctx.user.id);
+    const dozenToday = await countDozenToday(ctx.user.id);
     return {
       likesLeftToday: Math.max(0, entitlement.dailyLikeLimit - likesToday),
       dailyLikeLimit: entitlement.dailyLikeLimit,
@@ -83,6 +90,11 @@ export const likesRouter = createRouter({
           ? Math.max(0, FREE_DAILY_FLOWERS - flowersToday)
           : 99,
       waves: Math.max(0, FREE_DAILY_WAVES - wavesToday),
+      kisses:
+        entitlement.tier === "free"
+          ? Math.max(0, FREE_DAILY_KISSES - kissesToday)
+          : 99,
+      dozenLeft: Math.max(0, DAILY_DOZEN_LIMIT - dozenToday),
     };
   }),
 });

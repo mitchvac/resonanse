@@ -5,9 +5,13 @@ import {
   countFlowersToday,
   countLikesToday,
   countWavesToday,
+  countKissesToday,
+  countDozenToday,
+  DAILY_DOZEN_LIMIT,
   dismissIncomingLikesFrom,
   findExistingLike,
   FREE_DAILY_FLOWERS,
+  FREE_DAILY_KISSES,
   FREE_DAILY_WAVES,
   getDiscoveryQueue,
   getOrCreateMatch,
@@ -56,7 +60,7 @@ export const discoverRouter = createRouter({
     .input(
       z.object({
         toProfileId: z.number().int().positive(),
-        action: z.enum(["like", "pass", "pulse", "flower", "wave"]),
+        action: z.enum(["like", "pass", "pulse", "flower", "wave", "kiss"]),
         comment: z.string().max(500).optional(),
         targetType: z.enum(["profile", "prompt", "photo"]).optional(),
         targetRef: z.string().max(255).optional(),
@@ -107,13 +111,33 @@ export const discoverRouter = createRouter({
           });
         }
       } else if (input.action === "flower") {
-        // flower — free tier: FREE_DAILY_FLOWERS/day; Resonance+ unlimited
-        if (entitlement.tier === "free") {
+        // flower — free tier: FREE_DAILY_FLOWERS/day; Resonance+ unlimited.
+        // A dozen roses (targetRef 'dozen') is grander: ONE per day, every tier.
+        if (input.targetRef === "dozen") {
+          const dozenToday = await countDozenToday(userId);
+          if (dozenToday >= DAILY_DOZEN_LIMIT) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "One dozen a day — save it for someone who stops your heart",
+            });
+          }
+        } else if (entitlement.tier === "free") {
           const flowersToday = await countFlowersToday(userId);
           if (flowersToday >= FREE_DAILY_FLOWERS) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: "You're out of flowers for today",
+              message: "You're out of roses for today",
+            });
+          }
+        }
+      } else if (input.action === "kiss") {
+        // kiss — free tier: FREE_DAILY_KISSES/day; Resonance+ unlimited
+        if (entitlement.tier === "free") {
+          const kissesToday = await countKissesToday(userId);
+          if (kissesToday >= FREE_DAILY_KISSES) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "You're out of kisses for today",
             });
           }
         }
@@ -135,7 +159,7 @@ export const discoverRouter = createRouter({
       await recordLike({
         fromUserId: userId,
         toProfileId: input.toProfileId,
-        kind: input.action as "like" | "pulse" | "flower" | "wave",
+        kind: input.action as "like" | "pulse" | "flower" | "wave" | "kiss",
         comment: input.comment ?? null,
         targetType: input.targetType ?? "profile",
         targetRef: input.targetRef ?? null,

@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import type { MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flag, Flower2, Handshake, Heart, Share2, Sparkle, X } from 'lucide-react';
+import { Flag, Heart, Share2, Sparkle, X } from 'lucide-react';
+import { LipsIcon, RoseIcon, WaveHandIcon } from '@/components/gestures/icons';
 import GlassSheet from '@/components/GlassSheet';
 import GlassCard from '@/components/GlassCard';
 import AppToast from '@/components/AppToast';
@@ -31,10 +33,12 @@ export default function ProfileSheet({
   distance,
   pending,
   flowersLeft = null,
+  kissesLeft = null,
   onPass,
   onLike,
   onPulse,
-  onFlower,
+  onRose,
+  onKiss,
   onWave,
   onClose,
 }: {
@@ -44,11 +48,14 @@ export default function ProfileSheet({
   distance?: string;
   pending?: boolean;
   flowersLeft?: number | null;
+  kissesLeft?: number | null;
   onPass: () => void;
-  onLike: () => void;
+  onLike: (e?: MouseEvent) => void;
   onPulse: () => void;
-  onFlower: () => void;
-  onWave: () => void;
+  /** opens the RoseSheet popup (one rose / a dozen) — never sends directly */
+  onRose: (e?: MouseEvent) => void;
+  onKiss: (e?: MouseEvent) => void;
+  onWave: (e?: MouseEvent) => void;
   onClose: () => void;
 }) {
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -259,27 +266,48 @@ export default function ProfileSheet({
             className="glass flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
           >
             <span className="glass-content flex items-center justify-center">
-              <Handshake size={20} style={{ color: 'var(--violet)' }} aria-hidden="true" />
+              <WaveHandIcon size={21} />
             </span>
           </button>
           <button
             type="button"
             disabled={pending || flowersLeft === 0}
-            onClick={onFlower}
-            aria-label={flowersLeft === null ? 'Send a flower' : `Send a flower — ${flowersLeft} left today`}
-            title="Send a flower"
+            onClick={onRose}
+            aria-label={flowersLeft === null ? 'Send roses' : `Send roses — ${flowersLeft} left today`}
+            title="Send roses"
             className="glass relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
           >
             <span className="glass-content flex items-center justify-center">
-              <Flower2 size={20} style={{ color: '#e35d7c' }} aria-hidden="true" />
+              <RoseIcon size={21} />
             </span>
-            {flowersLeft !== null && (
+            {flowersLeft !== null && flowersLeft < 99 && (
               <span
                 className="t-micro absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-white"
                 style={{ background: '#e35d7c' }}
                 aria-hidden="true"
               >
                 {flowersLeft}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            disabled={pending || kissesLeft === 0}
+            onClick={onKiss}
+            aria-label={kissesLeft === null ? 'Send a kiss' : `Send a kiss — ${kissesLeft} left today`}
+            title="Send a kiss"
+            className="glass relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
+          >
+            <span className="glass-content flex items-center justify-center">
+              <LipsIcon size={21} />
+            </span>
+            {kissesLeft !== null && kissesLeft < 99 && (
+              <span
+                className="t-micro absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-white"
+                style={{ background: '#d64070' }}
+                aria-hidden="true"
+              >
+                {kissesLeft}
               </span>
             )}
           </button>

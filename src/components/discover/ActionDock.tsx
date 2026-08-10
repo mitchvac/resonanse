@@ -1,36 +1,54 @@
 import { motion } from 'framer-motion';
-import { Flower2, Heart, Sparkle, X } from 'lucide-react';
+import { Heart, Sparkle, X } from 'lucide-react';
+import { LipsIcon, RoseIcon, WaveHandIcon } from '@/components/gestures/icons';
 
 /**
  * ActionDock — design.md §8.8
- * Floating buttons under the queue card: Pass (48px, glass, ✕), Flower
- * (48px, glass, rose — scarce daily gesture), Like (64px center, violet,
- * heart, --violet-glow), Pulse (48px, glass, spark). Like elevated 8px.
- * Remaining-likes micro label above.
+ * Floating buttons under the card: Pass · Wave (say hi) · Rose (opens the
+ * rose popup — one rose or a dozen with a card) · Like (64px center, violet,
+ * elevated) · Kiss · Pulse. Remaining-likes micro label above.
  */
 export default function ActionDock({
   likesLeft,
   pulsesLeft,
   flowersLeft,
+  kissesLeft,
   onPass,
+  onWave,
+  onRose,
   onLike,
+  onKiss,
   onPulse,
-  onFlower,
   disabled = false,
 }: {
   likesLeft?: number | null;
   pulsesLeft?: number | null;
   flowersLeft?: number | null;
-  onPass: () => void;
-  onLike: () => void;
-  onPulse: () => void;
-  onFlower: () => void;
+  kissesLeft?: number | null;
+  onPass: (e?: React.MouseEvent) => void;
+  onWave: (e?: React.MouseEvent) => void;
+  /** opens the RoseSheet popup — never sends directly */
+  onRose: (e?: React.MouseEvent) => void;
+  onLike: (e?: React.MouseEvent) => void;
+  onKiss: (e?: React.MouseEvent) => void;
+  onPulse: (e?: React.MouseEvent) => void;
   disabled?: boolean;
 }) {
   const press = {
     whileTap: { scale: 0.92 },
     transition: { duration: 0.12, ease: [0.34, 1.56, 0.64, 1] as [number, number, number, number] },
   };
+  const circle =
+    'glass relative flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-50';
+  const badge = (n: number, bg: string) => (
+    <span
+      className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none text-white"
+      style={{ background: bg }}
+      aria-hidden="true"
+    >
+      {n}
+    </span>
+  );
   return (
     <div className="flex flex-col items-center gap-2.5">
       {likesLeft != null && (
@@ -47,13 +65,13 @@ export default function ActionDock({
             : `${likesLeft} LIKES LEFT TODAY`}
         </motion.span>
       )}
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-3">
         <motion.button
           type="button"
           aria-label="Pass"
           disabled={disabled}
           onClick={onPass}
-          className="glass flex h-12 w-12 items-center justify-center rounded-full disabled:opacity-50"
+          className={circle}
           {...press}
         >
           <span className="glass-content flex items-center justify-center">
@@ -63,26 +81,31 @@ export default function ActionDock({
 
         <motion.button
           type="button"
-          aria-label={
-            flowersLeft != null ? `Send a flower (${flowersLeft} left)` : 'Send a flower'
-          }
-          disabled={disabled || flowersLeft === 0}
-          onClick={onFlower}
-          className="glass relative flex h-12 w-12 items-center justify-center rounded-full disabled:opacity-50"
+          aria-label="Wave — say hi"
+          disabled={disabled}
+          onClick={onWave}
+          className={circle}
           {...press}
         >
           <span className="glass-content flex items-center justify-center">
-            <Flower2 size={20} style={{ color: '#e35d7c' }} aria-hidden="true" />
+            <WaveHandIcon size={20} />
           </span>
-          {flowersLeft != null && flowersLeft < 900 && (
-            <span
-              className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none text-white"
-              style={{ background: '#e35d7c' }}
-              aria-hidden="true"
-            >
-              {flowersLeft}
-            </span>
-          )}
+        </motion.button>
+
+        <motion.button
+          type="button"
+          aria-label={
+            flowersLeft != null ? `Send roses (${flowersLeft} left)` : 'Send roses'
+          }
+          disabled={disabled || flowersLeft === 0}
+          onClick={onRose}
+          className={circle}
+          {...press}
+        >
+          <span className="glass-content flex items-center justify-center">
+            <RoseIcon size={20} />
+          </span>
+          {flowersLeft != null && flowersLeft < 900 && badge(flowersLeft, '#e35d7c')}
         </motion.button>
 
         <motion.button
@@ -99,25 +122,33 @@ export default function ActionDock({
         <motion.button
           type="button"
           aria-label={
+            kissesLeft != null ? `Send a kiss (${kissesLeft} left)` : 'Send a kiss'
+          }
+          disabled={disabled || kissesLeft === 0}
+          onClick={onKiss}
+          className={circle}
+          {...press}
+        >
+          <span className="glass-content flex items-center justify-center">
+            <LipsIcon size={20} />
+          </span>
+          {kissesLeft != null && kissesLeft < 900 && badge(kissesLeft, '#d64070')}
+        </motion.button>
+
+        <motion.button
+          type="button"
+          aria-label={
             pulsesLeft != null ? `Send Pulse (${pulsesLeft} left)` : 'Send Pulse'
           }
           disabled={disabled || pulsesLeft === 0}
           onClick={onPulse}
-          className="glass relative flex h-12 w-12 items-center justify-center rounded-full disabled:opacity-50"
+          className={circle}
           {...press}
         >
           <span className="glass-content flex items-center justify-center">
             <Sparkle size={20} style={{ color: 'var(--violet)', fill: 'var(--violet)' }} aria-hidden="true" />
           </span>
-          {pulsesLeft != null && pulsesLeft < 900 && (
-            <span
-              className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none text-white"
-              style={{ background: 'var(--violet)' }}
-              aria-hidden="true"
-            >
-              {pulsesLeft}
-            </span>
-          )}
+          {pulsesLeft != null && pulsesLeft < 900 && badge(pulsesLeft, 'var(--violet)')}
         </motion.button>
       </div>
     </div>
