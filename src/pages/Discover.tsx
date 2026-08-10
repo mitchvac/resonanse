@@ -326,7 +326,10 @@ export default function Discover() {
                   entries={swipeEntries}
                   onSwipe={(entry, action) => doSwipe(entry, action)}
                 />
-                <div className="mt-5">
+                {/* Sticky so the dock floats above the tab bar: the card is
+                    taller than most phone viewports, and a dock you must
+                    scroll to find is a dock nobody finds (V82). */}
+                <div className="sticky bottom-24 z-30 mt-5">
                   <ActionDock
                     likesLeft={likesLeft}
                     pulsesLeft={pulsesLeft}
@@ -727,7 +730,8 @@ function QueueMode({
             ))}
           </div>
 
-          <div className="mt-4">
+          {/* Sticky-pinned like the swipe-view dock (V82) — never below the fold */}
+          <div className="sticky bottom-24 z-30 mt-4">
             <ActionDock
               likesLeft={likesLeft}
               pulsesLeft={pulsesLeft}
