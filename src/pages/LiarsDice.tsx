@@ -7,6 +7,7 @@ import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 import { LOGIN_PATH } from '@/const';
 import WinFireworks from '@/components/games/WinFireworks';
+import OwnAvatar from '@/components/games/OwnAvatar';
 import {
   BID_FACES,
   bidDecision,
@@ -269,7 +270,8 @@ export default function LiarsDice() {
     }
   }, [phase, turn, bid]);
 
-  const playerPhoto = profileQuery.data?.profile.photos?.[0] ?? '/self-01.jpg';
+  const playerPhoto = profileQuery.data?.profile.photos?.[0] ?? null;
+  const playerName = profileQuery.data?.profile.displayName ?? '';
 
   return (
     <div className="relative h-full overflow-hidden">
@@ -522,12 +524,7 @@ export default function LiarsDice() {
               >
                 <div className="flex items-center gap-2.5">
                   <span className="relative">
-                    <img
-                      src={playerPhoto}
-                      alt=""
-                      className="h-9 w-9 rounded-full object-cover"
-                      style={{ boxShadow: '0 0 0 1.5px var(--ring-stroke)' }}
-                    />
+                    <OwnAvatar photo={playerPhoto} name={playerName} />
                     <BadgeCheck
                       size={14}
                       className="absolute -bottom-0.5 -right-0.5 rounded-full"

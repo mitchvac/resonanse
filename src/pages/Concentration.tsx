@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
 import WinFireworks from '@/components/games/WinFireworks';
+import OwnAvatar from '@/components/games/OwnAvatar';
 
 const GLYPHS = ['✦', '❍', '△', '☾', '✕', '❑', '∿', '♁'];
 type Turn = 0 | 1;
@@ -191,7 +192,8 @@ export default function Concentration() {
     [busy, deck, gameOver, matched, turn, up],
   );
 
-  const playerPhoto = profileQuery.data?.profile.photos?.[0] ?? '/self-01.jpg';
+  const playerPhoto = profileQuery.data?.profile.photos?.[0] ?? null;
+  const playerName = profileQuery.data?.profile.displayName ?? '';
 
   return (
     <div className="relative h-full overflow-hidden">
@@ -269,12 +271,7 @@ export default function Concentration() {
               <div className="flex items-center gap-6">
                 <div className={cn('flex items-center gap-2.5', turn !== 0 && 'opacity-55')}>
                   <span className="relative">
-                    <img
-                      src={playerPhoto}
-                      alt=""
-                      className="h-9 w-9 rounded-full object-cover"
-                      style={{ boxShadow: '0 0 0 1.5px var(--ring-stroke)' }}
-                    />
+                    <OwnAvatar photo={playerPhoto} name={playerName} />
                     <BadgeCheck
                       size={14}
                       className="absolute -bottom-0.5 -right-0.5 rounded-full"
