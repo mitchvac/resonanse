@@ -36,14 +36,19 @@ export function loadH5Ads(): Promise<boolean> {
     window.adBreak = window.adConfig = (o: Record<string, unknown>) => {
       (window.adsbygoogle as unknown[]).push(o);
     };
-    const script = document.createElement('script');
-    script.crossOrigin = 'anonymous';
-    if (TEST_MODE) script.setAttribute('data-adbreak-test', 'on');
-    // Never auto-fire interstitials — we only call rewarded breaks manually.
-    script.setAttribute('data-ad-frequency-hint', '120s');
-    script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${CLIENT}`;
-    script.onerror = () => resolve(false);
-    document.head.appendChild(script);
+    // index.html already loads adsbygoogle.js for site verification (V80) —
+    // reuse that tag; only inject when absent (older cached HTML, tests).
+    const existing = document.querySelector('script[src*="pagead/js/adsbygoogle.js"]');
+    if (!existing) {
+      const script = document.createElement('script');
+      script.crossOrigin = 'anonymous';
+      if (TEST_MODE) script.setAttribute('data-adbreak-test', 'on');
+      // Never auto-fire interstitials — we only call rewarded breaks manually.
+      script.setAttribute('data-ad-frequency-hint', '120s');
+      script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${CLIENT}`;
+      script.onerror = () => resolve(false);
+      document.head.appendChild(script);
+    }
     const timeout = window.setTimeout(() => resolve(false), 8000);
     window.adConfig!({
       preloadAdBreaks: 'on',
