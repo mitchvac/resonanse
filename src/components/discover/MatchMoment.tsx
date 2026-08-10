@@ -1,4 +1,5 @@
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import BrandMark from '@/components/BrandMark';
 import { BtnGhost, BtnPrimary } from '@/components/ui/buttons';
@@ -30,6 +31,7 @@ export default function MatchMoment({
   matchId: number | null;
   onClose: () => void;
 }) {
+  const { t } = useTranslation('discover');
   const reduced = useReducedMotion();
   const navigate = useNavigate();
   const spring = reduced
@@ -48,14 +50,14 @@ export default function MatchMoment({
           transition={{ duration: 0.2 }}
           role="dialog"
           aria-modal="true"
-          aria-label="It's a match"
+          aria-label={t('match.title')}
         >
           <div className="flex w-full max-w-[340px] flex-col items-center px-6 text-center">
             <div className="relative flex items-center justify-center">
               {myPhoto ? (
                 <motion.img
                   src={myPhoto}
-                  alt="Your photo"
+                  alt={t('match.yourPhoto')}
                   className="h-24 w-24 rounded-full object-cover ring-4"
                   style={{ ['--tw-ring-color' as string]: 'rgba(255,255,255,0.8)' }}
                   initial={{ x: reduced ? 0 : -60, opacity: 0 }}
@@ -64,7 +66,7 @@ export default function MatchMoment({
                 />
               ) : (
                 <motion.div
-                  aria-label="You"
+                  aria-label={t('match.you')}
                   className="flex h-24 w-24 items-center justify-center rounded-full ring-4"
                   style={{
                     ['--tw-ring-color' as string]: 'rgba(255,255,255,0.8)',
@@ -82,7 +84,7 @@ export default function MatchMoment({
               {theirPhoto ? (
                 <motion.img
                   src={theirPhoto}
-                  alt={`Photo of ${theirName}`}
+                  alt={t('common.photoOf', { name: theirName })}
                   className="h-24 w-24 rounded-full object-cover ring-4"
                   style={{ ['--tw-ring-color' as string]: 'rgba(255,255,255,0.8)' }}
                   initial={{ x: reduced ? 0 : 60, opacity: 0 }}
@@ -125,7 +127,7 @@ export default function MatchMoment({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: reduced ? 0 : 0.24, duration: 0.32 }}
             >
-              It's a match
+              {t('match.title')}
             </motion.h2>
             <motion.p
               className="t-body mt-1"
@@ -134,7 +136,7 @@ export default function MatchMoment({
               animate={{ opacity: 1 }}
               transition={{ delay: reduced ? 0 : 0.32, duration: 0.32 }}
             >
-              You and {theirName} liked each other.
+              {t('match.body', { name: theirName })}
             </motion.p>
 
             <motion.div
@@ -147,9 +149,9 @@ export default function MatchMoment({
                 className="w-full"
                 onClick={() => (matchId ? navigate(`/chat/${matchId}`) : onClose())}
               >
-                Send the first message
+                {t('match.cta')}
               </BtnPrimary>
-              <BtnGhost onClick={onClose}>Keep browsing</BtnGhost>
+              <BtnGhost onClick={onClose}>{t('match.keepBrowsing')}</BtnGhost>
             </motion.div>
           </div>
         </motion.div>

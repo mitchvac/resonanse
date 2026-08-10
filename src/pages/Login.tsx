@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import GoogleMark from "@/components/GoogleMark";
+import { useTranslation } from "react-i18next";
 
 function getOAuthUrl() {
   const kimiAuthUrl = import.meta.env.VITE_KIMI_AUTH_URL;
@@ -19,11 +20,12 @@ function getOAuthUrl() {
 }
 
 export default function Login() {
+  const { t } = useTranslation('landing');
   return (
     <div className="min-h-dvh flex items-center justify-center">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle>Welcome</CardTitle>
+          <CardTitle>{t('login.welcome')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Button
@@ -33,7 +35,7 @@ export default function Login() {
               window.location.href = getOAuthUrl();
             }}
           >
-            Sign in with Kimi
+            {t('login.kimi')}
           </Button>
           <Button
             className="w-full min-h-[44px]"
@@ -44,7 +46,7 @@ export default function Login() {
             }}
           >
             <GoogleMark size={18} />
-            Continue with Google
+            {t('login.google')}
           </Button>
         </CardContent>
       </Card>

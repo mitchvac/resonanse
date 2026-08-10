@@ -1,13 +1,14 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { trpc } from '@/providers/trpc';
 import { firstNameOf } from '@/components/chat/types';
 
 const OPTIONS = [
-  { key: 'great', label: 'Great', rating: 5 },
-  { key: 'okay', label: 'Okay', rating: 3 },
-  { key: 'not-fit', label: 'Not a fit', rating: 1 },
+  { key: 'great', labelKey: 'weMet.great', rating: 5 },
+  { key: 'okay', labelKey: 'weMet.okay', rating: 3 },
+  { key: 'not-fit', labelKey: 'weMet.notFit', rating: 1 },
 ] as const;
 
 /**
@@ -30,6 +31,7 @@ export default function WeMetCard({
   onDone: () => void;
   onToast: (text: string) => void;
 }) {
+  const { t } = useTranslation('connect');
   const [selected, setSelected] = useState<(typeof OPTIONS)[number]['key'] | null>(null);
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -48,7 +50,7 @@ export default function WeMetCard({
       },
       {
         onSettled: () => {
-          onToast('Thanks — your queue just got smarter.');
+          onToast(t('weMet.toast'));
           onDone();
         },
       },
@@ -75,7 +77,7 @@ export default function WeMetCard({
           <Check size={12} color="#fff" aria-hidden="true" />
         </span>
         <span className="t-caption font-bold" style={{ color: 'var(--ok)' }}>
-          We Met ✓
+          {t('weMet.done')}
         </span>
       </motion.div>
     );
@@ -94,8 +96,8 @@ export default function WeMetCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
     >
-      <p className="t-eyebrow">WE MET</p>
-      <h3 className="t-title-sm mt-1.5">How was {dateLabel ?? 'the date'}?</h3>
+      <p className="t-eyebrow">{t('weMet.eyebrow')}</p>
+      <h3 className="t-title-sm mt-1.5">{t('weMet.title', { date: dateLabel ?? t('chat.theDate') })}</h3>
       <div className="mt-3 grid grid-cols-3 gap-2">
         {OPTIONS.map((opt, i) => {
           const active = selected === opt.key;
@@ -125,7 +127,7 @@ export default function WeMetCard({
                   <Check size={13} style={{ color: 'var(--violet)' }} aria-hidden="true" />
                 </motion.span>
               )}
-              {opt.label}
+              {t(opt.labelKey)}
             </motion.button>
           );
         })}
@@ -134,10 +136,10 @@ export default function WeMetCard({
         value={note}
         onChange={(e) => setNote(e.target.value)}
         rows={2}
-        placeholder={`Private note — this never reaches ${firstNameOf(peerName)}.`}
+        placeholder={t('weMet.notePlaceholder', { name: firstNameOf(peerName, t('chat.them')) })}
         className="t-body mt-3 w-full resize-none rounded-2xl px-3.5 py-2.5 outline-none focus:ring-1 focus:ring-[var(--violet)]"
         style={{ background: 'var(--field)', color: 'var(--text)' }}
-        aria-label="Private note about the date"
+        aria-label={t('weMet.noteAria')}
       />
       <button
         type="button"
@@ -146,7 +148,7 @@ export default function WeMetCard({
         className="t-button mt-3 h-11 min-h-[44px] w-full rounded-full text-white disabled:opacity-50"
         style={{ background: 'var(--violet)', boxShadow: 'var(--violet-glow)' }}
       >
-        {weMet.isPending ? 'Sending…' : 'Share feedback'}
+        {weMet.isPending ? t('weMet.sending') : t('weMet.shareFeedback')}
       </button>
     </motion.div>
   );

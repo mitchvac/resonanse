@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 
 /**
@@ -5,10 +6,11 @@ import { Check } from 'lucide-react';
  * 16px violet circle + white check in both themes. Sits after names.
  */
 export default function VerifiedBadge({ size = 16 }: { size?: number }) {
+  const { t } = useTranslation('discover');
   return (
     <span
       role="img"
-      aria-label="Verified profile"
+      aria-label={t('a11y.verifiedProfile')}
       className="inline-flex shrink-0 items-center justify-center rounded-full"
       style={{
         width: size,

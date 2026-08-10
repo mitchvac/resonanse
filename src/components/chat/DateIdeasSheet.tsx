@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
@@ -32,6 +33,7 @@ export default function DateIdeasSheet({
     time?: string;
   }) => void;
 }) {
+  const { t } = useTranslation('connect');
   const ideas = trpc.chat.dateIdeas.useQuery(
     { conversationId },
     { enabled: open, refetchOnWindowFocus: false },
@@ -41,9 +43,9 @@ export default function DateIdeasSheet({
   return (
     <GlassSheet open={open} onClose={onClose} labelledBy="date-ideas-title">
       <div className="max-h-[70dvh] overflow-y-auto px-5 pb-6 pt-1">
-        <p className="t-eyebrow">Date ideas</p>
+        <p className="t-eyebrow">{t('dateIdeas.eyebrow')}</p>
         <h2 id="date-ideas-title" className="t-title mt-1" style={{ color: 'var(--text)' }}>
-          Pick a plan, propose it
+          {t('dateIdeas.title')}
         </h2>
         <div className="mt-4 flex flex-col gap-3">
           {ideas.isLoading &&
@@ -79,7 +81,7 @@ export default function DateIdeasSheet({
                     <MapPin size={12} aria-hidden="true" />
                     {idea.location}
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Pick a time">
+                  <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={t('dateIdeas.pickTime')}>
                     {TIME_CHIPS.map((t) => (
                       <button
                         key={t}
@@ -115,7 +117,7 @@ export default function DateIdeasSheet({
                     className="t-button mt-3 h-10 min-h-[44px] w-full rounded-full text-white"
                     style={{ background: 'var(--violet)', boxShadow: 'var(--violet-glow)' }}
                   >
-                    Propose
+                    {t('dateIdeas.propose')}
                   </button>
                 </GlassCard>
               </motion.div>

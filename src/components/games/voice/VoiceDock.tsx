@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, Mic, MicOff, PhoneOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useGameVoice } from './useGameVoice';
 
 /**
@@ -22,6 +23,7 @@ export default function VoiceDock({
   matchId: number | null;
   game: string;
 }) {
+  const { t } = useTranslation('games');
   const { state, error, micOn, peers, configured, join, leave, toggleMic } =
     useGameVoice({ matchId, game });
 
@@ -31,10 +33,10 @@ export default function VoiceDock({
       <span
         className="t-micro flex items-center gap-1.5 rounded-full px-3 py-2"
         style={{ background: 'var(--field)', color: 'var(--text-secondary)' }}
-        title="Voice unlocks when a person joins the table"
+        title={t('voice.unlocksTitle')}
       >
         <MicOff size={13} aria-hidden="true" />
-        Voice at live tables
+        {t('voice.atLiveTables')}
       </span>
     );
   }
@@ -58,9 +60,9 @@ export default function VoiceDock({
             onClick={() => void join()}
             className="t-micro flex min-h-[36px] items-center gap-1.5 rounded-full px-3"
             style={{ background: 'var(--field)', color: 'var(--text)' }}
-            aria-label="Enable voice for this table"
+            aria-label={t('voice.enableAria')}
           >
-            <Mic size={14} aria-hidden="true" /> Voice
+            <Mic size={14} aria-hidden="true" /> {t('voice.voice')}
           </motion.button>
         )}
 
@@ -75,7 +77,7 @@ export default function VoiceDock({
             role="status"
           >
             <Loader2 size={13} className="animate-spin" aria-hidden="true" />
-            {state === 'requesting' ? 'Mic…' : 'Joining…'}
+            {state === 'requesting' ? t('voice.mic') : t('voice.joining')}
           </motion.span>
         )}
 
@@ -90,13 +92,13 @@ export default function VoiceDock({
             role="status"
           >
             <Mic size={13} style={{ color: 'var(--violet)' }} aria-hidden="true" />
-            Waiting for them…
+            {t('voice.waiting')}
             <button
               type="button"
               onClick={leave}
               className="flex min-h-[32px] min-w-[32px] items-center justify-center rounded-full"
               style={{ color: 'var(--text-secondary)' }}
-              aria-label="Leave voice"
+              aria-label={t('voice.leaveAria')}
             >
               <PhoneOff size={13} aria-hidden="true" />
             </button>
@@ -117,7 +119,7 @@ export default function VoiceDock({
               onClick={() => void toggleMic()}
               className="flex min-h-[32px] min-w-[32px] items-center justify-center rounded-full"
               style={{ color: micOn ? '#3d9a5f' : 'var(--text-secondary)' }}
-              aria-label={micOn ? 'Mute your microphone' : 'Unmute your microphone'}
+              aria-label={micOn ? t('voice.muteAria') : t('voice.unmuteAria')}
               aria-pressed={!micOn}
             >
               {micOn ? (
@@ -139,18 +141,18 @@ export default function VoiceDock({
             <span aria-live="polite">
               {peer
                 ? peer.micMuted
-                  ? `${peer.name} (muted)`
+                  ? t('voice.peerMuted', { name: peer.name })
                   : peer.speaking
-                    ? `${peer.name} is talking…`
+                    ? t('voice.peerTalking', { name: peer.name })
                     : peer.name
-                : 'Voice on'}
+                : t('voice.voiceOn')}
             </span>
             <button
               type="button"
               onClick={leave}
               className="flex min-h-[32px] min-w-[32px] items-center justify-center rounded-full"
               style={{ color: '#c0492f' }}
-              aria-label="Hang up voice"
+              aria-label={t('voice.hangUpAria')}
             >
               <PhoneOff size={14} aria-hidden="true" />
             </button>
@@ -167,11 +169,11 @@ export default function VoiceDock({
             onClick={() => void join()}
             className="t-micro flex min-h-[36px] items-center gap-1.5 rounded-full px-3"
             style={{ background: 'var(--field)', color: '#c0492f' }}
-            aria-label={error ? `${error} Tap to retry` : 'Voice failed — tap to retry'}
+            aria-label={error ? t('voice.errorRetry', { error }) : t('voice.failedRetry')}
             title={error ?? undefined}
           >
             <MicOff size={13} aria-hidden="true" />
-            {error ?? 'Voice failed'} · Retry
+            {error ?? t('voice.failed')} · {t('voice.retry')}
           </motion.button>
         )}
       </AnimatePresence>

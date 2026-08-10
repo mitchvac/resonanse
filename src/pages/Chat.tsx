@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -43,12 +44,12 @@ import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
-const GOAL_LABEL: Record<string, string> = {
-  serious: 'Serious',
-  casual: 'Casual',
-  explore: 'Explore',
-  enm: 'ENM',
-  friendship: 'Friendship',
+const GOAL_KEY: Record<string, string> = {
+  serious: 'chat.goalSerious',
+  casual: 'chat.goalCasual',
+  explore: 'chat.goalExplore',
+  enm: 'chat.goalEnm',
+  friendship: 'chat.goalFriendship',
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -83,6 +84,7 @@ function HiddenWordMessage({
   ephemeral: boolean;
   index: number;
 }) {
+  const { t } = useTranslation('connect');
   const [revealed, setRevealed] = useState(false);
   if (revealed) {
     return (
@@ -101,12 +103,12 @@ function HiddenWordMessage({
         onClick={() => setRevealed(true)}
         className="t-caption flex items-center gap-1.5 rounded-full px-3.5 py-1.5"
         style={{ background: 'var(--field)', color: 'var(--text-secondary)' }}
-        aria-label="Hidden message — tap to reveal"
+        aria-label={t('chat.hiddenAria')}
       >
         <EyeOff size={12} aria-hidden="true" />
-        Hidden — contains a word you muted
+        {t('chat.hiddenText')}
         <span className="font-bold underline" style={{ color: 'var(--text)' }}>
-          Reveal
+          {t('chat.hiddenReveal')}
         </span>
       </button>
     </motion.div>
@@ -116,6 +118,7 @@ function HiddenWordMessage({
 /** Event invite bubble — kind 'event_invite' (events.invite): compact event
     card with photo thumb, title, formatted start, and a link to /events. */
 function EventInviteBubble({ message, own }: { message: ChatMessage; own: boolean }) {
+  const { t } = useTranslation('connect');
   const meta = (message.meta ?? {}) as {
     title?: string;
     photo?: string | null;
@@ -141,7 +144,7 @@ function EventInviteBubble({ message, own }: { message: ChatMessage; own: boolea
           <img src={meta.photo} alt="" className="h-24 w-full object-cover" loading="lazy" />
         )}
         <div className="p-3.5">
-          <p className="t-eyebrow">Event invite</p>
+          <p className="t-eyebrow">{t('chat.eventInvite')}</p>
           <p className="t-value mt-1 font-bold" style={{ color: 'var(--text)' }}>
             {meta.title ?? message.content}
           </p>
@@ -161,7 +164,7 @@ function EventInviteBubble({ message, own }: { message: ChatMessage; own: boolea
             className="t-caption mt-2 inline-flex min-h-[44px] items-center gap-0.5 font-bold"
             style={{ color: 'var(--violet)' }}
           >
-            View event
+            {t('chat.viewEvent')}
             <ChevronRight size={13} aria-hidden="true" />
           </Link>
         </div>
@@ -172,6 +175,7 @@ function EventInviteBubble({ message, own }: { message: ChatMessage; own: boolea
 
 /** Peer typing indicator — glass bubble with bouncing dots. */
 function TypingBubble() {
+  const { t } = useTranslation('connect');
   return (
     <motion.div
       className="flex justify-start"
@@ -179,7 +183,7 @@ function TypingBubble() {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      aria-label="Typing"
+      aria-label={t('chat.typing')}
     >
       <span
         className="flex items-center gap-1 rounded-[24px] rounded-bl-[4px] px-4 py-3"
@@ -221,6 +225,7 @@ function useTranslateHealth() {
 }
 
 export default function Chat() {
+  const { t } = useTranslation('connect');
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -253,7 +258,7 @@ export default function Chat() {
   const conversation = chatQuery.data?.conversation;
   const match = chatQuery.data?.match;
   const peer = chatQuery.data?.peer ?? matchEntry?.otherProfile ?? null;
-  const peerName = firstNameOf(peer?.displayName);
+  const peerName = firstNameOf(peer?.displayName, t('chat.them'));
   const peerPhoto = peer?.photos?.[0] ?? '/avatar-01.jpg';
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -303,7 +308,7 @@ export default function Chat() {
       delete next[messageId];
       return next;
     });
-    showToast(unconfigured ? "Translation isn't configured yet." : fallback);
+    showToast(unconfigured ? t('chat.toastTranslationNotConfigured') : fallback);
   };
 
   const streamRef = useRef<HTMLDivElement>(null);
@@ -399,7 +404,7 @@ export default function Chat() {
           if (usedStarter) {
             setUsedStarter(false);
             setStartersOpen(false);
-            showToast('Nice.');
+            showToast(t('chat.toastNice'));
           }
           if (reply) {
             setPeerTyping(true);
@@ -409,7 +414,7 @@ export default function Chat() {
             }, 1200);
           }
         },
-        onError: () => showToast("Couldn't send — check your connection."),
+        onError: () => showToast(t('chat.toastSendError')),
       },
     );
   };
@@ -429,13 +434,13 @@ export default function Chat() {
         onSuccess: ({ message }) => {
           setMessages((ms) => ms.map((m) => (m.id === messageId ? { ...m, meta: message.meta } : m)));
         },
-        onError: () => showToast("Couldn't save that — try again."),
+        onError: () => showToast(t('chat.toastSaveError')),
       },
     );
     if (status === 'accepted') {
-      showToast(`Date planned — ${peerName} accepted`);
+      showToast(t('chat.toastDateAccepted', { name: peerName }));
     } else {
-      showToast('Declined — no pressure.');
+      showToast(t('chat.toastDateDeclined'));
     }
   };
 
@@ -452,11 +457,11 @@ export default function Chat() {
         onSuccess: ({ message }) => {
           setMessages((m) => [...m, message]);
           setDateSheetOpen(false);
-          showToast('Date idea sent.');
+          showToast(t('chat.toastDateIdeaSent'));
           /* Seed matches accept in the demo, driving the accept → We Met loop */
           later(() => markDateStatus(message.id, 'accepted', input.time), 2400);
         },
-        onError: () => showToast("Couldn't send the date idea."),
+        onError: () => showToast(t('chat.toastDateIdeaError')),
       },
     );
   };
@@ -467,7 +472,7 @@ export default function Chat() {
     setEphemeral(next);
     ephemeralMut.mutate({ conversationId, ephemeral: next });
     if (next) {
-      showToast('Messages disappear 24h after being read.');
+      showToast(t('chat.ephemeralBanner'));
     }
   };
 
@@ -483,8 +488,8 @@ export default function Chat() {
         onError: (err) =>
           showToast(
             err.data?.code === 'CONFLICT'
-              ? 'A call is already in progress.'
-              : "Couldn't start the video check.",
+              ? t('chat.toastCallInProgress')
+              : t('chat.toastVideoCheckError'),
           ),
       },
     );
@@ -503,20 +508,20 @@ export default function Chat() {
     if (searchParams.get('call')) setSearchParams({}, { replace: true });
     if (videoVerified) {
       setJustVideoVerified(true);
-      showToast('Video verified ✓', <BadgeCheck size={13} style={{ color: 'var(--ok)' }} />);
+      showToast(t('chat.toastVideoVerified'), <BadgeCheck size={13} style={{ color: 'var(--ok)' }} />);
       void utils.matches.list.invalidate();
       void utils.chat.messages.invalidate();
       return;
     }
-    if (reason === 'declined') showToast('Call declined.');
-    else if (reason === 'missed') showToast('No answer.');
-    else showToast('Call ended.');
+    if (reason === 'declined') showToast(t('chat.toastCallDeclined'));
+    else if (reason === 'missed') showToast(t('chat.toastNoAnswer'));
+    else showToast(t('chat.toastCallEnded'));
   };
 
   /* ---- Video notes (live camera) ---- */
   const handleVideoNoteSent = (message: ChatMessage) => {
     setMessages((m) => [...m, message]);
-    showToast('Video note sent.');
+    showToast(t('chat.toastVideoNoteSent'));
   };
 
   /* ---- We Met (§6) ---- */
@@ -531,11 +536,11 @@ export default function Chat() {
 
   /* Mutual-context chips (thread top, once) */
   const peerChips = peer
-    ? [GOAL_LABEL[peer.relationshipGoal] ?? 'Explore', peer.desires?.[0]].filter(Boolean)
+    ? [t(GOAL_KEY[peer.relationshipGoal] ?? 'chat.goalExplore'), peer.desires?.[0]].filter(Boolean)
     : [];
   const myProfile = meQuery.data?.profile;
   const myChips = myProfile
-    ? [GOAL_LABEL[myProfile.relationshipGoal] ?? 'Explore', myProfile.desires?.[0]].filter(Boolean)
+    ? [t(GOAL_KEY[myProfile.relationshipGoal] ?? 'chat.goalExplore'), myProfile.desires?.[0]].filter(Boolean)
     : [];
 
   /* Read ticks: own message is read when a later peer message exists */
@@ -560,7 +565,7 @@ export default function Chat() {
               onClick={() => navigate('/matches')}
               className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
-              aria-label="Back to matches"
+              aria-label={t('chat.backToMatches')}
             >
               <ChevronLeft size={20} aria-hidden="true" />
             </button>
@@ -575,7 +580,7 @@ export default function Chat() {
                 <span
                   className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full"
                   style={{ background: 'var(--warn)' }}
-                  aria-label="Vanish mode on"
+                  aria-label={t('chat.vanishModeOn')}
                 />
               )}
             </span>
@@ -583,23 +588,23 @@ export default function Chat() {
               <p className="t-value flex items-center gap-1 truncate font-bold" style={{ color: 'var(--text)' }}>
                 {peerName}
                 {peer?.verified && (
-                  <BadgeCheck size={16} style={{ color: 'var(--violet)' }} aria-label="Verified" />
+                  <BadgeCheck size={16} style={{ color: 'var(--violet)' }} aria-label={t('chat.verified')} />
                 )}
                 {showVideoVerified && (
                   <span
                     className="t-micro flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 font-bold"
                     style={{ background: 'var(--field)', color: 'var(--ok)' }}
-                    aria-label="Video verified"
+                    aria-label={t('chat.videoVerified')}
                   >
                     <Check size={9} strokeWidth={3} aria-hidden="true" />
-                    Video ✓
+                    {t('chat.videoBadge')}
                   </span>
                 )}
               </p>
               {activeNow && (
                 <p className="t-caption flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
                   <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--ok)' }} aria-hidden="true" />
-                  Active now
+                  {t('chat.activeNow')}
                 </p>
               )}
             </div>
@@ -608,7 +613,7 @@ export default function Chat() {
               onClick={() => setVideoSheetOpen(true)}
               className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
-              aria-label="Video check"
+              aria-label={t('chat.videoCheck')}
             >
               <Video size={18} aria-hidden="true" />
             </button>
@@ -617,7 +622,7 @@ export default function Chat() {
               onClick={() => setTrustOpen(true)}
               className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
-              aria-label={`Ways to verify ${peerName}`}
+              aria-label={t('chat.waysToVerify', { name: peerName })}
             >
               <Shield size={18} aria-hidden="true" />
             </button>
@@ -654,7 +659,7 @@ export default function Chat() {
             >
               <Shield size={14} className="shrink-0" style={{ color: 'var(--violet)' }} aria-hidden="true" />
               <p className="t-caption flex-1" style={{ color: 'var(--text-secondary)' }}>
-                Keep chats in-app until you feel safe. {peerName} can't see your exact location.
+                {t('chat.safetyBar', { name: peerName })}
               </p>
               <button
                 type="button"
@@ -664,7 +669,7 @@ export default function Chat() {
                 }}
                 className="flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center"
                 style={{ color: 'var(--text-secondary)' }}
-                aria-label="Dismiss safety note"
+                aria-label={t('chat.dismissSafety')}
               >
                 <X size={14} aria-hidden="true" />
               </button>
@@ -684,7 +689,7 @@ export default function Chat() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            Messages disappear 24h after being read.
+            {t('chat.ephemeralBanner')}
           </motion.p>
         )}
       </AnimatePresence>
@@ -708,10 +713,10 @@ export default function Chat() {
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
             <Shield size={28} style={{ color: 'var(--text-secondary)' }} aria-hidden="true" />
             <p className="t-body" style={{ color: 'var(--text-secondary)' }}>
-              This conversation is closed.
+              {t('chat.conversationClosed')}
             </p>
             <BtnPrimary to="/matches" className="h-11">
-              Back to matches
+              {t('chat.backToMatches')}
             </BtnPrimary>
           </div>
         )}
@@ -751,7 +756,7 @@ export default function Chat() {
                 i === 0 || !sameDay(messages[i - 1].createdAt, m.createdAt);
               return (
                 <div key={m.id} className="flex flex-col gap-2.5">
-                  {divider && <DayDivider label={dayLabel(m.createdAt)} />}
+                  {divider && <DayDivider label={dayLabel(m.createdAt, t)} />}
                   {m.kind === 'system' ? (
                     <SystemBubble text={m.content} />
                   ) : m.kind === 'date_idea' ? (
@@ -773,10 +778,10 @@ export default function Chat() {
                           <BtnGlass
                             className="h-9 px-4"
                             onClick={() => setTranslateSheetFor({ kind: 'voice', messageId: m.id })}
-                            ariaLabel={`Translate video note from ${peerName}`}
+                            ariaLabel={t('chat.translateNoteAria', { name: peerName })}
                           >
                             <Languages size={13} aria-hidden="true" />
-                            Translate
+                            {t('chat.translate')}
                           </BtnGlass>
                         </div>
                       )}
@@ -790,7 +795,7 @@ export default function Chat() {
                                 setVoiceTargets,
                                 m.id,
                                 unconfigured,
-                                "Couldn't translate that note.",
+                                t('chat.toastVoiceTranslateError'),
                               )
                             }
                           />
@@ -823,7 +828,7 @@ export default function Chat() {
                             onClick={() => setTranslateSheetFor({ kind: 'text', messageId: m.id })}
                             className="absolute right-1 top-1/2 flex h-8 w-8 min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full opacity-0 transition-opacity duration-150 before:absolute before:-inset-2 before:content-[''] group-hover:opacity-100 focus-visible:opacity-100"
                             style={{ color: 'var(--text-secondary)' }}
-                            aria-label={`Translate message from ${peerName}`}
+                            aria-label={t('chat.translateMessageAria', { name: peerName })}
                           >
                             <span
                               className="flex h-7 w-7 items-center justify-center rounded-full"
@@ -843,7 +848,7 @@ export default function Chat() {
                               setTextTargets,
                               m.id,
                               unconfigured,
-                              "Couldn't translate that.",
+                              t('chat.toastTextTranslateError'),
                             )
                           }
                         />
@@ -861,7 +866,7 @@ export default function Chat() {
               <WeMetCard
                 matchId={matchId}
                 peerName={peer?.displayName}
-                dateLabel={((acceptedDate.meta as DateMeta)?.time ?? 'the date').split(' ')[0]}
+                dateLabel={((acceptedDate.meta as DateMeta)?.time ?? t('chat.theDate')).split(' ')[0]}
                 onToast={showToast}
                 onDone={() => {
                   void utils.matches.list.invalidate();
@@ -932,13 +937,13 @@ export default function Chat() {
       <GlassSheet open={videoSheetOpen} onClose={() => setVideoSheetOpen(false)} labelledBy="video-check-title">
         <div className="px-5 pb-6 pt-1">
           <h2 id="video-check-title" className="t-title" style={{ color: 'var(--text)' }}>
-            Video check
+            {t('chat.videoCheckTitle')}
           </h2>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Both cameras, 3 minutes, no recording stored.
+            {t('chat.videoCheckBody')}
           </p>
           <BtnPrimary className="mt-4 w-full" onClick={startRealCall} disabled={startCallMut.isPending}>
-            {startCallMut.isPending ? 'Starting…' : 'Send video-check invite'}
+            {startCallMut.isPending ? t('chat.videoCheckStarting') : t('chat.videoCheckInvite')}
           </BtnPrimary>
         </div>
       </GlassSheet>

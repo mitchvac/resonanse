@@ -1,4 +1,5 @@
 import type { inferRouterOutputs } from '@trpc/server';
+import type { TFunction } from 'i18next';
 import type { AppRouter } from '../../../api/router';
 
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
@@ -8,27 +9,27 @@ export type ChatMessage = ChatData['messages'][number];
 export type DateIdea = RouterOutputs['chat']['dateIdeas']['ideas'][number];
 
 /** Relative timestamp per matches.md §2 ("2m" / "1h" / "3d"). */
-export function relTime(input: Date | string): string {
-  const t = input instanceof Date ? input.getTime() : new Date(input).getTime();
-  const diff = Date.now() - t;
+export function relTime(input: Date | string, t: TFunction): string {
+  const ts = input instanceof Date ? input.getTime() : new Date(input).getTime();
+  const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'now';
-  if (mins < 60) return `${mins}m`;
+  if (mins < 1) return t('chat.relNow');
+  if (mins < 60) return t('chat.relMinutes', { count: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) return t('chat.relHours', { count: hours });
   const days = Math.floor(hours / 24);
-  return `${days}d`;
+  return t('chat.relDays', { count: days });
 }
 
 /** Day-divider label per chat.md §2. */
-export function dayLabel(input: Date | string): string {
+export function dayLabel(input: Date | string, t: TFunction): string {
   const d = input instanceof Date ? input : new Date(input);
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
   const same = (a: Date, b: Date) => a.toDateString() === b.toDateString();
-  if (same(d, today)) return 'Today';
-  if (same(d, yesterday)) return 'Yesterday';
+  if (same(d, today)) return t('chat.today');
+  if (same(d, yesterday)) return t('chat.yesterday');
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
@@ -44,6 +45,6 @@ export function sameDay(a: Date | string, b: Date | string): boolean {
   return da.toDateString() === db.toDateString();
 }
 
-export function firstNameOf(name?: string | null): string {
-  return name?.split(' ')[0] ?? 'them';
+export function firstNameOf(name?: string | null, fallback = 'them'): string {
+  return name?.split(' ')[0] ?? fallback;
 }

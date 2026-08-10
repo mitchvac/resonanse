@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   motion,
   useMotionValue,
@@ -28,6 +29,7 @@ function SwipeCard({
   entry: QueueEntry;
   onSwipe: (action: 'like' | 'pass' | 'pulse') => void;
 }) {
+  const { t } = useTranslation('discover');
   const reduced = useReducedMotion();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -86,7 +88,7 @@ function SwipeCard({
         }}
         aria-hidden="true"
       >
-        LIKE
+        {t('swipe.like')}
       </motion.span>
       <motion.span
         className="t-title pointer-events-none absolute right-5 top-6 z-10 rounded-[24px] border-2 px-4 py-1.5"
@@ -98,7 +100,7 @@ function SwipeCard({
         }}
         aria-hidden="true"
       >
-        NOPE
+        {t('swipe.nope')}
       </motion.span>
       <motion.span
         className="t-title pointer-events-none absolute left-1/2 top-1/3 z-10 -translate-x-1/2 rounded-[24px] border-2 px-4 py-1.5"
@@ -110,13 +112,14 @@ function SwipeCard({
         }}
         aria-hidden="true"
       >
-        PULSE
+        {t('swipe.pulse')}
       </motion.span>
     </motion.div>
   );
 }
 
 function CardFace({ entry }: { entry: QueueEntry }) {
+  const { t } = useTranslation('discover');
   const { profile, compatibility } = entry;
   const photo = profile.photos?.[0] ?? '/avatar-01.jpg';
   const intents = (profile.desires ?? []).slice(0, 3);
@@ -124,7 +127,7 @@ function CardFace({ entry }: { entry: QueueEntry }) {
     <article className="relative h-full w-full overflow-hidden rounded-[28px]">
       <img
         src={photo}
-        alt={`Photo of ${profile.displayName}`}
+        alt={t('common.photoOf', { name: profile.displayName })}
         className="absolute inset-0 h-full w-full object-cover"
         draggable={false}
       />
@@ -146,7 +149,7 @@ function CardFace({ entry }: { entry: QueueEntry }) {
               )}
             </div>
             <span className="t-micro shrink-0 pt-1 font-bold" style={{ color: 'var(--text)' }}>
-              {compatibility} COMPATIBLE
+              {t('common.compatibleCap', { value: compatibility })}
             </span>
           </div>
           {intents.length > 0 && (

@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Archive, Search, X } from 'lucide-react';
@@ -31,6 +32,7 @@ function Skeleton({ className }: { className: string }) {
 }
 
 export default function Matches() {
+  const { t } = useTranslation('connect');
   const navigate = useNavigate();
   const { user } = useAuth();
   const myUserId = user?.id ?? null;
@@ -59,26 +61,26 @@ export default function Matches() {
 
   const setArchivedMut = trpc.matches.setArchived.useMutation({
     onSuccess: (_d, vars) => {
-      showToast(vars.archived ? 'Chat archived.' : 'Chat unarchived.');
+      showToast(vars.archived ? t('matches.toastArchived') : t('matches.toastUnarchived'));
       void utils.matches.list.invalidate();
     },
-    onError: () => showToast("Couldn't update the chat."),
+    onError: () => showToast(t('matches.toastUpdateError')),
   });
   const setMutedMut = trpc.matches.setMuted.useMutation({
     onSuccess: (_d, vars) => {
-      showToast(vars.muted ? 'Chat muted.' : 'Notifications on.');
+      showToast(vars.muted ? t('matches.toastMuted') : t('matches.toastNotificationsOn'));
       void utils.matches.list.invalidate();
     },
-    onError: () => showToast("Couldn't update the chat."),
+    onError: () => showToast(t('matches.toastUpdateError')),
   });
   const removeMut = trpc.matches.remove.useMutation({
     onSuccess: () => {
-      showToast("Removed. They won't be notified.");
+      showToast(t('matches.toastRemoved'));
       setRemoveEntry(null);
       void utils.matches.list.invalidate();
       void utils.chat.messages.invalidate();
     },
-    onError: () => showToast("Couldn't remove that match."),
+    onError: () => showToast(t('matches.toastRemoveError')),
   });
 
   /* §1 New matches rail: no conversation yet, inside the 48h window */
@@ -168,7 +170,7 @@ export default function Matches() {
 
   const otherUserIdOf = (entry: MatchEntry) =>
     entry.match.userAId === myUserId ? entry.match.userBId : entry.match.userAId;
-  const removeName = firstNameOf(removeEntry?.otherProfile?.displayName);
+  const removeName = firstNameOf(removeEntry?.otherProfile?.displayName, t('chat.them'));
 
   const isLoading = listQuery.isLoading;
   const isEmpty = !isLoading && entries.length === 0;
@@ -190,7 +192,7 @@ export default function Matches() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.24 }}
             >
-              Matches
+              {t('matches.header')}
             </motion.h1>
           )}
         </AnimatePresence>
@@ -208,10 +210,10 @@ export default function Matches() {
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search matches…"
+                placeholder={t('matches.searchPlaceholder')}
                 className="t-body h-11 w-full rounded-2xl px-4 outline-none focus:ring-1 focus:ring-[var(--violet)]"
                 style={{ background: 'var(--field)', color: 'var(--text)' }}
-                aria-label="Search matches"
+                aria-label={t('matches.searchAria')}
               />
             </motion.div>
           )}
@@ -225,7 +227,7 @@ export default function Matches() {
             color: 'var(--text)',
             boxShadow: showArchived ? 'inset 0 0 0 1.5px var(--violet)' : 'none',
           }}
-          aria-label={showArchived ? 'Hide archived chats' : 'Show archived chats'}
+          aria-label={showArchived ? t('matches.hideArchived') : t('matches.showArchived')}
           aria-pressed={showArchived}
         >
           <Archive size={18} aria-hidden="true" />
@@ -238,7 +240,7 @@ export default function Matches() {
           }}
           className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full"
           style={{ background: 'var(--field)', color: 'var(--text)' }}
-          aria-label={searchOpen ? 'Close search' : 'Search matches'}
+          aria-label={searchOpen ? t('matches.closeSearch') : t('matches.searchAria')}
           aria-expanded={searchOpen}
         >
           {searchOpen ? <X size={18} aria-hidden="true" /> : <Search size={18} aria-hidden="true" />}
@@ -263,7 +265,7 @@ export default function Matches() {
             className={refreshing ? 't-caption animate-pulse' : 't-caption'}
             style={{ color: 'var(--text-secondary)', opacity: refreshing ? 1 : pullY / 48 }}
           >
-            {refreshing ? 'Refreshing…' : 'Release to refresh'}
+            {refreshing ? t('matches.refreshing') : t('matches.releaseToRefresh')}
           </span>
         </div>
 
@@ -297,7 +299,7 @@ export default function Matches() {
 
             {/* §2 Active conversations */}
             {conversations.length > 0 && (
-              <section aria-label="Conversations" className="flex flex-col gap-2 px-5">
+              <section aria-label={t('matches.conversations')} className="flex flex-col gap-2 px-5">
                 {conversations.map((entry, i) => (
                   <ConversationRow
                     key={entry.match.id}
@@ -330,8 +332,8 @@ export default function Matches() {
 
             {/* Archived view — fetched via includeArchived, rows offer Unarchive */}
             {showArchived && archivedConversations.length > 0 && (
-              <section aria-label="Archived conversations" className="flex flex-col gap-2 px-5">
-                <p className="t-eyebrow">Archived</p>
+              <section aria-label={t('matches.archivedConversations')} className="flex flex-col gap-2 px-5">
+                <p className="t-eyebrow">{t('matches.archived')}</p>
                 {archivedConversations.map((entry, i) => (
                   <ConversationRow
                     key={entry.match.id}
@@ -365,9 +367,9 @@ export default function Matches() {
 
             {/* §3 Goal progress card — after 4+ conversation rows */}
             {conversations.length >= 4 && (
-              <section className="px-5" aria-label="Your weekly goal">
+              <section className="px-5" aria-label={t('matches.yourGoal')}>
                 <GlassCard edge="none" className="px-[22px] py-5">
-                  <p className="t-eyebrow">Your goal · 1 date / week</p>
+                  <p className="t-eyebrow">{t('matches.goalTitle')}</p>
                   <div className="mt-2 flex items-baseline gap-2">
                     <motion.span
                       className="t-title-sm"
@@ -376,7 +378,7 @@ export default function Matches() {
                       viewport={{ once: true, amount: 0.2 }}
                       transition={{ duration: 0.6 }}
                     >
-                      {Math.min(datesThisWeek, 1)} of 1 this week
+                      {t('matches.goalProgress', { count: Math.min(datesThisWeek, 1) })}
                     </motion.span>
                   </div>
                   <div
@@ -393,7 +395,7 @@ export default function Matches() {
                     />
                   </div>
                   <p className="t-caption mt-3" style={{ color: 'var(--text-secondary)' }}>
-                    You're ahead of 78% of members at turning matches into dates.
+                    {t('matches.goalCaption')}
                   </p>
                 </GlassCard>
               </section>
@@ -411,13 +413,13 @@ export default function Matches() {
           >
             <BrandMark size={64} />
             <h2 className="t-title-sm" style={{ color: 'var(--text-ink)' }}>
-              Your matches land here.
+              {t('matches.emptyTitle')}
             </h2>
             <p className="t-body" style={{ color: 'var(--text-secondary)' }}>
-              Like someone from today's queue to start something.
+              {t('matches.emptyBody')}
             </p>
             <BtnPrimary to="/discover" className="mt-2">
-              Open today's queue
+              {t('matches.emptyCta')}
             </BtnPrimary>
           </motion.div>
         )}
@@ -431,10 +433,10 @@ export default function Matches() {
       >
         <div className="px-5 pb-6 pt-1">
           <h2 id="remove-match-title" className="t-title" style={{ color: 'var(--text)' }}>
-            Remove {removeName}?
+            {t('matches.removeTitle', { name: removeName })}
           </h2>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            They won't be notified. This also removes the chat and keeps them out of your queue.
+            {t('matches.removeBody')}
           </p>
           <div className="mt-5 flex gap-3">
             <BtnGlass
@@ -442,7 +444,7 @@ export default function Matches() {
               onClick={() => setRemoveEntry(null)}
               disabled={removeMut.isPending}
             >
-              Keep
+              {t('matches.keep')}
             </BtnGlass>
             <BtnDanger
               className="flex-1"
@@ -451,7 +453,7 @@ export default function Matches() {
                 if (removeEntry) removeMut.mutate({ matchId: removeEntry.match.id });
               }}
             >
-              {removeMut.isPending ? 'Removing…' : 'Remove'}
+              {removeMut.isPending ? t('matches.removing') : t('matches.remove')}
             </BtnDanger>
           </div>
         </div>

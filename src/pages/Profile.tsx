@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   Settings as SettingsIcon,
@@ -168,6 +169,7 @@ function QuickRow({
 /* ================================================================== */
 export default function Profile() {
   const navigate = useNavigate();
+  const { t } = useTranslation('settings');
   const reduced = useReducedMotion();
   const { user } = useAuth();
   const utils = trpc.useUtils();
@@ -213,14 +215,14 @@ export default function Profile() {
   const isPremium = !!entitlement && entitlement.tier !== 'free';
   const pulses = entitlement?.pulses ?? 3;
   const tierLabel =
-    entitlement?.tier === 'x' ? 'Resonance X' : entitlement?.tier === 'plus' ? 'Resonance+' : 'Free';
+    entitlement?.tier === 'x' ? 'Resonance X' : entitlement?.tier === 'plus' ? 'Resonance+' : t('tiers.free');
 
   /* Share — copy the profile link to the clipboard */
   const shareProfile = async () => {
     const url = `${window.location.origin}/profile`;
     try {
       await navigator.clipboard.writeText(url);
-      push('Profile link copied.');
+      push(t('profile.toasts.linkCopied'));
     } catch {
       try {
         const ta = document.createElement('textarea');
@@ -231,9 +233,9 @@ export default function Profile() {
         ta.select();
         document.execCommand('copy');
         ta.remove();
-        push('Profile link copied.');
+        push(t('profile.toasts.linkCopied'));
       } catch {
-        push("Couldn't copy the link — copy the address bar instead.");
+        push(t('profile.toasts.linkCopyError'));
       }
     }
   };
@@ -280,9 +282,9 @@ export default function Profile() {
           ? [...real, dataUrl].slice(0, 6)
           : real.map((p, i) => (i === target ? dataUrl : p));
       await upsertProfile.mutateAsync({ photos: next });
-      push(target === 'add' ? 'Photo added.' : 'Photo updated.');
+      push(target === 'add' ? t('profile.toasts.photoAdded') : t('profile.toasts.photoUpdated'));
     } catch {
-      push("Couldn't save that photo — try again.");
+      push(t('profile.toasts.photoSaveError'));
     } finally {
       setPhotoPending(null);
     }
@@ -296,9 +298,9 @@ export default function Profile() {
       const real = profile?.photos?.filter(Boolean) ?? [];
       await upsertProfile.mutateAsync({ photos: real.filter((_, i) => i !== idx) });
       setMainPhotoIdx(0);
-      push('Photo removed.');
+      push(t('profile.toasts.photoRemoved'));
     } catch {
-      push("Couldn't remove that photo — try again.");
+      push(t('profile.toasts.photoRemoveError'));
     } finally {
       setPhotoPending(null);
     }
@@ -313,7 +315,7 @@ export default function Profile() {
   const saveWeeklyGoal = (goal: number) => {
     updateSettings.mutate({ weeklyGoal: goal });
     setGoalOpen(false);
-    push('Weekly goal saved.');
+    push(t('profile.toasts.goalSaved'));
   };
 
   // Honest outcome stats — real likes, matches, and We Met check-ins
@@ -348,13 +350,13 @@ export default function Profile() {
         {/* ── Top chrome: t-heading "You" + settings / share ─────────── */}
         <header className="flex items-center justify-between pt-4">
           <h1 className="t-heading" style={{ color: 'var(--text-ink)' }}>
-            You
+            {t('profile.title')}
           </h1>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => navigate('/settings')}
-              aria-label="Settings"
+              aria-label={t('profile.settingsAria')}
               className="flex h-11 w-11 items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
             >
@@ -363,7 +365,7 @@ export default function Profile() {
             <button
               type="button"
               onClick={() => void shareProfile()}
-              aria-label="Share your profile"
+              aria-label={t('profile.shareAria')}
               className="flex h-11 w-11 items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
             >
@@ -374,7 +376,7 @@ export default function Profile() {
 
         {isLoading ? (
           /* ── Loading skeleton (§7.2: glass blocks + shimmer) ──────── */
-          <div className="mt-5 flex flex-col gap-4" aria-busy="true" aria-label="Loading profile">
+          <div className="mt-5 flex flex-col gap-4" aria-busy="true" aria-label={t('profile.loadingAria')}>
             <div className="glass skeleton-shimmer h-44 rounded-[24px]" />
             <div className="grid grid-cols-3 gap-3">
               <div className="glass skeleton-shimmer h-24 rounded-[20px]" />
@@ -397,7 +399,7 @@ export default function Profile() {
                   <div className="relative shrink-0">
                     <motion.img
                       src={photos[mainPhotoIdx] ?? photos[0]}
-                      alt={`${displayName}'s main profile photo`}
+                      alt={t('profile.mainPhotoAlt', { name: displayName })}
                       className="h-[88px] w-[88px] rounded-[16px] object-cover"
                       initial={reduced ? { opacity: 0 } : { opacity: 0, filter: 'blur(8px)' }}
                       animate={reduced ? { opacity: 1 } : { opacity: 1, filter: 'blur(0px)' }}
@@ -417,7 +419,7 @@ export default function Profile() {
                       <div className="flex shrink-0 flex-col items-center">
                         <StrengthArc pct={strength} />
                         <span className="t-micro mt-1" style={{ color: 'var(--text)' }}>
-                          PROFILE STRENGTH {strength}%
+                          {t('profile.strengthLabel', { pct: strength })}
                         </span>
                       </div>
                     </div>
@@ -429,7 +431,7 @@ export default function Profile() {
                     {anonymity && (
                       <p className="t-caption mt-2 inline-flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
                         <EyeOff size={12} aria-hidden="true" />
-                        Hidden from non-matches
+                        {t('profile.hiddenFromNonMatches')}
                       </p>
                     )}
                   </div>
@@ -441,7 +443,7 @@ export default function Profile() {
                     role="status"
                   >
                     <TriangleAlert size={14} aria-hidden="true" />
-                    Verification pending — we'll notify you when it's reviewed.
+                    {t('profile.verificationPending')}
                   </p>
                 )}
                 {/* ID verification — badge row when done, CTA row otherwise */}
@@ -451,7 +453,7 @@ export default function Profile() {
                     style={{ background: 'var(--field)', color: 'var(--ok)' }}
                   >
                     <IdCard size={14} aria-hidden="true" />
-                    ID verified ✓
+                    {t('profile.idVerified')}
                   </p>
                 ) : (
                   <button
@@ -461,27 +463,27 @@ export default function Profile() {
                     style={{ background: 'var(--field)', color: 'var(--text)' }}
                   >
                     <IdCard size={14} style={{ color: 'var(--violet)' }} aria-hidden="true" />
-                    <span className="flex-1">Verify your ID</span>
+                    <span className="flex-1">{t('profile.verifyId')}</span>
                     <span className="font-normal" style={{ color: 'var(--text-secondary)' }}>
-                      Scanned in-browser — never stored
+                      {t('profile.verifyIdHint')}
                     </span>
                     <ChevronRight size={15} style={{ color: 'var(--text-secondary)' }} aria-hidden="true" />
                   </button>
                 )}
                 <div className="mt-4 grid grid-cols-1 gap-2">
                   <BtnGlass onClick={() => navigate('/profile-setup')} className="h-11 w-full">
-                    Edit profile
+                    {t('profile.editProfile')}
                   </BtnGlass>
                   <BtnGlass onClick={() => setPreviewOpen(true)} className="h-11 w-full">
                     <Eye size={16} aria-hidden="true" />
-                    Preview as others see you
+                    {t('profile.previewAsOthers')}
                   </BtnGlass>
                 </div>
               </GlassCard>
             </motion.div>
 
             {/* ── Your photos — add / replace / make main / remove ────── */}
-            <h3 className="t-eyebrow mb-3 mt-8">Your photos</h3>
+            <h3 className="t-eyebrow mb-3 mt-8">{t('profile.yourPhotos')}</h3>
             <div className="grid grid-cols-3 gap-2">
               {photos.slice(0, 6).map((src, i) => {
                 const isReal = i < realPhotoCount;
@@ -491,7 +493,7 @@ export default function Profile() {
                     type="button"
                     disabled={!isReal}
                     onClick={() => setPhotoSheet(i)}
-                    aria-label={isReal ? `Edit photo ${i + 1}` : `Photo ${i + 1}`}
+                    aria-label={isReal ? t('profile.editPhotoAria', { n: i + 1 }) : t('profile.photoAria', { n: i + 1 })}
                     className="relative aspect-[4/5] overflow-hidden rounded-[16px] text-left disabled:cursor-default"
                     initial={{ opacity: 0, y: 12 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -500,12 +502,12 @@ export default function Profile() {
                   >
                     <img
                       src={src}
-                      alt={`Profile photo ${i + 1}`}
+                      alt={t('profile.photoAlt', { n: i + 1 })}
                       className="h-full w-full object-cover"
                     />
                     {i === 0 && isReal && (
                       <span className="t-micro absolute left-1.5 top-1.5 rounded-full bg-black/45 px-2 py-0.5 text-white">
-                        MAIN
+                        {t('profile.mainTag')}
                       </span>
                     )}
                     {isReal && (
@@ -528,7 +530,7 @@ export default function Profile() {
                   type="button"
                   onClick={() => setPhotoSheet('add')}
                   disabled={photoPending !== null}
-                  aria-label="Add a photo"
+                  aria-label={t('profile.addPhotoAria')}
                   className="relative flex aspect-[4/5] items-center justify-center rounded-[16px] disabled:opacity-50"
                   initial={{ opacity: 0, y: 12 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -550,21 +552,21 @@ export default function Profile() {
             </div>
 
             {/* ── §2 This week — outcome stats ───────────────────────── */}
-            <h3 className="t-eyebrow mb-3 mt-8">This week</h3>
+            <h3 className="t-eyebrow mb-3 mt-8">{t('profile.thisWeek')}</h3>
             <div className="grid grid-cols-3 gap-3">
               <StatCard
-                micro="MATCHES"
+                micro={t('profile.matchesMicro')}
                 value={<CountUp value={matchCount} />}
                 onClick={() => navigate('/matches')}
                 delay={0}
               />
               <StatCard
-                micro="LIKES RECEIVED"
+                micro={t('profile.likesMicro')}
                 value={<CountUp value={likesReceived} />}
                 sub={
                   likesReceived > 0 ? (
                     <span className="inline-flex items-center gap-0.5" style={{ color: 'var(--ok)' }}>
-                      <TrendingUp size={12} aria-hidden="true" /> In your Likes tab
+                      <TrendingUp size={12} aria-hidden="true" /> {t('profile.inLikesTab')}
                     </span>
                   ) : undefined
                 }
@@ -572,12 +574,12 @@ export default function Profile() {
                 delay={0.08}
               />
               <StatCard
-                micro="DATES"
+                micro={t('profile.datesMicro')}
                 value={
                   <span className="inline-flex items-baseline gap-1">
                     <CountUp value={datesCount} />
                     <span className="t-caption" style={{ color: 'var(--text-secondary)' }}>
-                      /{weeklyGoal} goal
+                      {t('profile.datesGoal', { goal: weeklyGoal })}
                     </span>
                   </span>
                 }
@@ -596,7 +598,7 @@ export default function Profile() {
                         }}
                       />
                     </span>
-                    Met
+                    {t('profile.met')}
                   </span>
                 }
                 onClick={() => setGoalOpen(true)}
@@ -614,24 +616,24 @@ export default function Profile() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.4 }}
                 transition={{ duration: 0.38, delay: 0.24, ease: EASE_OUT }}
-                aria-label="Photo insights — Resonance+ feature"
+                aria-label={t('profile.photoInsightsAria')}
               >
                 <GlassCard edge="none" className="rounded-[20px] p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2" style={{ filter: 'blur(4px)' }} aria-hidden="true">
-                      <span className="t-title-sm" style={{ color: 'var(--text)' }}>Photo insights</span>
+                      <span className="t-title-sm" style={{ color: 'var(--text)' }}>{t('profile.photoInsights')}</span>
                     </div>
                     <LockChip label="Resonance+" />
                   </div>
                   <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                    See which photos earn likes.
+                    {t('profile.photoInsightsCaption')}
                   </p>
                 </GlassCard>
               </motion.button>
             )}
 
             {/* ── §3 Photo performance (Resonance+ preview) ──────────── */}
-            <h3 className="t-eyebrow mb-3 mt-8">Photo performance</h3>
+            <h3 className="t-eyebrow mb-3 mt-8">{t('profile.photoPerformance')}</h3>
             {isPremium ? (
               <div>
                 <div className="grid grid-cols-4 gap-2">
@@ -646,7 +648,7 @@ export default function Profile() {
                     >
                       <img
                         src={src}
-                        alt={`Profile photo ${i + 1}`}
+                        alt={t('profile.photoAlt', { n: i + 1 })}
                         className="aspect-[4/5] w-full rounded-[16px] object-cover"
                       />
                       {i === bestIdx && (
@@ -654,7 +656,7 @@ export default function Profile() {
                           className="t-micro absolute left-1.5 top-1.5 rounded-full px-1.5 py-0.5 font-bold text-white"
                           style={{ background: 'var(--ok)' }}
                         >
-                          TOP
+                          {t('profile.topTag')}
                         </span>
                       )}
                       <div
@@ -690,13 +692,13 @@ export default function Profile() {
                   <GlassCard edge="none" className="flex items-center gap-2.5 rounded-[20px] p-4">
                     <Sparkles size={18} style={{ color: 'var(--violet)' }} aria-hidden="true" />
                     <p className="t-caption flex-1" style={{ color: 'var(--text)' }}>
-                      Photo 3 (hiking) outperforms at 2.4× — consider making it main.
+                      {t('profile.photoTip')}
                     </p>
                     <BtnGhost
                       onClick={() => makeMain(bestIdx)}
                       className="shrink-0 px-2 text-violet"
                     >
-                      Make main
+                      {t('profile.makeMain')}
                     </BtnGhost>
                   </GlassCard>
                 </motion.div>
@@ -712,10 +714,10 @@ export default function Profile() {
                 <GlassCard edge="amber" className="flex items-center gap-3 rounded-[20px] p-4">
                   <Lock size={18} style={{ color: 'var(--text)' }} aria-hidden="true" />
                   <p className="t-caption flex-1" style={{ color: 'var(--text)' }}>
-                    Photo performance is a Resonance+ feature — see exactly which photos earn your likes.
+                    {t('profile.performanceGate')}
                   </p>
-                  <BtnPrimary to="/premium" className="h-9 shrink-0 px-4" ariaLabel="Upgrade to Resonance+">
-                    Upgrade
+                  <BtnPrimary to="/premium" className="h-9 shrink-0 px-4" ariaLabel={t('profile.upgradeAria')}>
+                    {t('profile.upgrade')}
                   </BtnPrimary>
                 </GlassCard>
               </motion.div>
@@ -730,14 +732,14 @@ export default function Profile() {
               className="mt-8"
             >
               <GlassCard edge="none" className="p-5">
-                <p className="t-eyebrow">Dating goal</p>
+                <p className="t-eyebrow">{t('profile.datingGoal')}</p>
                 <p className="t-value mt-2 font-bold" style={{ color: 'var(--text)' }}>
-                  {weeklyGoal} date{weeklyGoal > 1 ? 's' : ''} per week
+                  {t('profile.datesPerWeek', { count: weeklyGoal })}
                 </p>
                 <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-                  On track — 4-week streak.
+                  {t('profile.onTrack')}
                 </p>
-                <div className="mt-3 flex gap-1.5" aria-label="4 week streak of 7 weeks shown">
+                <div className="mt-3 flex gap-1.5" aria-label={t('profile.streakAria', { done: 4, total: 7 })}>
                   {Array.from({ length: 7 }, (_, i) => (
                     <motion.span
                       key={i}
@@ -752,20 +754,20 @@ export default function Profile() {
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-3">
                   <BtnGlass onClick={() => navigate('/profile-setup')} className="h-11 flex-1">
-                    Retake Reflections
+                    {t('profile.retakeReflections')}
                   </BtnGlass>
                 </div>
                 <p className="t-micro mt-2" style={{ color: 'var(--text-secondary)' }}>
-                  LAST TAKEN 3 WEEKS AGO — RETAKING IMPROVES YOUR QUEUE
+                  {t('profile.lastTaken')}
                 </p>
               </GlassCard>
             </motion.div>
 
             {/* ── §5 Account quick rows ──────────────────────────────── */}
-            <h3 className="t-eyebrow mb-3 mt-8">Account</h3>
+            <h3 className="t-eyebrow mb-3 mt-8">{t('profile.accountSection')}</h3>
             <div className="flex flex-col gap-2">
               <QuickRow
-                label="Membership"
+                label={t('profile.membership')}
                 value={tierLabel}
                 right={
                   !isPremium ? (
@@ -773,7 +775,7 @@ export default function Profile() {
                       className="t-caption rounded-full px-2 py-1 font-bold text-white"
                       style={{ background: 'var(--violet)', fontSize: 10 }}
                     >
-                      Upgrade
+                      {t('profile.upgrade')}
                     </span>
                   ) : undefined
                 }
@@ -781,32 +783,32 @@ export default function Profile() {
                 delay={0}
               />
               <QuickRow
-                label="Pulses"
-                value={`${pulses} left`}
+                label={t('profile.pulses')}
+                value={t('profile.pulsesLeft', { count: pulses })}
                 onClick={() => navigate('/premium')}
                 delay={0.04}
               />
               <QuickRow
-                label="Wallet"
+                label={t('profile.wallet')}
                 value={
                   walletQuery.data
                     ? walletQuery.data.hasWallet
                       ? `${formatCoins(walletQuery.data.balance)} DC`
-                      : 'Set up Date-Coin'
+                      : t('profile.setUpDateCoin')
                     : undefined
                 }
                 right={
                   walletSecQuery.data?.hasWallet ? (
                     walletSecQuery.data.delegation?.status === 'active' ? (
                       <span className="t-caption font-bold" style={{ color: 'var(--ok)' }}>
-                        Ecosystem on
+                        {t('profile.ecosystemOn')}
                       </span>
                     ) : (
                       <span
                         className="t-caption font-bold"
                         style={{ color: 'var(--text-secondary)' }}
                       >
-                        Ecosystem off
+                        {t('profile.ecosystemOff')}
                       </span>
                     )
                   ) : undefined
@@ -815,32 +817,32 @@ export default function Profile() {
                 delay={0.06}
               />
               <QuickRow
-                label="Verification status"
+                label={t('profile.verificationStatus')}
                 right={
                   verified ? (
                     <span className="t-caption inline-flex items-center gap-1 font-bold" style={{ color: 'var(--ok)' }}>
-                      <VerifiedBadge size={14} /> Verified
+                      <VerifiedBadge size={14} /> {t('profile.verified')}
                     </span>
                   ) : (
                     <span className="t-caption font-bold" style={{ color: 'var(--warn)' }}>
-                      {verificationPending ? 'Pending' : 'Not verified'}
+                      {verificationPending ? t('profile.pending') : t('profile.notVerified')}
                     </span>
                   )
                 }
                 delay={0.08}
               />
               <QuickRow
-                label="Constellation"
+                label={t('profile.constellation')}
                 value={
                   constellationCount > 0
-                    ? `${constellationCount} linked partner${constellationCount === 1 ? '' : 's'}`
-                    : 'Link a partner'
+                    ? t('profile.linkedPartners', { count: constellationCount })
+                    : t('profile.linkPartner')
                 }
                 onClick={() => navigate('/profile-setup')}
                 delay={0.12}
               />
               <QuickRow
-                label="Notification preferences"
+                label={t('profile.notificationPrefs')}
                 onClick={() => navigate('/settings')}
                 delay={0.16}
               />
@@ -880,13 +882,13 @@ export default function Profile() {
       <GlassSheet open={photoSheet === 'add'} onClose={() => setPhotoSheet(null)} labelledBy="add-photo-title">
         <div className="px-6 pb-8 pt-2">
           <h3 id="add-photo-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
-            Add a photo
+            {t('profile.addPhotoSheet.title')}
           </h3>
           <div className="mt-4 flex flex-col gap-2">
             {(
               [
-                { icon: Camera, label: 'Camera', hint: 'Take one now', source: 'camera' },
-                { icon: ImagePlus, label: 'Library', hint: 'Pick from your photos', source: 'library' },
+                { icon: Camera, label: t('profile.addPhotoSheet.camera'), hint: t('profile.addPhotoSheet.cameraHint'), source: 'camera' },
+                { icon: ImagePlus, label: t('profile.addPhotoSheet.library'), hint: t('profile.addPhotoSheet.libraryHint'), source: 'library' },
               ] as const
             ).map((opt) => (
               <button
@@ -919,28 +921,28 @@ export default function Profile() {
       >
         <div className="px-6 pb-8 pt-2">
           <h3 id="edit-photo-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
-            Photo options
+            {t('profile.editPhotoSheet.title')}
           </h3>
           <div className="mt-4 flex flex-col gap-2">
             {(
               [
                 {
-                  label: 'Replace',
+                  label: t('profile.editPhotoSheet.replace'),
                   action: () => typeof photoSheet === 'number' && pickPhotoFile(photoSheet, 'library'),
                 },
                 {
-                  label: 'Take a new one',
+                  label: t('profile.editPhotoSheet.takeNew'),
                   action: () => typeof photoSheet === 'number' && pickPhotoFile(photoSheet, 'camera'),
                 },
                 {
-                  label: 'Make main',
+                  label: t('profile.makeMain'),
                   action: () => {
                     if (typeof photoSheet === 'number') makeMain(photoSheet);
                     setPhotoSheet(null);
                   },
                 },
                 {
-                  label: 'Remove',
+                  label: t('profile.editPhotoSheet.remove'),
                   danger: true,
                   action: () => typeof photoSheet === 'number' && void removeRealPhoto(photoSheet),
                 },
@@ -969,15 +971,15 @@ export default function Profile() {
       <GlassSheet open={goalOpen} onClose={() => setGoalOpen(false)} labelledBy="goal-title">
         <div className="px-6 pb-8 pt-2">
           <h3 id="goal-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
-            Weekly dating goal
+            {t('profile.goalSheet.title')}
           </h3>
           <p className="t-body mt-1" style={{ color: 'var(--text-secondary)' }}>
-            We pace your queue and reminders around this. Small goals count.
+            {t('profile.goalSheet.body')}
           </p>
           <div className="mt-5 flex items-center justify-center gap-6">
             <button
               type="button"
-              aria-label="Decrease weekly goal"
+              aria-label={t('profile.goalSheet.decreaseAria')}
               disabled={weeklyGoal <= 1}
               onClick={() => setWeeklyGoal((g) => Math.max(1, g - 1))}
               className="glass flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-40"
@@ -990,7 +992,7 @@ export default function Profile() {
             </span>
             <button
               type="button"
-              aria-label="Increase weekly goal"
+              aria-label={t('profile.goalSheet.increaseAria')}
               disabled={weeklyGoal >= 3}
               onClick={() => setWeeklyGoal((g) => Math.min(3, g + 1))}
               className="glass flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-40"
@@ -1000,10 +1002,10 @@ export default function Profile() {
             </button>
           </div>
           <p className="t-caption mt-2 text-center" style={{ color: 'var(--text-secondary)' }}>
-            {weeklyGoal} date{weeklyGoal > 1 ? 's' : ''} per week
+            {t('profile.datesPerWeek', { count: weeklyGoal })}
           </p>
           <BtnPrimary onClick={() => saveWeeklyGoal(weeklyGoal)} className="mt-6 w-full">
-            Save goal
+            {t('profile.goalSheet.save')}
           </BtnPrimary>
         </div>
       </GlassSheet>
@@ -1012,12 +1014,12 @@ export default function Profile() {
       <GlassSheet open={previewOpen} onClose={() => setPreviewOpen(false)} labelledBy="preview-title">
         <div className="px-6 pb-8 pt-2">
           <h3 id="preview-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
-            How others see you
+            {t('profile.previewSheet.title')}
           </h3>
           <div className="relative mt-4 overflow-hidden rounded-[24px]">
             <img
               src={photos[mainPhotoIdx] ?? photos[0]}
-              alt={`Preview of ${displayName}'s profile card`}
+              alt={t('profile.previewSheet.alt', { name: displayName })}
               className="aspect-[4/5] w-full object-cover"
             />
             <div className="photo-scrim absolute inset-0" aria-hidden="true" />
@@ -1035,7 +1037,7 @@ export default function Profile() {
                   ))}
                 </div>
                 <p className="t-value mt-2" style={{ color: 'var(--text)' }}>
-                  {profile?.prompts?.[0]?.answer ?? profile?.bio ?? 'Here for something real — coffee first, hikes second.'}
+                  {profile?.prompts?.[0]?.answer ?? profile?.bio ?? t('profile.previewSheet.bioFallback')}
                 </p>
               </GlassCard>
             </div>
@@ -1043,11 +1045,11 @@ export default function Profile() {
           <div className="mt-4 flex items-center gap-2">
             <Heart size={16} style={{ color: 'var(--violet)' }} aria-hidden="true" />
             <p className="t-caption" style={{ color: 'var(--text-secondary)' }}>
-              This is the card people in your queue swipe on.
+              {t('profile.previewSheet.cardNote')}
             </p>
           </div>
           <BtnPrimary onClick={() => setPreviewOpen(false)} className="mt-5 w-full">
-            Done
+            {t('profile.previewSheet.done')}
           </BtnPrimary>
         </div>
       </GlassSheet>

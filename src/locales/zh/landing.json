@@ -1,0 +1,259 @@
+{
+  "hero": {
+    "eyebrow": "约会，去噪版",
+    "title": "少刷屏，多相遇。",
+    "subtitle": "每天为你精选 5–10 位心意相投的人——而不是一个为让你一直单身、一直刷下去而设计的无尽卡池。",
+    "getStarted": "开始使用",
+    "seeHow": "看看它如何运作 ↓",
+    "caption": "免费开始 · 照片认证社区 · 所有性别、所有关系形态",
+    "offerAria": "创始会员礼遇：10,000 Date Coins",
+    "offerMeta": "Resonance · 创始礼遇",
+    "offerGrows": "逐年增长",
+    "offerTitle": "10,000 Date Coins",
+    "offerFor": "献给前 100,000 位创始会员",
+    "offerDesc": "一份随你陪伴我们的每一年不断增值的折扣。",
+    "offerPill": "创始会员专属"
+  },
+  "problem": {
+    "eyebrow": "问题所在",
+    "heading": "刷不完的卡片。摸不透的心意。聊不下去的对话。",
+    "body": "老牌应用靠你的孤独赚钱。重数量轻质量，付费墙先于结果，整个滑动经济都在奖励“永不见面”。",
+    "stat1": { "suffix": " 分钟", "label": "每天刷屏" },
+    "stat2": { "suffix": "%", "label": "匹配 → 见面" },
+    "stat3": { "static": "每 2 人中 1 人", "label": "感觉更糟" }
+  },
+  "loop": {
+    "eyebrow": "Resonance 循环",
+    "heading": "四个步骤，一个方向：走向线下。",
+    "step1": {
+      "title": "说出你的心意",
+      "body": "认真、随缘、探索、ENM、友谊——一开始就坦白，按双向奔赴匹配。"
+    },
+    "step2": {
+      "title": "领取你的每日队列",
+      "body": "5–10 份精选档案。契合度、心意对齐，以及真实的行为信号。"
+    },
+    "step3": {
+      "title": "发出信号，而不是垃圾信息",
+      "body": "点赞有限。评论对方的话题回答。遇到真正心动的人，就送出一枚 Pulse。"
+    },
+    "step4": {
+      "title": "走到线下相见",
+      "body": "AI 开场白、约会灵感，还有一个不断调优匹配的 We Met 循环。"
+    }
+  },
+  "modes": {
+    "eyebrow": "模式",
+    "heading": "一个应用，遇见的每种方式",
+    "tierFree": "免费",
+    "tapForDetails": "{{title}}——点按查看详情",
+    "queue": {
+      "title": "每日队列",
+      "caption": "每天 5–10 次遇见真心的好机会。每天中午刷新。",
+      "bullet1": "按心意 + 契合度精选",
+      "bullet2": "每天中午刷新",
+      "bullet3": "筛选与硬性条件全包含"
+    },
+    "swipe": {
+      "title": "经典滑动",
+      "caption": "想要海量模式时随你切换，心意筛选依然开启。",
+      "bullet1": "完整卡池畅刷",
+      "bullet2": "心意筛选保持开启",
+      "bullet3": "同样有限的点赞"
+    },
+    "nearby": {
+      "title": "附近动态",
+      "caption": "实时、本地、就在此刻。",
+      "bullet1": "实时本地网格",
+      "bullet2": "按活跃度呈现",
+      "bullet3": "同样的安全规则"
+    },
+    "events": {
+      "title": "活动",
+      "caption": "报名即见，轻松无压力。",
+      "bullet1": "精选本地活动",
+      "bullet2": "看看还有谁参加",
+      "bullet3": "群组形式优先"
+    },
+    "travel": {
+      "title": "旅行",
+      "caption": "落地之前，先切换你的城市。",
+      "bullet1": "提前设定目的地",
+      "bullet2": "抵达时队列已就绪",
+      "bullet3": "本地约会灵感备好"
+    }
+  },
+  "outcomes": {
+    "alt": "一对情侣傍晚在小咖啡馆的桌旁开怀大笑",
+    "eyebrow": "要结果，不要粘性",
+    "heading": "我们优化的指标，是你的第一次约会。",
+    "body": "我们的 We Met 循环会询问约会进展——每一次回答都让下一批推荐更精准。",
+    "stats": "68% 匹配→对话 · 31% 对话→约会 · 4.6★ 匹配质量（内测用户）"
+  },
+  "safety": {
+    "eyebrow": "安全与心意",
+    "heading": "安全不该藏在设置页里。",
+    "body": "认证、同意与举报都是一等界面——在你浏览、匹配、聊天的地方就能看到，绝不会埋在三层菜单之下。",
+    "rows": {
+      "verification": {
+        "title": "照片认证",
+        "body": "强制自拍 + 实时核验。没有徽章，就无法浏览。"
+      },
+      "screenshots": {
+        "title": "截屏提醒",
+        "body": "有人截取你的聊天或照片时，你会立刻知道。"
+      },
+      "hiddenWords": {
+        "title": "屏蔽词",
+        "body": "过滤掉那些你永远不想收到的话。"
+      },
+      "anonymity": {
+        "title": "隐身模式",
+        "body": "在你选择现身之前，悄悄浏览。"
+      },
+      "scam": {
+        "title": "AI 反诈骗防线",
+        "body": "爱情诈骗的套路，在抵达你之前就被标记。"
+      },
+      "consent": {
+        "title": "边界与同意工具",
+        "body": "在应用内清晰地设定并尊重彼此的边界。"
+      }
+    }
+  },
+  "testimonials": {
+    "eyebrow": "早期反响",
+    "heading": "那些停止刷屏的人",
+    "headshotAlt": "{{name}}的照片",
+    "q1": { "quote": "每日上限第一天让我觉得受限，第二天却让我觉得解脱。" },
+    "q2": { "quote": "话题提示做到了我的开场白永远做不到的事。我们五天就见面了。" },
+    "q3": { "quote": "第一个让我坦白心意不但不吓跑别人、反而吸引来对的人的应用。" }
+  },
+  "pricing": {
+    "eyebrow": "价格",
+    "heading": "免费是真的。Plus 是力量。X 是翅膀。",
+    "body": "不花钱也能用好 Resonance。Resonance+ 和 Resonance X 为想要更多信号、更远触达、更多地方的人带来更深体验。",
+    "tierFree": "免费",
+    "free": {
+      "title": "带着心意开始",
+      "features": "每日队列 · 有限点赞 · 完整安全体系 · 活动报名"
+    },
+    "plus": {
+      "title": "更深的信号",
+      "features": "查看谁喜欢你 · 更多 Pulses · 高级筛选 · 附近动态"
+    },
+    "x": {
+      "title": "去往任何地方",
+      "features": "包含 + 全部权益 · 旅行模式 · 优先展示 · X 专属活动"
+    },
+    "compare": "对比方案 →"
+  },
+  "faq": {
+    "eyebrow": "常见问题",
+    "heading": "好问题",
+    "q1": {
+      "q": "Resonance 免费吗？",
+      "a": "是的。每日队列、有限点赞、消息、活动和完整安全体系永久免费。Resonance+ 和 X 提供的是便利与触达——核心安全绝不收费。"
+    },
+    "q2": {
+      "q": "为什么要有每日上限？",
+      "a": "因为注意力才是关键。小队列意味着每份档案都会被认真读，每个点赞都有分量，应用也才能为“约会”优化，而不是为“屏幕时长”优化。"
+    },
+    "q3": {
+      "q": "照片认证怎么进行？",
+      "a": "注册时拍一张自拍并通过快速实时核验。认证会员会获得徽章；未认证账号无法浏览也无法被看到。全程不到一分钟。"
+    },
+    "q4": {
+      "q": "什么是 Pulse？",
+      "a": "Pulse 是一枚有分量的超级喜欢。它会把你置顶在对方 Likes You 网格的顶部，并带一条紫色下划线。它刻意稀缺——免费会员每周只有几枚。"
+    },
+    "q5": {
+      "q": "哪些模式免费？",
+      "a": "每日队列、经典滑动和活动免费。附近动态属于 Resonance+，旅行模式属于 Resonance X。筛选和硬性条件在所有模式下都免费。"
+    }
+  },
+  "finalCta": {
+    "heading": "你的队列明天中午开启。",
+    "body": "今晚就建好你的档案，明早醒来，遇见值得相见的人。",
+    "button": "创建你的档案",
+    "caption": "免费开始 · 只需两分钟 · 需要照片认证",
+    "share": "分享给需要它的朋友"
+  },
+  "login": {
+    "welcome": "欢迎",
+    "kimi": "使用 Kimi 登录",
+    "google": "使用 Google 继续"
+  },
+  "signIn": {
+    "oauthGoogleNotConfigured": "Google 登录暂不可用——请改用邮箱或 Kimi。",
+    "oauthGoogleFailed": "Google 登录未完成。请重试，或使用邮箱或 Kimi。",
+    "titleIn": "欢迎回来。",
+    "titleUp": "创建你的账号。",
+    "subtitleIn": "从你离开的地方继续。",
+    "subtitleUp": "用更安静的方式，遇见值得遇见的人。",
+    "tabAria": "登录或创建账号",
+    "tabIn": "登录",
+    "tabUp": "创建账号",
+    "nameLabel": "姓名",
+    "namePlaceholder": "你的名字",
+    "emailLabel": "邮箱",
+    "passwordLabel": "密码",
+    "passwordHint": "至少 8 个字符",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "forgot": "忘记密码？",
+    "pending": "请稍候…",
+    "or": "或",
+    "continueKimi": "使用 Kimi 继续",
+    "continueGoogle": "使用 Google 继续",
+    "errors": {
+      "nameRequired": "告诉我们你的名字",
+      "emailInvalid": "请输入有效的邮箱地址",
+      "passwordShort": "至少 8 个字符",
+      "passwordRequired": "请输入你的密码"
+    }
+  },
+  "forgotPassword": {
+    "title": "忘记密码了？",
+    "subtitle": "输入你的邮箱，我们会发送重置链接。",
+    "emailLabel": "邮箱",
+    "send": "发送重置链接",
+    "sending": "发送中…",
+    "emailInvalid": "请输入有效的邮箱地址",
+    "sentTitle": "请查收收件箱。",
+    "sentBody": "如果该邮箱注册了账号，重置链接已在路上。链接 30 分钟后过期。",
+    "backToSignIn": "返回登录"
+  },
+  "resetPassword": {
+    "title": "设置一个新密码。",
+    "subtitle": "至少 8 个字符。",
+    "newLabel": "新密码",
+    "confirmLabel": "确认新密码",
+    "submit": "重置密码",
+    "updating": "更新中…",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "errors": {
+      "passwordShort": "至少 8 个字符",
+      "confirmMismatch": "两次输入的密码不一致"
+    },
+    "invalidTitle": "此链接无效。",
+    "invalidBody": "这个重置链接无效或已过期。重新申请一个，我们会把它发到你的收件箱。",
+    "requestNew": "重新申请链接",
+    "doneTitle": "密码已更新。",
+    "doneBody": "你的密码已重置。请使用新密码登录。",
+    "goToSignIn": "前往登录",
+    "backToSignIn": "返回登录"
+  },
+  "authLayout": {
+    "signInTitle": "登录以继续",
+    "signInBody": "访问此面板需要登录验证。继续以启动登录流程。",
+    "signIn": "登录",
+    "toggleNav": "切换导航栏",
+    "navigation": "导航",
+    "page1": "页面 1",
+    "page2": "页面 2",
+    "signOut": "退出登录",
+    "menu": "菜单"
+  }
+}

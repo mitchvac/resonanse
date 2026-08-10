@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "primary": "Navegação principal",
+    "discover": "Descobrir",
+    "likes": "Curtidas",
+    "matches": "Matches",
+    "events": "Eventos",
+    "community": "Comunidade",
+    "profile": "Perfil",
+    "likesBadge": "{{count}} curtidas",
+    "unreadMessages": "Mensagens não lidas"
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "backHome": "Voltar ao início"
+  },
+  "onboarding": {
+    "continue": "Continuar",
+    "saving": "Salvando…",
+    "saveExit": "Salvar e sair",
+    "saveError": "Não foi possível salvar — verifique sua conexão e tente novamente.",
+    "demoHint": "Modo demo — entre para salvar seu progresso"
+  },
+  "footer": {
+    "tagline": "Encontros com intenção",
+    "description": "Uma seleção diária de pessoas que combinam com a sua intenção — e as ferramentas para transformar um match em um primeiro encontro.",
+    "product": "Produto",
+    "company": "Empresa",
+    "legal": "Jurídico",
+    "safety": "Segurança",
+    "copyright": "© Resonance. Feito para se encontrar na vida real.",
+    "themeNote": "Warm Glass de dia, Night HUD à noite — mude nas Configurações.",
+    "signIn": "Entrar",
+    "links": {
+      "dailyQueue": "Fila diária",
+      "modes": "Modos",
+      "events": "Eventos",
+      "about": "Sobre",
+      "careers": "Carreiras",
+      "press": "Imprensa",
+      "contact": "Contato",
+      "privacy": "Privacidade",
+      "terms": "Termos",
+      "cookies": "Cookies",
+      "dataRequests": "Solicitações de dados",
+      "verification": "Verificação",
+      "communityRules": "Regras da comunidade",
+      "report": "Denunciar",
+      "consentTools": "Ferramentas de consentimento"
+    }
+  }
+}

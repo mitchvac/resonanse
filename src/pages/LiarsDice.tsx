@@ -6,6 +6,7 @@ import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 import { LOGIN_PATH } from '@/const';
+import { useTranslation } from 'react-i18next';
 import WinFireworks from '@/components/games/WinFireworks';
 import OwnAvatar from '@/components/games/OwnAvatar';
 import {
@@ -24,10 +25,10 @@ import type { Bid, BidFace } from '@/lib/liarsDice/engine';
 /* ------------------------------------------------------------------ */
 
 const SEATS = [
-  { name: 'You', isBot: false },
-  { name: 'BOT · Riley', isBot: true },
-  { name: 'BOT · Maya', isBot: true },
-  { name: 'BOT · Sam', isBot: true },
+  { key: 'seats.you', isBot: false },
+  { key: 'seats.botRiley', isBot: true },
+  { key: 'seats.botMaya', isBot: true },
+  { key: 'seats.botSam', isBot: true },
 ] as const;
 
 const STARTING_DICE = 5;
@@ -61,6 +62,7 @@ function DieFace({
   highlight?: boolean;
   dim?: boolean;
 }) {
+  const { t } = useTranslation('games');
   return (
     <span
       className="flex items-center justify-center rounded-[10px]"
@@ -76,7 +78,7 @@ function DieFace({
           ? '0 0 0 2px var(--ok)'
           : '0 0 0 1px var(--ring-stroke)',
       }}
-      aria-label={`Die showing ${value}`}
+      aria-label={t('liarsDice.dieAria', { value })}
       role="img"
     >
       {glyph(value)}
@@ -85,7 +87,9 @@ function DieFace({
 }
 
 export default function LiarsDice() {
+  const { t } = useTranslation('games');
   const navigate = useNavigate();
+  const seatName = (i: number) => t(SEATS[i]?.key ?? 'seats.you');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const entitlementsQuery = trpc.premium.entitlements.useQuery(undefined, {
@@ -108,7 +112,7 @@ export default function LiarsDice() {
   const [turn, setTurn] = useState(0);
   const [phase, setPhase] = useState<Phase>('play');
   const [reveal, setReveal] = useState<RevealState | null>(null);
-  const [winner, setWinner] = useState<string | null>(null);
+  const [winner, setWinner] = useState<number | null>(null);
   const [log, setLog] = useState<string[]>([]);
   const [qty, setQty] = useState(1);
   const [face, setFace] = useState<BidFace>(2);
@@ -142,7 +146,7 @@ export default function LiarsDice() {
     setWinner(null);
     setQty(1);
     setFace(2);
-    setLog(['Fresh table — you open the bidding.']);
+    setLog([t('liarsDice.log.freshTable')]);
   }, [clearTimers]);
 
   useEffect(() => {
@@ -157,21 +161,21 @@ export default function LiarsDice() {
     later(() => botAct(t, diceState, b, bIdx), delay);
   }
 
-  function botAct(t: number, diceState: number[][], b: Bid | null, bIdx: number) {
-    const own = diceState[t];
-    const unknown = diceState.reduce((n, d, i) => n + (i === t ? 0 : d.length), 0);
+  function botAct(seat: number, diceState: number[][], b: Bid | null, bIdx: number) {
+    const own = diceState[seat];
+    const unknown = diceState.reduce((n, d, i) => n + (i === seat ? 0 : d.length), 0);
     const decision = bidDecision(own, b, unknown, Math.random);
     if (decision.kind === 'bid') {
-      pushLog(`${SEATS[t].name} bids ${decision.bid.quantity} × ${glyph(decision.bid.face)}`);
+      pushLog(t('liarsDice.log.bids', { name: seatName(seat), quantity: decision.bid.quantity, face: glyph(decision.bid.face) }));
       setBid(decision.bid);
-      setBidder(t);
+      setBidder(seat);
       const alive = diceState.map((d) => d.length > 0);
-      const nt = nextTurnIndex(alive, t);
+      const nt = nextTurnIndex(alive, seat);
       setTurn(nt);
-      scheduleIfBot(nt, diceState, decision.bid, t);
+      scheduleIfBot(nt, diceState, decision.bid, seat);
     } else if (b && bIdx >= 0) {
-      pushLog(`${SEATS[t].name} calls liar.`);
-      resolveChallenge(t, diceState, b, bIdx);
+      pushLog(t('liarsDice.log.callsLiar', { name: seatName(seat) }));
+      resolveChallenge(seat, diceState, b, bIdx);
     }
   }
 
@@ -195,10 +199,10 @@ export default function LiarsDice() {
     });
     setPhase('reveal');
 
-    pushLog(`${count} × ${glyph(b.face)} on the table — ${stood ? 'bid stands' : 'bid was a bluff'}.`);
-    pushLog(loserIdx === 0 ? 'You lose a die.' : `${SEATS[loserIdx].name} loses a die.`);
+    pushLog(t('liarsDice.log.reveal', { count, face: glyph(b.face), verdict: t(stood ? 'liarsDice.verdict.stands' : 'liarsDice.verdict.bluff') }));
+    pushLog(loserIdx === 0 ? t('liarsDice.log.youLoseDie') : t('liarsDice.log.losesDie', { name: seatName(loserIdx) }));
     if (after[loserIdx].length === 0) {
-      pushLog(loserIdx === 0 ? "You're out." : `${SEATS[loserIdx].name} is out.`);
+      pushLog(loserIdx === 0 ? t('liarsDice.log.youreOut') : t('liarsDice.log.isOut', { name: seatName(loserIdx) }));
     }
 
     const alive = after.map((d) => d.length > 0);
@@ -206,12 +210,12 @@ export default function LiarsDice() {
     const beat = after[0].length === 0 ? 900 : 2800;
 
     if (aliveCount === 1) {
-      const winnerName = SEATS[alive.indexOf(true)].name;
+      const winnerIdx = alive.indexOf(true);
       later(() => {
         setPhase('over');
-        setWinner(winnerName);
+        setWinner(winnerIdx);
         pushLog(
-          winnerName === 'You' ? 'You win the table.' : `${winnerName} wins the table.`,
+          winnerIdx === 0 ? t('liarsDice.youWinTable') : t('liarsDice.winsTable', { name: seatName(winnerIdx) }),
         );
       }, beat);
       return;
@@ -229,7 +233,7 @@ export default function LiarsDice() {
     setReveal(null);
     setTurn(starter);
     setPhase('play');
-    pushLog(starter === 0 ? 'New round — you open.' : `New round — ${SEATS[starter].name} opens.`);
+    pushLog(starter === 0 ? t('liarsDice.log.newRoundYou') : t('liarsDice.log.newRoundOther', { name: seatName(starter) }));
     scheduleIfBot(starter, rolled, null, -1);
   }
 
@@ -240,7 +244,7 @@ export default function LiarsDice() {
 
   function placeBid() {
     if (!isPlayerTurn || !proposedLegal) return;
-    pushLog(`You bid ${proposed.quantity} × ${glyph(proposed.face)}`);
+    pushLog(t('liarsDice.log.youBid', { quantity: proposed.quantity, face: glyph(proposed.face) }));
     setBid(proposed);
     setBidder(0);
     const alive = dice.map((d) => d.length > 0);
@@ -251,7 +255,7 @@ export default function LiarsDice() {
 
   function callLiar() {
     if (!isPlayerTurn || !bid || bidder < 0) return;
-    pushLog('You called liar.');
+    pushLog(t('liarsDice.log.youCalledLiar'));
     resolveChallenge(0, dice, bid, bidder);
   }
 
@@ -280,7 +284,7 @@ export default function LiarsDice() {
           <div className="glass flex h-[52px] items-center rounded-full pl-1 pr-4">
             <button
               type="button"
-              aria-label="Back to Community"
+              aria-label={t('shared.backToCommunity')}
               onClick={() => navigate('/community')}
               className="glass-content flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
@@ -291,20 +295,18 @@ export default function LiarsDice() {
               className="t-value flex-1 pr-11 text-center font-bold"
               style={{ color: 'var(--text)', position: 'relative', zIndex: 1 }}
             >
-              Liar&apos;s Dice
+              {t('liarsDice.title')}
             </span>
           </div>
         </div>
 
         <header className="mt-6 px-5">
-          <p className="t-eyebrow">LOCAL TABLE</p>
+          <p className="t-eyebrow">{t('shared.localTable')}</p>
           <h1 className="t-heading mt-2" style={{ color: 'var(--text-ink)' }}>
-            You + 3 labelled bots.
+            {t('liarsDice.header')}
           </h1>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Five dice each, ones are wild, somebody&apos;s bluffing. Bots are always
-            labelled. Live multiplayer seats arrive with the Stage 2 community
-            backend.
+            {t('liarsDice.intro')}
           </p>
         </header>
 
@@ -317,12 +319,12 @@ export default function LiarsDice() {
         {!accessLoading && !isAuthenticated && (
           <section className="mt-6 px-5">
             <GlassCard className="p-5">
-              <h2 className="t-title-sm">Sign in to take a seat.</h2>
+              <h2 className="t-title-sm">{t('shared.signInToSeat')}</h2>
               <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                Community games are part of your Resonance access.
+                {t('shared.signInBody')}
               </p>
               <BtnPrimary to={LOGIN_PATH} className="mt-4 w-full">
-                Sign in
+                {t('shared.signIn')}
               </BtnPrimary>
             </GlassCard>
           </section>
@@ -331,28 +333,27 @@ export default function LiarsDice() {
         {!accessLoading && isAuthenticated && !allowed && (
           <section className="mt-6 px-5">
             <GlassCard edge="amber" className="p-5">
-              <p className="t-eyebrow">SEATING LOCKED</p>
-              <h2 className="t-title-sm mt-1">Your free trial has ended.</h2>
+              <p className="t-eyebrow">{t('shared.seatingLocked')}</p>
+              <h2 className="t-title-sm mt-1">{t('shared.trialEnded')}</h2>
               <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                The lobby stays visible, but taking a seat needs Resonance+ or X.
-                Dating core stays free: queue, matches, conversations and share board.
+                {t('shared.trialEndedBody')}
               </p>
               <BtnPrimary to="/premium" className="mt-4 w-full">
-                See plans
+                {t('shared.seePlans')}
               </BtnPrimary>
             </GlassCard>
           </section>
         )}
 
         {!accessLoading && isAuthenticated && allowed && (
-          <section className="mt-6 px-5" aria-label="Liar's Dice game">
+          <section className="mt-6 px-5" aria-label={t('liarsDice.gameAria')}>
             <GlassCard className="p-4" ringX={24}>
               <div className="flex items-center justify-between">
-                <p className="t-eyebrow">THE TABLE</p>
+                <p className="t-eyebrow">{t('liarsDice.theTable')}</p>
                 <BtnGlass
                   className="h-9 min-h-[36px] px-3"
                   onClick={newGame}
-                  ariaLabel="Restart game"
+                  ariaLabel={t('shared.restartGame')}
                 >
                   <RotateCcw size={15} aria-hidden="true" />
                 </BtnGlass>
@@ -369,7 +370,7 @@ export default function LiarsDice() {
                     phase === 'reveal' && reveal ? reveal.tableDice[idx] : null;
                   return (
                     <div
-                      key={seat.name}
+                      key={seat.key}
                       className="flex flex-col items-center gap-1.5 rounded-[16px] px-1.5 py-3"
                       style={{
                         background: 'var(--field)',
@@ -386,7 +387,7 @@ export default function LiarsDice() {
                           color: 'var(--text-secondary)',
                           boxShadow: '0 0 0 1.5px var(--ring-stroke)',
                         }}
-                        aria-label="Labelled bot"
+                        aria-label={t('shared.labelledBot')}
                         role="img"
                       >
                         <Bot size={18} aria-hidden="true" />
@@ -395,14 +396,14 @@ export default function LiarsDice() {
                         className="t-micro font-bold uppercase"
                         style={{ color: 'var(--text)' }}
                       >
-                        {seat.name}
+                        {seatName(idx)}
                       </span>
                       {out ? (
                         <span
                           className="t-micro"
                           style={{ color: 'var(--text-secondary)' }}
                         >
-                          out
+                          {t('liarsDice.out')}
                         </span>
                       ) : shownDice ? (
                         <span className="flex flex-wrap justify-center gap-0.5">
@@ -419,7 +420,7 @@ export default function LiarsDice() {
                       ) : (
                         <span
                           className="flex items-center gap-1"
-                          aria-label={`${count} dice left`}
+                          aria-label={t('liarsDice.diceLeft', { count })}
                         >
                           <Dices
                             size={12}
@@ -455,7 +456,7 @@ export default function LiarsDice() {
                     }}
                     aria-live="polite"
                   >
-                    {bidder === 0 ? 'You bid' : `${SEATS[bidder].name} bids`}{' '}
+                    {bidder === 0 ? t('liarsDice.youBid') : t('liarsDice.nameBids', { name: seatName(bidder) })}{' '}
                     {bid.quantity} × {glyph(bid.face)}
                   </p>
                 ) : (
@@ -466,7 +467,7 @@ export default function LiarsDice() {
                       color: 'var(--text-secondary)',
                     }}
                   >
-                    No bid on the table yet.
+                    {t('liarsDice.noBid')}
                   </p>
                 )}
               </div>
@@ -477,10 +478,10 @@ export default function LiarsDice() {
               >
                 {phase === 'play'
                   ? isPlayerTurn
-                    ? 'Your turn — raise the bid or call liar.'
-                    : `${SEATS[turn].name} is thinking…`
+                    ? t('liarsDice.yourTurn')
+                    : t('liarsDice.thinking', { name: seatName(turn) })
                   : phase === 'reveal'
-                    ? 'Cups up — counting the table.'
+                    ? t('liarsDice.cupsUp')
                     : ''}
               </p>
 
@@ -494,19 +495,20 @@ export default function LiarsDice() {
                   }}
                 >
                   <p className="t-body" style={{ color: 'var(--text)' }} aria-live="polite">
-                    {reveal.count} × {glyph(reveal.bid.face)} on the table —{' '}
-                    {reveal.count >= reveal.bid.quantity
-                      ? 'bid stands.'
-                      : 'bid was a bluff.'}{' '}
+                    {t('liarsDice.revealLine', {
+                      count: reveal.count,
+                      face: glyph(reveal.bid.face),
+                      verdict: t(reveal.count >= reveal.bid.quantity ? 'liarsDice.reveal.stands' : 'liarsDice.reveal.bluff'),
+                    })}{' '}
                     {reveal.loserIdx === 0
-                      ? 'You lose a die.'
-                      : `${SEATS[reveal.loserIdx].name} loses a die.`}
+                      ? t('liarsDice.reveal.youLose')
+                      : t('liarsDice.reveal.loses', { name: seatName(reveal.loserIdx) })}
                   </p>
                   <p
                     className="t-micro mt-1"
                     style={{ color: 'var(--text-secondary)' }}
                   >
-                    {youOut ? 'Fast-forwarding…' : 'Next round…'}
+                    {youOut ? t('liarsDice.fastForward') : t('liarsDice.nextRound')}
                   </p>
                 </div>
               )}
@@ -529,14 +531,14 @@ export default function LiarsDice() {
                       size={14}
                       className="absolute -bottom-0.5 -right-0.5 rounded-full"
                       style={{ color: 'var(--ok)', background: 'var(--stage-base)' }}
-                      aria-label="Verified"
+                      aria-label={t('shared.verified')}
                     />
                   </span>
                   <span
                     className="t-micro font-bold"
                     style={{ color: 'var(--text-secondary)' }}
                   >
-                    YOU · {dice[0].length} {dice[0].length === 1 ? 'DIE' : 'DICE'}
+                    {t('liarsDice.youDice', { count: dice[0].length })}
                   </span>
                 </div>
                 {youOut ? (
@@ -544,7 +546,7 @@ export default function LiarsDice() {
                     className="t-caption mt-3 text-center"
                     style={{ color: 'var(--text-secondary)' }}
                   >
-                    You&apos;re out — riding it out with the bots.
+                    {t('liarsDice.youreOutRiding')}
                   </p>
                 ) : (
                   <div className="mt-3 flex justify-center gap-2">
@@ -570,7 +572,7 @@ export default function LiarsDice() {
                   <div className="flex items-center justify-center gap-3">
                     <button
                       type="button"
-                      aria-label="Decrease quantity"
+                      aria-label={t('liarsDice.decreaseQty')}
                       disabled={!isPlayerTurn || qty <= 1}
                       onClick={() => setQty((q) => Math.max(1, q - 1))}
                       className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full disabled:opacity-40"
@@ -591,7 +593,7 @@ export default function LiarsDice() {
                     </span>
                     <button
                       type="button"
-                      aria-label="Increase quantity"
+                      aria-label={t('liarsDice.increaseQty')}
                       disabled={!isPlayerTurn || qty >= MAX_QUANTITY}
                       onClick={() => setQty((q) => Math.min(MAX_QUANTITY, q + 1))}
                       className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full disabled:opacity-40"
@@ -612,7 +614,7 @@ export default function LiarsDice() {
                         type="button"
                         disabled={!isPlayerTurn}
                         onClick={() => setFace(f)}
-                        aria-label={`Bid face ${f}`}
+                        aria-label={t('liarsDice.bidFace', { face: f })}
                         aria-pressed={face === f}
                         className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[12px] text-[26px] leading-none disabled:opacity-50"
                         style={{
@@ -633,14 +635,14 @@ export default function LiarsDice() {
                       disabled={!isPlayerTurn || !proposedLegal}
                       onClick={placeBid}
                     >
-                      Bid
+                      {t('liarsDice.bid')}
                     </BtnPrimary>
                     <BtnGlass
                       className="h-12 flex-1"
                       disabled={!isPlayerTurn || !bid}
                       onClick={callLiar}
                     >
-                      Liar!
+                      {t('liarsDice.liar')}
                     </BtnGlass>
                   </div>
 
@@ -649,14 +651,14 @@ export default function LiarsDice() {
                       className="t-micro mt-2 text-center"
                       style={{ color: 'var(--text-secondary)' }}
                     >
-                      Raise the quantity, or the face at the same quantity.
+                      {t('liarsDice.raiseHint')}
                     </p>
                   )}
                 </div>
               )}
 
               {/* Game over */}
-              {phase === 'over' && winner && (
+              {phase === 'over' && winner !== null && (
                 <div
                   className="mt-4 flex flex-col items-center gap-3 rounded-[18px] p-5 text-center"
                   style={{
@@ -666,11 +668,11 @@ export default function LiarsDice() {
                 >
                   <Dices size={22} style={{ color: 'var(--violet)' }} aria-hidden="true" />
                   <p className="t-title" style={{ color: 'var(--text)' }} aria-live="polite">
-                    {winner === 'You' ? 'You win the table.' : `${winner} wins the table.`}
+                    {winner === 0 ? t('liarsDice.youWinTable') : t('liarsDice.winsTable', { name: seatName(winner) })}
                   </p>
                   <BtnPrimary className="h-12 w-full" onClick={newGame}>
                     <RotateCcw size={16} aria-hidden="true" />
-                    Play again
+                    {t('liarsDice.playAgain')}
                   </BtnPrimary>
                 </div>
               )}
@@ -678,7 +680,7 @@ export default function LiarsDice() {
               {/* Round log */}
               {log.length > 0 && (
                 <div className="mt-4">
-                  <p className="t-eyebrow">TABLE LOG</p>
+                  <p className="t-eyebrow">{t('liarsDice.tableLog')}</p>
                   <ul className="mt-2 space-y-1">
                     {log.map((line, i) => (
                       <li
@@ -700,7 +702,7 @@ export default function LiarsDice() {
         )}
 
         {/* V83 — fireworks when the human takes the table */}
-        <WinFireworks fire={phase === 'over' && winner === 'You'} />
+        <WinFireworks fire={phase === 'over' && winner === 0} />
       </div>
     </div>
   );

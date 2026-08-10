@@ -1,4 +1,5 @@
 import type { MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Heart } from 'lucide-react';
 import { LipsIcon, RoseIcon, WaveHandIcon } from '@/components/gestures/icons';
 
@@ -17,7 +18,7 @@ export default function GestureRow({
   onRose,
   onKiss,
   onLike,
-  name = 'them',
+  name,
 }: {
   /** null hides the count badge (count unknown); 0 disables */
   flowersLeft?: number | null;
@@ -31,6 +32,8 @@ export default function GestureRow({
   /** liker's first name, used only in aria labels */
   name?: string;
 }) {
+  const { t } = useTranslation('discover');
+  const displayName = name ?? t('common.them');
   // Buttons must swallow pointer+click events: cards are themselves tappable
   // (open profile) and the grid tiles sit inside a long-press wrapper.
   const stop = (e: React.SyntheticEvent) => e.stopPropagation();
@@ -42,14 +45,14 @@ export default function GestureRow({
       onPointerDown={stop}
       onClick={stop}
       role="group"
-      aria-label={`Respond to ${name}`}
+      aria-label={t('gestures.respondTo', { name: displayName })}
     >
       <button
         type="button"
         disabled={pending}
         onClick={onWave}
-        aria-label={`Wave back at ${name} — say hi`}
-        title="Wave — say hi"
+        aria-label={t('gestures.waveBackAria', { name: displayName })}
+        title={t('gestures.waveSayHi')}
         className={circle}
       >
         <span className="glass-content flex items-center justify-center">
@@ -61,9 +64,11 @@ export default function GestureRow({
         disabled={pending || flowersLeft === 0}
         onClick={onRose}
         aria-label={
-          flowersLeft === null ? `Send ${name} roses` : `Send ${name} roses — ${flowersLeft} left today`
+          flowersLeft === null
+            ? t('gestures.sendRosesTo', { name: displayName })
+            : t('gestures.sendRosesToLeft', { name: displayName, count: flowersLeft })
         }
-        title="Send roses"
+        title={t('gestures.sendRoses')}
         className={circle}
       >
         <span className="glass-content flex items-center justify-center">
@@ -84,9 +89,11 @@ export default function GestureRow({
         disabled={pending || kissesLeft === 0}
         onClick={onKiss}
         aria-label={
-          kissesLeft === null ? `Send ${name} a kiss` : `Send ${name} a kiss — ${kissesLeft} left today`
+          kissesLeft === null
+            ? t('gestures.sendKissTo', { name: displayName })
+            : t('gestures.sendKissToLeft', { name: displayName, count: kissesLeft })
         }
-        title="Send a kiss"
+        title={t('gestures.sendKiss')}
         className={circle}
       >
         <span className="glass-content flex items-center justify-center">
@@ -106,12 +113,12 @@ export default function GestureRow({
         type="button"
         disabled={pending}
         onClick={onLike}
-        aria-label={`Like ${name} back`}
-        title="Like back"
+        aria-label={t('gestures.likeBackTo', { name: displayName })}
+        title={t('gestures.likeBack')}
         className="shadow-violet-glow flex h-9 min-w-9 flex-1 items-center justify-center gap-1 rounded-full bg-violet text-white transition-transform duration-fast active:scale-[0.97] disabled:opacity-50"
       >
         <Heart size={15} fill="currentColor" strokeWidth={0} aria-hidden="true" />
-        <span className="t-micro font-bold">Like back</span>
+        <span className="t-micro font-bold">{t('gestures.likeBack')}</span>
       </button>
     </div>
   );

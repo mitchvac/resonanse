@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
@@ -17,9 +18,37 @@ import { cn } from '@/lib/utils';
  * Footer: BtnGhost "Reset" + BtnPrimary "Show N people" (live count-flip).
  */
 
+/* Option values are filter DATA (never translated) — display labels come
+   from the discover namespace via these key maps. */
 const INTENT_OPTIONS = ['Serious', 'Casual', 'Explore', 'Friendship', 'ENM'];
 const RELTYPE_OPTIONS = ['Monogamous', 'Non-monogamous', 'Open to both'];
 const FAMILY_OPTIONS = ['Want kids', 'Open', 'No kids', 'Have kids'];
+const POLITICS_OPTIONS = ['Liberal', 'Moderate', 'Conservative', 'Apolitical'];
+
+const INTENT_KEYS: Record<string, string> = {
+  Serious: 'serious',
+  Casual: 'casual',
+  Explore: 'explore',
+  Friendship: 'friendship',
+  ENM: 'enm',
+};
+const RELTYPE_KEYS: Record<string, string> = {
+  Monogamous: 'monogamous',
+  'Non-monogamous': 'nonMonogamous',
+  'Open to both': 'openToBoth',
+};
+const FAMILY_KEYS: Record<string, string> = {
+  'Want kids': 'wantKids',
+  Open: 'open',
+  'No kids': 'noKids',
+  'Have kids': 'haveKids',
+};
+const POLITICS_KEYS: Record<string, string> = {
+  Liberal: 'liberal',
+  Moderate: 'moderate',
+  Conservative: 'conservative',
+  Apolitical: 'apolitical',
+};
 
 /** Filters applied to discover.queue — owned by Discover.tsx. */
 export type DiscoverFilters = {
@@ -85,6 +114,7 @@ function Group({
   children: ReactNode;
   delay: number;
 }) {
+  const { t } = useTranslation('discover');
   const timer = useRef<number | null>(null);
   const [pulse, setPulse] = useState(false);
 
@@ -123,7 +153,7 @@ function Group({
             onClick={onLockedTap}
             className="t-micro flex items-center gap-1 rounded-full px-2 py-0.5"
             style={{ background: 'var(--field)', color: 'var(--text)' }}
-            aria-label={`${title} — Resonance+ filter`}
+            aria-label={t('filters.lockedAria', { title })}
           >
             <Lock size={10} aria-hidden="true" /> +
           </button>
@@ -136,7 +166,7 @@ function Group({
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              DEALBREAKER
+              {t('filters.dealbreaker')}
             </motion.span>
           )
         )}
@@ -144,7 +174,7 @@ function Group({
       <div className={cn(locked && 'pointer-events-none opacity-60')}>{children}</div>
       {dealbreaker && (
         <p className="t-caption mt-2" style={{ color: 'var(--text-secondary)' }}>
-          Dealbreakers hide all non-matches from every mode.
+          {t('filters.dealbreakerNote')}
         </p>
       )}
     </motion.section>
@@ -164,6 +194,7 @@ export default function FilterSheet({
   onClose: () => void;
   onLockedTap: () => void;
 }) {
+  const { t } = useTranslation('discover');
   const [intents, setIntents] = useState<string[]>(initial.intents);
   const [ageMin, setAgeMin] = useState(initial.minAge);
   const [ageMax, setAgeMax] = useState(initial.maxAge);
@@ -246,7 +277,7 @@ export default function FilterSheet({
         style={{ color: 'var(--text-secondary)' }}
         onClick={() => toggleDealbreaker(key)}
       >
-        {dealbreakers.has(key) ? 'Remove dealbreaker' : 'Make dealbreaker'}
+        {dealbreakers.has(key) ? t('filters.removeDealbreaker') : t('filters.makeDealbreaker')}
       </button>
     </Group>
   );
@@ -256,7 +287,7 @@ export default function FilterSheet({
       <div className="max-h-[85dvh] overflow-y-auto px-5 pb-6">
         <div className="flex items-baseline justify-between">
           <h3 id="filters-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
-            Filters
+            {t('filters.title')}
           </h3>
           {activeCount > 0 && (
             <motion.span
@@ -275,11 +306,11 @@ export default function FilterSheet({
         <div className="mt-4 flex flex-col gap-3">
           {toggleGroup(
             'intent',
-            'Intent',
+            t('filters.groups.intent'),
             <div className="flex flex-wrap gap-1.5">
               {INTENT_OPTIONS.map((o) => (
                 <Chip key={o} selected={intents.includes(o)} onClick={() => toggleIn(intents, setIntents, o)}>
-                  {o}
+                  {t(`filters.intentOptions.${INTENT_KEYS[o]}`)}
                 </Chip>
               ))}
             </div>,
@@ -288,7 +319,7 @@ export default function FilterSheet({
 
           {toggleGroup(
             'age',
-            'Age',
+            t('filters.groups.age'),
             <div>
               <p className="t-caption mb-2" style={{ color: 'var(--text)' }}>
                 {ageMin} – {ageMax === 40 ? '40+' : ageMax}
@@ -299,7 +330,7 @@ export default function FilterSheet({
                   min={22}
                   max={40}
                   value={ageMin}
-                  aria-label="Minimum age"
+                  aria-label={t('filters.minAge')}
                   onChange={(e) => setAgeMin(Math.min(Number(e.target.value), ageMax))}
                   className="w-full accent-[#7B49F5]"
                 />
@@ -308,7 +339,7 @@ export default function FilterSheet({
                   min={22}
                   max={40}
                   value={ageMax}
-                  aria-label="Maximum age"
+                  aria-label={t('filters.maxAge')}
                   onChange={(e) => setAgeMax(Math.max(Number(e.target.value), ageMin))}
                   className="w-full accent-[#7B49F5]"
                 />
@@ -319,25 +350,25 @@ export default function FilterSheet({
 
           {toggleGroup(
             'distance',
-            'Distance',
+            t('filters.groups.distance'),
             <div>
               <p className="t-caption mb-2" style={{ color: 'var(--text)' }}>
-                Within {distance} km
+                {t('filters.withinKm', { km: distance })}
               </p>
               <input
                 type="range"
                 min={1}
                 max={100}
                 value={distance}
-                aria-label="Maximum distance"
+                aria-label={t('filters.maxDistance')}
                 onChange={(e) => setDistance(Number(e.target.value))}
                 className="w-full accent-[#7B49F5]"
               />
               <div className="mt-3 flex items-center justify-between">
                 <span className="t-caption" style={{ color: 'var(--text)' }}>
-                  This city only
+                  {t('filters.thisCityOnly')}
                 </span>
-                <Toggle on={cityOnly} onChange={setCityOnly} label="This city only" />
+                <Toggle on={cityOnly} onChange={setCityOnly} label={t('filters.thisCityOnly')} />
               </div>
             </div>,
             0.08,
@@ -345,11 +376,11 @@ export default function FilterSheet({
 
           {toggleGroup(
             'relationship',
-            'Relationship type',
+            t('filters.groups.relationship'),
             <div className="flex flex-wrap gap-1.5">
               {RELTYPE_OPTIONS.map((o) => (
                 <Chip key={o} selected={relType.includes(o)} onClick={() => toggleIn(relType, setRelType, o)}>
-                  {o}
+                  {t(`filters.relTypeOptions.${RELTYPE_KEYS[o]}`)}
                 </Chip>
               ))}
             </div>,
@@ -358,11 +389,11 @@ export default function FilterSheet({
 
           {toggleGroup(
             'family',
-            'Family plans',
+            t('filters.groups.family'),
             <div className="flex flex-wrap gap-1.5">
               {FAMILY_OPTIONS.map((o) => (
                 <Chip key={o} selected={family.includes(o)} onClick={() => toggleIn(family, setFamily, o)}>
-                  {o}
+                  {t(`filters.familyOptions.${FAMILY_KEYS[o]}`)}
                 </Chip>
               ))}
             </div>,
@@ -371,29 +402,29 @@ export default function FilterSheet({
 
           {toggleGroup(
             'verified',
-            'Verified only',
+            t('filters.groups.verified'),
             <div className="flex items-center justify-between">
               <span className="t-caption" style={{ color: 'var(--text)' }}>
-                Show verified profiles only
+                {t('filters.showVerifiedOnly')}
               </span>
-              <Toggle on={verifiedOnly} onChange={setVerifiedOnly} label="Verified only" />
+              <Toggle on={verifiedOnly} onChange={setVerifiedOnly} label={t('filters.groups.verified')} />
             </div>,
             0.2,
           )}
 
           {/* premium-locked advanced row */}
-          <Group title="Politics" locked onLockedTap={onLockedTap} delay={0.24}>
+          <Group title={t('filters.groups.politics')} locked onLockedTap={onLockedTap} delay={0.24}>
             <div className="flex flex-wrap gap-1.5">
-              {['Liberal', 'Moderate', 'Conservative', 'Apolitical'].map((o) => (
-                <Chip key={o}>{o}</Chip>
+              {POLITICS_OPTIONS.map((o) => (
+                <Chip key={o}>{t(`filters.politicsOptions.${POLITICS_KEYS[o]}`)}</Chip>
               ))}
             </div>
           </Group>
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-3">
-          <BtnGhost onClick={reset}>Reset</BtnGhost>
-          <BtnPrimary onClick={apply}>Show people</BtnPrimary>
+          <BtnGhost onClick={reset}>{t('filters.reset')}</BtnGhost>
+          <BtnPrimary onClick={apply}>{t('filters.showPeople')}</BtnPrimary>
         </div>
       </div>
     </GlassSheet>

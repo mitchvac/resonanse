@@ -5,6 +5,7 @@ import {
   RoomEvent,
   type Participant,
 } from 'livekit-client';
+import { useTranslation } from 'react-i18next';
 import { trpc } from '@/providers/trpc';
 import { isMediaCaptureUnavailable, micErrorMessage } from '@/lib/cameraCheck';
 
@@ -41,6 +42,7 @@ export function useGameVoice({
   matchId: number | null;
   game: string;
 }) {
+  const { t } = useTranslation('games');
   const [state, setState] = useState<VoiceState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [micOn, setMicOn] = useState(true);
@@ -58,7 +60,7 @@ export function useGameVoice({
     room.remoteParticipants.forEach((p: Participant) => {
       list.push({
         identity: p.identity,
-        name: p.name || 'Player',
+        name: p.name || t('voice.player'),
         speaking: p.isSpeaking,
         micMuted: !p.isMicrophoneEnabled,
       });
@@ -150,7 +152,7 @@ export function useGameVoice({
           ? micErrorMessage()
           : e instanceof Error && e.message
             ? e.message
-            : "Couldn't start voice — try again.";
+            : t('voice.couldntStart');
       setError(msg);
       setState('error');
     }

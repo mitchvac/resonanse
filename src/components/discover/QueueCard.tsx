@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import VerifiedBadge from '@/components/discover/VerifiedBadge';
@@ -29,6 +30,7 @@ export default function QueueCard({
   /** Tap a specific prompt → like-with-comment composer */
   onComment?: (targetRef: string) => void;
 }) {
+  const { t } = useTranslation('discover');
   const photo = profile.photos?.[0] ?? '/avatar-01.jpg';
   const prompt = profile.prompts?.[0];
   const intents = (profile.desires ?? []).slice(0, 3);
@@ -37,7 +39,7 @@ export default function QueueCard({
     <article className="relative aspect-[4/5] w-full overflow-hidden rounded-[28px]">
       <img
         src={photo}
-        alt={`Photo of ${profile.displayName}`}
+        alt={t('common.photoOf', { name: profile.displayName })}
         className="absolute inset-0 h-full w-full object-cover"
         loading="lazy"
       />
@@ -47,7 +49,7 @@ export default function QueueCard({
       <button
         type="button"
         className="absolute inset-0 z-[1] cursor-pointer"
-        aria-label={`Open ${profile.displayName}'s profile`}
+        aria-label={t('common.openProfile', { name: profile.displayName })}
         onClick={onOpen}
       />
 
@@ -74,7 +76,7 @@ export default function QueueCard({
             <div className="flex shrink-0 flex-col items-center gap-0.5">
               <CompatibilityArc value={compatibility} animateKey={profile.id} />
               <span className="t-micro" style={{ color: 'var(--text)' }}>
-                COMPATIBLE
+                {t('common.compatibleWord')}
               </span>
             </div>
           </div>
@@ -93,7 +95,7 @@ export default function QueueCard({
               className="mt-3 block w-full rounded-[16px] p-3 text-left transition-colors duration-fast"
               style={{ background: 'var(--field)' }}
               onClick={() => onComment?.(prompt.question)}
-              aria-label={`Like with a comment on "${prompt.question}"`}
+              aria-label={t('queue.likeCommentAria', { question: prompt.question })}
             >
               <span className="t-micro block" style={{ color: 'var(--text-secondary)' }}>
                 {prompt.question}

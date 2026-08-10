@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import GlassSheet from '@/components/GlassSheet';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import type { QueueProfile } from '@/components/discover/types';
@@ -26,15 +27,17 @@ export default function CommentComposer({
   onSend: (action: 'like' | 'pulse', comment: string) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation('discover');
   const [comment, setComment] = useState('');
   const promptAnswer = profile?.prompts?.find((p) => p.question === targetQuestion);
 
   return (
     <GlassSheet open={open} onClose={onClose} labelledBy="composer-title">
       <div className="px-6 pb-8 pt-2">
-        <p className="t-eyebrow">Like with a comment</p>
+        <p className="t-eyebrow">{t('composer.eyebrow')}</p>
         <h3 id="composer-title" className="t-title-sm mt-1" style={{ color: 'var(--text)' }}>
-          {targetQuestion ?? `${profile?.displayName ?? 'Their'}'s profile`}
+          {targetQuestion ??
+            t('composer.theirProfile', { name: profile?.displayName ?? t('common.their') })}
         </h3>
         {promptAnswer && (
           <p
@@ -45,7 +48,7 @@ export default function CommentComposer({
           </p>
         )}
         <label htmlFor="composer-field" className="sr-only">
-          Your comment
+          {t('composer.yourComment')}
         </label>
         <textarea
           id="composer-field"
@@ -53,7 +56,7 @@ export default function CommentComposer({
           onChange={(e) => setComment(e.target.value)}
           maxLength={500}
           rows={3}
-          placeholder="Say something specific…"
+          placeholder={t('composer.placeholder')}
           className="t-value mt-4 w-full resize-none rounded-[16px] p-3.5 outline-none transition-colors duration-fast focus:ring-1 focus:ring-[var(--violet)]"
           style={{
             background: 'var(--field)',
@@ -70,7 +73,7 @@ export default function CommentComposer({
               setComment('');
             }}
           >
-            Send like
+            {t('composer.sendLike')}
           </BtnPrimary>
           <BtnGlass
             disabled={pending || comment.trim().length === 0 || pulsesLeft === 0}
@@ -79,7 +82,10 @@ export default function CommentComposer({
               setComment('');
             }}
           >
-            Send Pulse{pulsesLeft != null && pulsesLeft < 900 ? ` · ${pulsesLeft} left` : ''}
+            {t('composer.sendPulse')}
+            {pulsesLeft != null && pulsesLeft < 900
+              ? ` · ${t('composer.pulsesLeft', { count: pulsesLeft })}`
+              : ''}
           </BtnGlass>
         </div>
       </div>

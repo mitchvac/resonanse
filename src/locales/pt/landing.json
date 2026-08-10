@@ -1,0 +1,259 @@
+{
+  "hero": {
+    "eyebrow": "Namoro, sem ruído",
+    "title": "Menos deslizar. Mais encontros.",
+    "subtitle": "Uma fila diária de 5–10 pessoas escolhidas por intenção mútua — não um baralho infinito feito para manter você solteiro e rolando a tela.",
+    "getStarted": "Começar",
+    "seeHow": "Veja como funciona ↓",
+    "caption": "Grátis para começar · Comunidade com foto verificada · Todos os gêneros, todas as estruturas",
+    "offerAria": "Oferta para membros fundadores: 10.000 Date Coins",
+    "offerMeta": "Resonance · oferta de fundador",
+    "offerGrows": "Cresce a cada ano",
+    "offerTitle": "10.000 Date Coins",
+    "offerFor": "Para os nossos primeiros 100.000 membros fundadores",
+    "offerDesc": "Um desconto que cresce a cada ano que você passa com a gente.",
+    "offerPill": "Exclusivo para membros fundadores"
+  },
+  "problem": {
+    "eyebrow": "O problema",
+    "heading": "Baralhos infinitos. Intenções misturadas. Conversas mortas.",
+    "body": "Os apps antigos lucram com a sua solidão. Volume em vez de qualidade, paywalls em vez de resultados e uma economia de swipe que recompensa nunca se encontrar.",
+    "stat1": { "suffix": " min", "label": "DESLIZANDO / DIA" },
+    "stat2": { "suffix": "%", "label": "MATCH → ENCONTRO" },
+    "stat3": { "static": "1 em 2", "label": "SENTEM-SE PIOR" }
+  },
+  "loop": {
+    "eyebrow": "O ciclo Resonance",
+    "heading": "Quatro passos. Uma direção: o mundo real.",
+    "step1": {
+      "title": "Diga o que você procura",
+      "body": "Sério, casual, explorar, ENM, amizade — declarado desde o início, combinado pela reciprocidade."
+    },
+    "step2": {
+      "title": "Receba sua fila diária",
+      "body": "5–10 perfis selecionados. Compatibilidade, intenções alinhadas e sinais reais de comportamento."
+    },
+    "step3": {
+      "title": "Mande sinal, não spam",
+      "body": "Likes limitados. Comente nos prompts. Gaste um Pulse quando alguém realmente importa."
+    },
+    "step4": {
+      "title": "Encontre-se na vida real",
+      "body": "Sugestões de conversa com IA, ideias de encontros e um ciclo We Met que afina seus matches continuamente."
+    }
+  },
+  "modes": {
+    "eyebrow": "Modos",
+    "heading": "Um app, todas as formas de se encontrar",
+    "tierFree": "GRÁTIS",
+    "tapForDetails": "{{title}} — toque para detalhes",
+    "queue": {
+      "title": "Fila diária",
+      "caption": "Suas 5–10 melhores chances de algo real. Renova ao meio-dia.",
+      "bullet1": "Seleção por intenção + compatibilidade",
+      "bullet2": "Renova ao meio-dia",
+      "bullet3": "Filtros e critérios eliminatórios incluídos"
+    },
+    "swipe": {
+      "title": "Swipe clássico",
+      "caption": "Modo volume, quando você quiser. Os filtros de intenção continuam ativos.",
+      "bullet1": "Acesso ao baralho completo",
+      "bullet2": "Filtros de intenção sempre ativos",
+      "bullet3": "Os mesmos likes limitados"
+    },
+    "nearby": {
+      "title": "Perto de você",
+      "caption": "Tempo real, local, agora.",
+      "bullet1": "Grade local ao vivo",
+      "bullet2": "Destaque por atividade",
+      "bullet3": "As mesmas regras de segurança"
+    },
+    "events": {
+      "title": "Eventos",
+      "caption": "Confirme presença e encontre pessoalmente, sem pressão.",
+      "bullet1": "Eventos locais selecionados",
+      "bullet2": "Veja quem mais vai",
+      "bullet3": "Formatos em grupo primeiro"
+    },
+    "travel": {
+      "title": "Viagem",
+      "caption": "Mude de cidade antes de pousar.",
+      "bullet1": "Defina seu destino com antecedência",
+      "bullet2": "Sua fila se prepara na chegada",
+      "bullet3": "Ideias de encontros locais prontas"
+    }
+  },
+  "outcomes": {
+    "alt": "Um casal rindo à mesa de um pequeno café à noite",
+    "eyebrow": "Resultados, não engajamento",
+    "heading": "A métrica que otimizamos é o seu primeiro encontro.",
+    "body": "Nosso ciclo We Met pergunta como foi — e cada resposta deixa a próxima fila mais certeira.",
+    "stats": "68% match→conversa · 31% conversa→encontro · 4,6★ qualidade dos matches (grupo beta)"
+  },
+  "safety": {
+    "eyebrow": "Segurança e intenção",
+    "heading": "Segurança não é uma página de configurações.",
+    "body": "Verificação, consentimento e denúncia são interface de primeira classe — visíveis onde você navega, dá match e conversa. Nunca enterrados três menus abaixo.",
+    "rows": {
+      "verification": {
+        "title": "Verificação de foto",
+        "body": "Selfie obrigatória + verificação ao vivo. Sem selo, sem navegação."
+      },
+      "screenshots": {
+        "title": "Alertas de captura de tela",
+        "body": "Se alguém capturar seu chat ou suas fotos, você fica sabendo."
+      },
+      "hiddenWords": {
+        "title": "Palavras ocultas",
+        "body": "Filtre as frases que você nunca quer receber."
+      },
+      "anonymity": {
+        "title": "Modo anônimo",
+        "body": "Navegue sem ser visto até decidir aparecer."
+      },
+      "scam": {
+        "title": "Defesa contra golpes com IA",
+        "body": "Padrões de golpe romântico sinalizados antes de chegarem a você."
+      },
+      "consent": {
+        "title": "Ferramentas de consentimento",
+        "body": "Formas claras, no app, de definir e respeitar limites."
+      }
+    }
+  },
+  "testimonials": {
+    "eyebrow": "Primeiros sinais",
+    "heading": "Pessoas que pararam de deslizar",
+    "headshotAlt": "Foto de {{name}}",
+    "q1": { "quote": "O limite diário pareceu restritivo por um dia. Depois, virou alívio." },
+    "q2": { "quote": "Os prompts fizeram o que minhas cantadas nunca conseguiram. Nos encontramos em cinco dias." },
+    "q3": { "quote": "O primeiro app em que dizer minha intenção de cara não assustou ninguém — atraiu as pessoas certas." }
+  },
+  "pricing": {
+    "eyebrow": "Preços",
+    "heading": "Grátis de verdade. Plus é poder. X são asas.",
+    "body": "Resonance funciona sem pagar. Resonance+ e Resonance X adicionam profundidade para quem quer mais sinal, mais alcance e mais lugares.",
+    "tierFree": "GRÁTIS",
+    "free": {
+      "title": "Comece com intenção",
+      "features": "Fila diária · Likes limitados · Segurança completa · RSVP em eventos"
+    },
+    "plus": {
+      "title": "Sinal mais profundo",
+      "features": "Veja quem curtiu você · Mais Pulses · Filtros avançados · Perto de você"
+    },
+    "x": {
+      "title": "Vá a qualquer lugar",
+      "features": "Tudo do + · Modo viagem · Posicionamento prioritário · Eventos exclusivos X"
+    },
+    "compare": "Comparar planos →"
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "heading": "Perguntas justas",
+    "q1": {
+      "q": "O Resonance é grátis?",
+      "a": "Sim. A fila diária, os likes limitados, as mensagens, os eventos e toda a segurança são grátis para sempre. Resonance+ e X adicionam conveniência e alcance — nunca a segurança essencial."
+    },
+    "q2": {
+      "q": "Por que um limite diário?",
+      "a": "Porque atenção é o ingrediente. Uma fila pequena significa que cada perfil é lido, cada like tem valor e o app pode otimizar para encontros em vez de tempo de tela."
+    },
+    "q3": {
+      "q": "Como funciona a verificação de foto?",
+      "a": "No cadastro, você tira uma selfie e passa por uma rápida verificação ao vivo. Membros verificados ganham um selo; contas não verificadas não podem navegar nem ser vistas. Leva menos de um minuto."
+    },
+    "q4": {
+      "q": "O que é um Pulse?",
+      "a": "Um Pulse é um superlike com peso. Ele fixa você no topo da grade Likes You da pessoa, com um sublinhado violeta. Eles são propositalmente raros — membros grátis recebem alguns por semana."
+    },
+    "q5": {
+      "q": "Quais modos são grátis?",
+      "a": "Fila diária, Swipe clássico e Eventos são grátis. Perto de você é Resonance+. O modo Viagem é Resonance X. Filtros e critérios eliminatórios são grátis em todos os modos."
+    }
+  },
+  "finalCta": {
+    "heading": "Sua fila abre amanhã ao meio-dia.",
+    "body": "Monte seu perfil hoje à noite. Acorde com pessoas que valem a pena conhecer.",
+    "button": "Crie seu perfil",
+    "caption": "Grátis para começar · Leva dois minutos · Verificação de foto obrigatória",
+    "share": "Compartilhe com um amigo que precisa disso"
+  },
+  "login": {
+    "welcome": "Boas-vindas",
+    "kimi": "Entrar com Kimi",
+    "google": "Continuar com Google"
+  },
+  "signIn": {
+    "oauthGoogleNotConfigured": "O login com Google ainda não está disponível — use e-mail ou Kimi.",
+    "oauthGoogleFailed": "O login com Google não foi concluído. Tente de novo ou use e-mail ou Kimi.",
+    "titleIn": "Que bom ver você de volta.",
+    "titleUp": "Crie sua conta.",
+    "subtitleIn": "Continue de onde parou.",
+    "subtitleUp": "Um jeito mais tranquilo de conhecer gente que vale a pena.",
+    "tabAria": "Entrar ou criar conta",
+    "tabIn": "Entrar",
+    "tabUp": "Criar conta",
+    "nameLabel": "Nome",
+    "namePlaceholder": "Seu primeiro nome",
+    "emailLabel": "E-mail",
+    "passwordLabel": "Senha",
+    "passwordHint": "Pelo menos 8 caracteres",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
+    "forgot": "Esqueceu a senha?",
+    "pending": "Um momento…",
+    "or": "ou",
+    "continueKimi": "Continuar com Kimi",
+    "continueGoogle": "Continuar com Google",
+    "errors": {
+      "nameRequired": "Conte para nós o seu nome",
+      "emailInvalid": "Digite um e-mail válido",
+      "passwordShort": "Pelo menos 8 caracteres",
+      "passwordRequired": "Digite sua senha"
+    }
+  },
+  "forgotPassword": {
+    "title": "Esqueceu sua senha?",
+    "subtitle": "Digite seu e-mail e enviaremos um link de redefinição.",
+    "emailLabel": "E-mail",
+    "send": "Enviar link",
+    "sending": "Enviando…",
+    "emailInvalid": "Digite um e-mail válido",
+    "sentTitle": "Verifique sua caixa de entrada.",
+    "sentBody": "Se existir uma conta com esse e-mail, um link de redefinição está a caminho. Ele expira em 30 minutos.",
+    "backToSignIn": "Voltar para entrar"
+  },
+  "resetPassword": {
+    "title": "Escolha uma nova senha.",
+    "subtitle": "Pelo menos 8 caracteres.",
+    "newLabel": "Nova senha",
+    "confirmLabel": "Confirme a nova senha",
+    "submit": "Redefinir senha",
+    "updating": "Atualizando…",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
+    "errors": {
+      "passwordShort": "Pelo menos 8 caracteres",
+      "confirmMismatch": "As senhas não coincidem"
+    },
+    "invalidTitle": "Este link não é válido.",
+    "invalidBody": "Este link de redefinição é inválido ou expirou. Peça um novo e nós o enviaremos para sua caixa de entrada.",
+    "requestNew": "Pedir um novo link",
+    "doneTitle": "Senha atualizada.",
+    "doneBody": "Sua senha foi redefinida. Entre com sua nova senha.",
+    "goToSignIn": "Ir para entrar",
+    "backToSignIn": "Voltar para entrar"
+  },
+  "authLayout": {
+    "signInTitle": "Entre para continuar",
+    "signInBody": "O acesso a este painel requer autenticação. Continue para iniciar o login.",
+    "signIn": "Entrar",
+    "toggleNav": "Alternar navegação",
+    "navigation": "Navegação",
+    "page1": "Página 1",
+    "page2": "Página 2",
+    "signOut": "Sair",
+    "menu": "Menu"
+  }
+}

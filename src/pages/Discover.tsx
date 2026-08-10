@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { MapPin, SlidersHorizontal, X } from 'lucide-react';
@@ -73,6 +74,7 @@ function countdownToNoon(): string {
 }
 
 export default function Discover() {
+  const { t } = useTranslation('discover');
   const reduced = useReducedMotion();
   const utils = trpc.useUtils();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -154,7 +156,7 @@ export default function Discover() {
     if (entry) {
       setSheetEntry(entry);
     } else {
-      setToast({ id: Date.now(), message: "That profile isn't in your queue anymore" });
+      setToast({ id: Date.now(), message: t('toasts.profileGone') });
     }
     setSearchParams({}, { replace: true });
   }, [profileParam, queueQuery.isLoading, queueQuery.isError, entries, setSearchParams]);
@@ -193,33 +195,33 @@ export default function Discover() {
       }
       // gestures must never feel dead — every send gets a confirmation
       if (input.action === 'wave') {
-        setToast({ id: Date.now(), message: 'You waved — they’ll see it in their Likes.' });
+        setToast({ id: Date.now(), message: t('toasts.waveSent') });
       } else if (input.action === 'flower') {
         setToast({
           id: Date.now(),
           message:
             input.targetRef === 'dozen'
-              ? 'A dozen roses are on their way, card and all.'
-              : 'Your rose is on its way — with the card attached.',
+              ? t('toasts.dozenSent')
+              : t('toasts.roseSent'),
         });
       } else if (input.action === 'kiss') {
-        setToast({ id: Date.now(), message: 'Kiss sent — bold move. They’ll see it in their Likes.' });
+        setToast({ id: Date.now(), message: t('toasts.kissSent') });
       }
     },
     onError: (error, input) => {
       if (error.data?.code !== 'FORBIDDEN') {
-        setToast({ id: Date.now(), message: "Couldn't send — check your connection and try again." });
+        setToast({ id: Date.now(), message: t('toasts.sendFailed') });
         return;
       }
       if (input.action === 'pulse') setOutOfPulses(true);
       else if (input.action === 'flower') {
         if (input.targetRef === 'dozen') {
-          setToast({ id: Date.now(), message: 'One dozen a day — save it for someone who stops your heart.' });
+          setToast({ id: Date.now(), message: t('toasts.dozenLimit') });
         } else setOutOfFlowers(true);
       } else if (input.action === 'kiss') {
-        setToast({ id: Date.now(), message: "You're out of kisses for today — they reset at midnight." });
+        setToast({ id: Date.now(), message: t('toasts.outOfKisses') });
       } else if (input.action === 'wave') {
-        setToast({ id: Date.now(), message: "That's a lot of hellos — waves reset at midnight." });
+        setToast({ id: Date.now(), message: t('toasts.waveLimit') });
       } else setOutOfLikes(true);
     },
   });
@@ -290,7 +292,7 @@ export default function Discover() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              aria-label="Filters"
+              aria-label={t('a11y.filters')}
               onClick={() => setFiltersOpen(true)}
               className="glass flex h-10 min-h-[44px] w-10 min-w-[44px] items-center justify-center rounded-full"
             >
@@ -300,7 +302,7 @@ export default function Discover() {
             </button>
             <button
               type="button"
-              aria-label="Travel mode"
+              aria-label={t('a11y.travelMode')}
               onClick={() => setTravelOpen(true)}
               className="glass flex h-10 min-h-[44px] w-10 min-w-[44px] items-center justify-center rounded-full"
             >
@@ -314,7 +316,8 @@ export default function Discover() {
           options={MODES}
           value={mode}
           onChange={setMode}
-          ariaLabel="Discovery mode"
+          ariaLabel={t('a11y.discoveryMode')}
+          labelFor={(m) => t(`modes.${m.toLowerCase()}`)}
           className="mt-3"
         />
       </header>
@@ -368,7 +371,7 @@ export default function Discover() {
             countdown={countdownToNoon()}
           />
         ) : mode === 'Swipe' ? (
-          <section aria-label="Swipe mode">
+          <section aria-label={t('a11y.swipeMode')}>
             {swipeEntries.length > 0 ? (
               <>
                 <SwipeDeck
@@ -425,13 +428,13 @@ export default function Discover() {
           animate={{ opacity: 1, y: 0 }}
         >
           <span className="glass-content t-caption flex items-center gap-2" style={{ color: 'var(--text)' }}>
-            Browsing {travelCity} · Travel mode
+            {t('travel.browsing', { city: travelCity })}
             <button
               type="button"
               className="underline"
               onClick={() => setTravelOpen(true)}
             >
-              Change
+              {t('travel.change')}
             </button>
           </span>
         </motion.div>
@@ -481,7 +484,7 @@ export default function Discover() {
       {/* the rose moment — one rose or a dozen, with a card */}
       <RoseSheet
         open={!!roseEntry}
-        name={roseEntry?.profile.displayName.split(' ')[0] ?? 'them'}
+        name={roseEntry?.profile.displayName.split(' ')[0] ?? t('common.them')}
         flowersLeft={flowersLeft}
         dozenLeft={dozenLeft}
         pending={swipeMutation.isPending}
@@ -521,9 +524,9 @@ export default function Discover() {
       {/* Travel city-search sheet — free users see the GateCard state */}
       <GlassSheet open={travelOpen} onClose={() => setTravelOpen(false)} labelledBy="travel-title">
         <div className="px-6 pb-8 pt-2">
-          <p className="t-eyebrow">Travel mode</p>
+          <p className="t-eyebrow">{t('travel.eyebrow')}</p>
           <h3 id="travel-title" className="t-title-sm mt-1" style={{ color: 'var(--text)' }}>
-            Browse another city
+            {t('travel.title')}
           </h3>
           {isPremium ? (
             <div className="mt-4 flex flex-wrap gap-1.5">
@@ -535,7 +538,7 @@ export default function Discover() {
                     setTravelOpen(false);
                   }}
                 >
-                  ← Back to my city
+                  {t('travel.backToMyCity')}
                 </Chip>
               )}
               {['Lisbon', 'Tokyo', 'Berlin', 'Mexico City', 'London', 'New York'].map((city) => (
@@ -554,9 +557,9 @@ export default function Discover() {
           ) : (
             <GateCard
               className="mt-4"
-              title="Travel with Resonance+"
-              caption="Set your location anywhere before you land. Your queue follows you."
-              ctaLabel="Unlock Travel"
+              title={t('travel.gateTitle')}
+              caption={t('travel.gateCaption')}
+              ctaLabel={t('travel.gateCta')}
             />
           )}
         </div>
@@ -566,12 +569,12 @@ export default function Discover() {
       <GlassSheet open={outOfLikes} onClose={() => setOutOfLikes(false)} labelledBy="out-of-likes">
         <div className="px-6 pb-8 pt-2">
           <h3 id="out-of-likes" className="sr-only">
-            You're out of likes for today
+            {t('gates.outOfLikesTitle')}
           </h3>
           <GateCard
-            title="You're out of likes for today"
-            caption="Resonance+ removes the daily cap — and your queue refreshes at noon."
-            ctaLabel="Get Resonance+"
+            title={t('gates.outOfLikesTitle')}
+            caption={t('gates.outOfLikesCaption')}
+            ctaLabel={t('gates.getPlus')}
           />
           <div className="mt-3 flex justify-center">
             <button
@@ -583,7 +586,7 @@ export default function Discover() {
                 setMode('Queue');
               }}
             >
-              Back to Queue
+              {t('gates.backToQueue')}
             </button>
           </div>
         </div>
@@ -593,12 +596,12 @@ export default function Discover() {
       <GlassSheet open={outOfFlowers} onClose={() => setOutOfFlowers(false)} labelledBy="out-of-flowers">
         <div className="px-6 pb-8 pt-2">
           <h3 id="out-of-flowers" className="sr-only">
-            You're out of flowers for today
+            {t('gates.outOfFlowersTitle')}
           </h3>
           <GateCard
-            title="You're out of flowers for today"
-            caption="Free members send 3 flowers a day. Resonance+ grows an unlimited garden — and flowers always land unblurred."
-            ctaLabel="Get Resonance+"
+            title={t('gates.outOfFlowersTitle')}
+            caption={t('gates.outOfFlowersCaption')}
+            ctaLabel={t('gates.getPlus')}
           />
         </div>
       </GlassSheet>
@@ -607,12 +610,12 @@ export default function Discover() {
       <GlassSheet open={outOfPulses} onClose={() => setOutOfPulses(false)} labelledBy="out-of-pulses">
         <div className="px-6 pb-8 pt-2">
           <h3 id="out-of-pulses" className="sr-only">
-            You're out of Pulses
+            {t('gates.outOfPulsesTitle')}
           </h3>
           <GateCard
-            title="You're out of Pulses"
-            caption="A Pulse pins you at the top of their Likes with a note — grab a pack and keep the signal strong."
-            ctaLabel="Get Pulses"
+            title={t('gates.outOfPulsesTitle')}
+            caption={t('gates.outOfPulsesCaption')}
+            ctaLabel={t('gates.getPulses')}
           />
           <div className="mt-3 flex justify-center">
             <button
@@ -621,7 +624,7 @@ export default function Discover() {
               style={{ color: 'var(--text)' }}
               onClick={() => setOutOfPulses(false)}
             >
-              Not now
+              {t('gates.notNow')}
             </button>
           </div>
         </div>
@@ -631,12 +634,12 @@ export default function Discover() {
       <GlassSheet open={lockedFilterGate} onClose={() => setLockedFilterGate(false)} labelledBy="locked-filter">
         <div className="px-6 pb-8 pt-2">
           <h3 id="locked-filter" className="sr-only">
-            Advanced filters
+            {t('gates.advancedFiltersSr')}
           </h3>
           <GateCard
-            title="Advanced filters are Resonance+"
-            caption="Politics, languages, zodiac and more — zero in on what matters."
-            ctaLabel="Unlock advanced filters"
+            title={t('gates.advancedFiltersTitle')}
+            caption={t('gates.advancedFiltersCaption')}
+            ctaLabel={t('gates.unlockAdvancedFilters')}
           />
         </div>
       </GlassSheet>
@@ -708,18 +711,19 @@ function QueueMode({
   onTrySwipe: () => void;
   countdown: string;
 }) {
+  const { t } = useTranslation('discover');
   const exhausted = queueIndex >= entries.length;
 
   return (
-    <section aria-label="Daily Resonance Queue">
+    <section aria-label={t('a11y.dailyQueue')}>
       {/* §1 header block */}
-      <p className="t-eyebrow">Your queue · refreshes at noon</p>
+      <p className="t-eyebrow">{t('queue.eyebrow')}</p>
       <div className="mt-1 flex items-baseline justify-between gap-3">
         <h1 className="t-heading" style={{ color: 'var(--text-ink)' }}>
-          {entries.length} people. Chosen well.
+          {t('queue.heading', { count: entries.length })}
         </h1>
         <span className="t-micro shrink-0" style={{ color: 'var(--text-secondary)' }}>
-          NEW QUEUE IN {countdown}
+          {t('queue.newQueueIn', { countdown })}
         </span>
       </div>
 
@@ -743,22 +747,24 @@ function QueueMode({
                   className="h-14 w-14 shrink-0 rounded-full object-cover"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="t-eyebrow">Most compatible today</p>
+                  <p className="t-eyebrow">{t('queue.mostCompatible')}</p>
                   <p className="t-title-sm mt-0.5" style={{ color: 'var(--text)' }}>
                     {mostCompatible.profile.displayName}, {mostCompatible.profile.age}
                   </p>
                   <p className="t-caption line-clamp-1" style={{ color: 'var(--text-secondary)' }}>
                     {mostCompatible.profile.prompts?.[0]
-                      ? `You both answered '${mostCompatible.profile.prompts[0].question.replace(/…$/, '')}' the same way.`
-                      : 'Your answers resonate.'}
+                      ? t('queue.bothAnswered', {
+                          question: mostCompatible.profile.prompts[0].question.replace(/…$/, ''),
+                        })
+                      : t('queue.answersResonate')}
                   </p>
                 </div>
                 <BtnPrimary className="h-9 px-4 text-[13px]" onClick={() => onOpenEntry(mostCompatible)}>
-                  View
+                  {t('queue.view')}
                 </BtnPrimary>
                 <button
                   type="button"
-                  aria-label="Dismiss"
+                  aria-label={t('a11y.dismiss')}
                   onClick={onDismissBanner}
                   className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full"
                   style={{ background: 'var(--field)', color: 'var(--text)' }}
@@ -790,7 +796,7 @@ function QueueMode({
             ref={railRef}
             className="no-scrollbar -mx-5 mt-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5"
             role="group"
-            aria-label="Queue cards"
+            aria-label={t('a11y.queueCards')}
             onScroll={(e) => {
               const rail = e.currentTarget;
               const slide = rail.querySelector<HTMLElement>(':scope > div');
@@ -871,6 +877,7 @@ function EmptyQueue({
   travelCity?: string | null;
   onClearTravel?: () => void;
 }) {
+  const { t } = useTranslation('discover');
   /* Filters active but nothing matched — say so honestly instead of the
      generic "that's today's queue" (which reads like the app is empty). */
   if (travelCity) {
@@ -878,14 +885,14 @@ function EmptyQueue({
       <div className="flex flex-col items-center px-6 py-14 text-center">
         <BrandMark size={56} />
         <h2 className="t-title-sm mt-5" style={{ color: 'var(--text-ink)' }}>
-          No one in {travelCity} yet.
+          {t('empty.travelTitle', { city: travelCity })}
         </h2>
         <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-          This city is still growing. Turn off Travel mode to see people near you.
+          {t('empty.travelBody')}
         </p>
         {onClearTravel && (
           <BtnGlass className="mt-6" onClick={onClearTravel}>
-            Turn off Travel mode
+            {t('empty.turnOffTravel')}
           </BtnGlass>
         )}
       </div>
@@ -895,41 +902,43 @@ function EmptyQueue({
     <div className="flex flex-col items-center px-6 py-14 text-center">
       <BrandMark size={56} />
       <h2 className="t-title-sm mt-5" style={{ color: 'var(--text-ink)' }}>
-        That's today's queue.
+        {t('empty.queueTitle')}
       </h2>
       <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-        Seven people, chosen well — never a slot machine.
+        {t('empty.queueBody')}
       </p>
       <BtnGlass className="mt-6" onClick={onTrySwipe}>
-        Try Swipe mode
+        {t('empty.trySwipe')}
       </BtnGlass>
       <span className="t-micro mt-4" style={{ color: 'var(--text-secondary)' }}>
-        NEW QUEUE IN {countdown}
+        {t('queue.newQueueIn', { countdown })}
       </span>
     </div>
   );
 }
 
 function LoadError({ onRetry }: { onRetry: () => void }) {
+  const { t } = useTranslation('discover');
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">
       <BrandMark size={56} />
       <h2 className="t-title-sm mt-5" style={{ color: 'var(--text-ink)' }}>
-        Couldn't load your queue.
+        {t('error.loadQueueTitle')}
       </h2>
       <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-        Check your connection and try again.
+        {t('error.body')}
       </p>
       <BtnGlass className="mt-6" onClick={onRetry}>
-        Retry
+        {t('error.retry')}
       </BtnGlass>
     </div>
   );
 }
 
 function DiscoverSkeleton() {
+  const { t } = useTranslation('discover');
   return (
-    <div aria-label="Loading your queue" role="status">
+    <div aria-label={t('a11y.loadingQueue')} role="status">
       <div className="skeleton-shimmer h-3 w-44 rounded-full bg-field" />
       <div className="skeleton-shimmer mt-2 h-8 w-56 rounded-[12px] bg-field" />
       <div className="skeleton-shimmer mt-4 aspect-[4/5] w-full rounded-[28px] bg-field" />

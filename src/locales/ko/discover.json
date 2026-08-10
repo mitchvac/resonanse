@@ -1,0 +1,340 @@
+{
+  "common": {
+    "them": "상대",
+    "themCap": "상대",
+    "someone": "누군가",
+    "member": "회원",
+    "profile": "프로필",
+    "their": "상대",
+    "photoOf": "{{name}}의 사진",
+    "openProfile": "{{name}}의 프로필 열기",
+    "noPhoto": "{{name}}(사진 없음)",
+    "photoHidden": "{{name}}(사진 숨김)",
+    "leftToday": "오늘 {{count}}번 남음",
+    "compatible": "궁합 {{value}}",
+    "compatibleCap": "궁합 {{value}}",
+    "compatibleWord": "궁합",
+    "more": "더 보기",
+    "less": "접기"
+  },
+  "modes": {
+    "queue": "큐",
+    "swipe": "스와이프",
+    "nearby": "근처"
+  },
+  "preview": {
+    "auto": "자동",
+    "free": "무료",
+    "label": "데모 미리보기",
+    "a11y": "등급 미리보기"
+  },
+  "a11y": {
+    "filters": "필터",
+    "travelMode": "여행 모드",
+    "discoveryMode": "발견 모드",
+    "swipeMode": "스와이프 모드",
+    "dailyQueue": "오늘의 Resonance 큐",
+    "queueCards": "큐 카드",
+    "dismiss": "닫기",
+    "loadingQueue": "큐를 불러오는 중",
+    "loadingLikes": "좋아요를 불러오는 중",
+    "verifiedProfile": "인증된 프로필",
+    "activeNow": "지금 활동 중",
+    "nearby": "근처",
+    "pulsesReceived": "받은 Pulse",
+    "rosesReceived": "받은 장미",
+    "wavesReceived": "받은 손인사",
+    "kissesReceived": "받은 키스",
+    "peopleWhoLikedYou": "나를 좋아한 사람들"
+  },
+  "queue": {
+    "eyebrow": "내 큐 · 정오에 새로고침",
+    "heading": "{{count}}명. 잘 골랐어요.",
+    "newQueueIn": "새 큐까지 {{countdown}}",
+    "mostCompatible": "오늘 가장 잘 맞는 사람",
+    "bothAnswered": "「{{question}}」에 둘 다 똑같이 답했어요.",
+    "answersResonate": "두 분의 답변이 공명해요.",
+    "view": "보기",
+    "likeCommentAria": "「{{question}}」에 댓글과 함께 좋아요"
+  },
+  "nearby": {
+    "micro": "내 주변에서 일어나는 일 · 실시간"
+  },
+  "travel": {
+    "browsing": "{{city}} 보는 중 · 여행 모드",
+    "change": "변경",
+    "eyebrow": "여행 모드",
+    "title": "다른 도시 둘러보기",
+    "backToMyCity": "← 내 도시로 돌아가기",
+    "gateTitle": "Resonance+와 여행해요",
+    "gateCaption": "도착하기 전에 어디든 위치를 설정하세요. 큐가 따라다녀요.",
+    "gateCta": "여행 잠금 해제"
+  },
+  "gates": {
+    "outOfLikesTitle": "오늘의 좋아요를 다 썼어요",
+    "outOfLikesCaption": "Resonance+는 하루 제한이 없어요. 큐는 정오에 새로고침돼요.",
+    "getPlus": "Resonance+ 시작하기",
+    "backToQueue": "큐로 돌아가기",
+    "outOfFlowersTitle": "오늘의 꽃을 다 썼어요",
+    "outOfFlowersCaption": "무료 회원은 하루 3송이를 보낼 수 있어요. Resonance+는 무제한 정원이에요. 꽃은 언제나 흐림 없이 도착해요.",
+    "outOfPulsesTitle": "Pulse를 다 썼어요",
+    "outOfPulsesCaption": "Pulse는 메모와 함께 상대의 좋아요 맨 위에 고정돼요. 팩을 구매해 신호를 강하게 유지하세요.",
+    "getPulses": "Pulse 구매",
+    "notNow": "나중에요",
+    "advancedFiltersSr": "고급 필터",
+    "advancedFiltersTitle": "고급 필터는 Resonance+ 전용이에요",
+    "advancedFiltersCaption": "정치, 언어, 별자리까지 — 중요한 것에 집중하세요.",
+    "unlockAdvancedFilters": "고급 필터 잠금 해제",
+    "unlockWithPlus": "Resonance+로 잠금 해제",
+    "seeWhoTitle": "이미 나에게 빠진 사람 보기",
+    "seeWhoCaption": "모든 좋아요를 선명하게 보고, 궁합순으로 정리하고, Pulse도 놓치지 마세요.",
+    "sortGateSr": "궁합순 정렬",
+    "sortGateTitle": "중요한 기준으로 정렬해요",
+    "sortGateCaption": "궁합, 최신순, 거리 — 정렬은 Resonance+ 기능이에요."
+  },
+  "empty": {
+    "travelTitle": "{{city}}에는 아직 아무도 없어요.",
+    "travelBody": "이 도시는 아직 성장 중이에요. 여행 모드를 끄면 근처 사람들을 볼 수 있어요.",
+    "turnOffTravel": "여행 모드 끄기",
+    "queueTitle": "오늘의 큐는 여기까지예요.",
+    "queueBody": "일곱 명, 정성껏 골랐어요. 슬롯머신이 아니에요.",
+    "trySwipe": "스와이프 모드 해보기"
+  },
+  "error": {
+    "loadQueueTitle": "큐를 불러오지 못했어요.",
+    "loadLikesTitle": "좋아요를 불러오지 못했어요.",
+    "body": "연결을 확인하고 다시 시도해 주세요.",
+    "retry": "다시 시도"
+  },
+  "toasts": {
+    "waveSent": "손을 흔들었어요. 상대의 좋아요에 보여요.",
+    "dozenSent": "장미 한 다발이 카드와 함께 가고 있어요.",
+    "roseSent": "장미가 카드와 함께 가고 있어요.",
+    "kissSent": "키스를 보냈어요. 과감하네요. 상대의 좋아요에 보여요.",
+    "sendFailed": "보내지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+    "dozenLimit": "한 다발은 하루 한 번. 심장을 멈추게 할 사람에게 아껴두세요.",
+    "outOfKisses": "오늘의 키스를 다 썼어요. 자정에 리셋돼요.",
+    "waveLimit": "인사가 많네요. 손인사는 자정에 리셋돼요.",
+    "profileGone": "그 프로필은 더 이상 큐에 없어요",
+    "passedQuietly": "조용히 넘겼어요. 상대는 몰라요.",
+    "usedUp": "오늘치는 다 썼어요.",
+    "linkCopied": "프로필 링크를 복사했어요.",
+    "reportSent": "신고를 보냈어요. 팀에서 검토할게요.",
+    "blocked": "{{name}}님을 차단했어요. 상대에게 알림이 가지 않아요."
+  },
+  "likes": {
+    "header": "나를 좋아해요",
+    "countPeople": "{{count}}명",
+    "countPulses": "PULSE {{count}}개",
+    "countRoses": "장미 {{count}}송이",
+    "countWaves": "손인사 {{count}}번",
+    "countKisses": "키스 {{count}}번",
+    "sort": "정렬",
+    "sortGateA11y": "정렬 — Resonance+ 기능",
+    "sortA11y": "좋아요 정렬",
+    "firstLikeTitle": "첫 좋아요가 오고 있어요.",
+    "firstLikeBody": "좋아요는 만료되지 않아요. 누군가 공명하면 여기에 도착해요.",
+    "boostProfile": "프로필 부스트",
+    "someoneLikedPrompt": "누군가 내 질문 「{{ref}}」을 좋아해요",
+    "someoneLikedPhoto": "누군가 내 두 번째 사진을 좋아해요",
+    "someoneLikedProfile": "누군가 내 프로필을 좋아해요",
+    "peopleWhoLikedYou": "나를 좋아한 사람들",
+    "moreLikesA11y": "좋아요 {{count}}개 더 — 잠금 해제해서 보기",
+    "footerNote": "좋아요는 만료되지 않아요. Pulse를 보낸 사람은 항상 맨 위에 보여요.",
+    "howPulsesWork": "Pulse 작동 방식"
+  },
+  "rails": {
+    "pulsesReceived": "받은 Pulse",
+    "rosesReceived": "받은 장미",
+    "wavesReceived": "손인사를 건넨 사람",
+    "kissesReceived": "받은 키스",
+    "labels": {
+      "pulse": "PULSE",
+      "dozenRoses": "장미 한 다발",
+      "rose": "장미 한 송이",
+      "wave": "손인사",
+      "kiss": "키스"
+    }
+  },
+  "context": {
+    "waved": "손인사를 건넸어요",
+    "kiss": "키스를 보냈어요",
+    "dozenRoses": "장미 한 다발을 보냈어요",
+    "rose": "장미 한 송이를 보냈어요",
+    "likedAnswer": "내 답변 「{{ref}}」을 좋아해요",
+    "likedPhoto": "내 사진을 좋아해요",
+    "likedProfile": "내 프로필을 좋아해요"
+  },
+  "teaser": {
+    "someoneLikesYou": "누군가 나를 좋아해요",
+    "summary": "{{context}} · {{km}}km 거리 · {{compatibility}}",
+    "body": "Resonance+는 이 좋아요를 포함해 모든 좋아요를 선명하게 보여줘요."
+  },
+  "explainer": {
+    "title": "Pulse 작동 방식",
+    "body1": "Pulse는 메모가 달린 좋아요예요. \"당신의 이 부분이 좋아요\"를 전하는 가장 확실한 방법이죠. Pulse는 절대 흐려지지 않고 항상 이 페이지 맨 위에 고정돼요.",
+    "body2": "프로필의 Pulse 버튼에서 보내세요. Pulse에 좋아요로 답하면 바로 매치예요."
+  },
+  "quickActions": {
+    "fallbackTitle": "빠른 작업",
+    "likeBack": "좋아요 답장",
+    "passQuietly": "조용히 넘기기"
+  },
+  "sort": {
+    "title": "좋아요 정렬",
+    "orderA11y": "정렬 순서",
+    "options": {
+      "compatibility": "궁합",
+      "mostRecent": "최신순",
+      "nearby": "가까운 순",
+      "newestMembers": "새 회원"
+    }
+  },
+  "gestures": {
+    "respondTo": "{{name}}에게 답하기",
+    "waveBackAria": "{{name}}에게 손인사 답하기 — 안녕하세요 전해요",
+    "waveSayHi": "손인사 — 안녕하세요 전해요",
+    "sendRosesTo": "{{name}}에게 장미 보내기",
+    "sendRosesToLeft": "{{name}}에게 장미 보내기 — 오늘 {{count}}송이 남음",
+    "sendRoses": "장미 보내기",
+    "sendRosesLeft": "장미 보내기 — 오늘 {{count}}송이 남음",
+    "sendKissTo": "{{name}}에게 키스 보내기",
+    "sendKissToLeft": "{{name}}에게 키스 보내기 — 오늘 {{count}}번 남음",
+    "sendKiss": "키스 보내기",
+    "sendKissLeft": "키스 보내기 — 오늘 {{count}}번 남음",
+    "likeBack": "좋아요 답장",
+    "likeBackTo": "{{name}}에게 좋아요 답장",
+    "pass": "넘기기",
+    "like": "좋아요",
+    "sendPulse": "Pulse 보내기"
+  },
+  "dock": {
+    "unlimitedLikes": "RESONANCE+ 좋아요 무제한",
+    "likesLeft": "오늘 좋아요 {{count}}번 남음",
+    "sendRosesCount": "장미 보내기({{count}}송이 남음)",
+    "sendKissCount": "키스 보내기({{count}}번 남음)",
+    "sendPulseCount": "Pulse 보내기({{count}}번 남음)"
+  },
+  "roseSheet": {
+    "sentDozenTitle": "장미 한 다발이 가고 있어요",
+    "sentSingleTitle": "장미가 가고 있어요",
+    "sentBody": "{{name}}에게 카드와 함께 도착해요.",
+    "eyebrow": "마음을 전해요",
+    "title": "{{name}}에게 장미 보내기",
+    "subtitle": "진짜 장미에 카드를 달아요.",
+    "sendOneAria": "장미 한 송이 보내기",
+    "sendDozenAria": "장미 한 다발 보내기",
+    "oneRose": "장미 한 송이",
+    "dozen": "장미 한 다발",
+    "noneLeft": "오늘은 다 보냈어요",
+    "theClassic": "변하지 않는 클래식",
+    "backTomorrow": "내일 다시 와요",
+    "dozenPerDay": "하루 {{count}}번 — 가장 큰 마음",
+    "grandGesture": "가장 큰 마음",
+    "altOneRose": "선물 카드가 달린 긴 줄기 빨간 장미 한 송이",
+    "altDozen": "선물 카드가 달린 빨간 장미 열두 송이 꽃다발"
+  },
+  "composer": {
+    "eyebrow": "댓글과 함께 좋아요",
+    "theirProfile": "{{name}}의 프로필",
+    "yourComment": "내 댓글",
+    "placeholder": "구체적으로 말해보세요…",
+    "sendLike": "좋아요 보내기",
+    "sendPulse": "Pulse 보내기",
+    "pulsesLeft": "{{count}}번 남음"
+  },
+  "filters": {
+    "title": "필터",
+    "dealbreaker": "필수 조건",
+    "dealbreakerNote": "필수 조건에 맞지 않는 사람은 모든 모드에서 숨겨져요.",
+    "makeDealbreaker": "필수 조건으로",
+    "removeDealbreaker": "필수 조건 해제",
+    "lockedAria": "{{title}} — Resonance+ 필터",
+    "groups": {
+      "intent": "목적",
+      "age": "나이",
+      "distance": "거리",
+      "relationship": "관계 형태",
+      "family": "가족 계획",
+      "verified": "인증 회원만",
+      "politics": "정치"
+    },
+    "intentOptions": {
+      "serious": "진지해요",
+      "casual": "가볍게",
+      "explore": "알아가는 중",
+      "friendship": "친구",
+      "enm": "ENM"
+    },
+    "relTypeOptions": {
+      "monogamous": "일부일처",
+      "nonMonogamous": "비일부일처",
+      "openToBoth": "둘 다 가능"
+    },
+    "familyOptions": {
+      "wantKids": "아이 원해요",
+      "open": "열린 마음",
+      "noKids": "아이 없어요",
+      "haveKids": "아이 있어요"
+    },
+    "politicsOptions": {
+      "liberal": "진보",
+      "moderate": "중도",
+      "conservative": "보수",
+      "apolitical": "무관심"
+    },
+    "minAge": "최소 나이",
+    "maxAge": "최대 나이",
+    "maxDistance": "최대 거리",
+    "withinKm": "{{km}}km 이내",
+    "thisCityOnly": "이 도시만",
+    "showVerifiedOnly": "인증된 프로필만 보기",
+    "reset": "초기화",
+    "showPeople": "사람 보기"
+  },
+  "match": {
+    "title": "매치됐어요",
+    "body": "{{name}}님과 서로 좋아했어요.",
+    "cta": "첫 메시지 보내기",
+    "keepBrowsing": "계속 둘러보기",
+    "yourPhoto": "내 사진",
+    "you": "나"
+  },
+  "profileSheet": {
+    "photoAlt": "{{name}}의 사진 {{index}}",
+    "photoDot": "사진 {{index}}",
+    "activeToday": "오늘 활동함",
+    "lifestyle": "라이프스타일",
+    "share": "공유",
+    "shareAria": "프로필 공유",
+    "reportBlock": "신고 / 차단",
+    "reportBlockAria": "신고 또는 차단"
+  },
+  "safety": {
+    "title": "신고 또는 차단",
+    "reportName": "{{name}} 신고",
+    "reasonA11y": "신고 사유",
+    "cancel": "취소",
+    "sending": "보내는 중…",
+    "sendReport": "신고 보내기",
+    "blockName": "{{name}} 차단",
+    "blockNote": "조용하고 즉각적이에요. 상대에게 알림이 가지 않아요.",
+    "blocking": "차단 중…",
+    "block": "차단",
+    "reasons": {
+      "spam": "스팸",
+      "abuse": "욕설·괴롭힘",
+      "fake": "가짜",
+      "under18": "18세 미만",
+      "other": "기타"
+    }
+  },
+  "swipe": {
+    "like": "좋아요",
+    "nope": "넘김",
+    "pulse": "PULSE"
+  },
+  "likeTile": {
+    "blurredAria": "누군가 나를 좋아해요 — 궁합 {{value}}. 누군지 잠금 해제해서 보세요."
+  }
+}

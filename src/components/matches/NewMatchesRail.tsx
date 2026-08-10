@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import LightTrail from '@/components/LightTrail';
@@ -79,11 +80,12 @@ export default function NewMatchesRail({
   onOpen: (entry: MatchEntry) => void;
   onRemove: (entry: MatchEntry) => void;
 }) {
+  const { t } = useTranslation('connect');
   const cells = entries.length + 1; // + "Your turn" tile
   const railWidth = cells * 72 + (cells - 1) * 16;
 
   return (
-    <section aria-label="New matches">
+    <section aria-label={t('matches.newMatches')}>
       <div className="no-scrollbar overflow-x-auto px-5 pb-1">
         <div className="relative" style={{ width: railWidth }}>
           {/* Light-trail thread beneath the avatars (§1) */}
@@ -112,11 +114,11 @@ export default function NewMatchesRail({
                   {entries.length}
                 </span>
                 <span className="t-micro" style={{ color: 'var(--text)' }}>
-                  YOUR TURN
+                  {t('matches.yourTurn')}
                 </span>
               </div>
               <span className="t-caption" style={{ color: 'var(--text-secondary)' }}>
-                Say hi first
+                {t('matches.sayHiFirst')}
               </span>
             </motion.div>
 
@@ -141,7 +143,7 @@ export default function NewMatchesRail({
                     type="button"
                     onClick={() => onOpen(entry)}
                     className="flex w-full flex-col items-center gap-1.5"
-                    aria-label={`Say hi to ${name} — ${Math.round(100 - pct)}% of 48 hours left`}
+                    aria-label={t('matches.sayHiTo', { name, percent: Math.round(100 - pct) })}
                   >
                     <span className="relative h-[72px] w-[72px]">
                       <ExpiryRing pct={pct} index={i + 1} />
@@ -160,7 +162,7 @@ export default function NewMatchesRail({
                     type="button"
                     onClick={() => onRemove(entry)}
                     className="absolute -right-2 -top-2 flex h-11 w-11 items-start justify-end"
-                    aria-label={`Remove ${name}`}
+                    aria-label={t('matches.removeName', { name })}
                   >
                     <span
                       className="flex h-6 w-6 items-center justify-center rounded-full"
@@ -181,7 +183,7 @@ export default function NewMatchesRail({
         </div>
       </div>
       <p className="t-caption mt-2 px-5" style={{ color: 'var(--text-secondary)' }}>
-        Say hi within 48h — momentum matters
+        {t('matches.momentum')}
       </p>
     </section>
   );

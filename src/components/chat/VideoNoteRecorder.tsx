@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AlertTriangle, RotateCcw, SendHorizontal, X } from 'lucide-react';
 import { trpc } from '@/providers/trpc';
@@ -58,6 +59,7 @@ export default function VideoNoteRecorder({
   onSent: (message: ChatMessage) => void;
   onToast: (text: string) => void;
 }) {
+  const { t } = useTranslation('connect');
   const reduced = useReducedMotion();
   const [phase, setPhase] = useState<Phase>('camera');
   const [lowRes, setLowRes] = useState(false);
@@ -203,10 +205,10 @@ export default function VideoNoteRecorder({
           setLowRes(true);
           discardBlob();
           setPhase('camera');
-          onToast('That clip was too large — re-recording at a lower resolution.');
+          onToast(t('videoNote.toastTooLarge'));
         } else {
           setPhase('preview');
-          onToast('Still too large — try a shorter clip.');
+          onToast(t('videoNote.toastStillTooLarge'));
         }
         return;
       }
@@ -219,7 +221,7 @@ export default function VideoNoteRecorder({
       onClose();
     } catch {
       setPhase('preview');
-      onToast("Couldn't send the video note.");
+      onToast(t('videoNote.toastSendError'));
     }
   };
 
@@ -237,7 +239,7 @@ export default function VideoNoteRecorder({
           transition={{ duration: 0.24 }}
           role="dialog"
           aria-modal="true"
-          aria-label="Record a video note"
+          aria-label={t('videoNote.dialogAria')}
         >
           {/* Header */}
           <div
@@ -248,13 +250,13 @@ export default function VideoNoteRecorder({
               type="button"
               onClick={onClose}
               className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-white/85"
-              aria-label="Close video note recorder"
+              aria-label={t('videoNote.closeAria')}
             >
               <X size={20} aria-hidden="true" />
             </button>
-            <p className="t-title-sm flex-1 text-white">Video note</p>
+            <p className="t-title-sm flex-1 text-white">{t('videoNote.title')}</p>
             <span className="t-micro rounded-full px-2.5 py-1 text-white/75 ring-1 ring-white/25">
-              LIVE CAMERA
+              {t('videoNote.liveCamera')}
             </span>
           </div>
 
@@ -313,12 +315,12 @@ export default function VideoNoteRecorder({
                   <button
                     type="button"
                     onClick={startRecording}
-                    aria-label="Start recording"
+                    aria-label={t('videoNote.startRecording')}
                     className="flex h-[72px] w-[72px] items-center justify-center rounded-full border-[3px] border-white transition-transform duration-fast active:scale-95"
                   >
                     <span className="h-[52px] w-[52px] rounded-full" style={{ background: 'var(--violet)' }} />
                   </button>
-                  <p className="t-caption text-white/60">Up to {MAX_SEC} seconds</p>
+                  <p className="t-caption text-white/60">{t('videoNote.upTo', { count: MAX_SEC })}</p>
                 </>
               )}
 
@@ -326,7 +328,7 @@ export default function VideoNoteRecorder({
                 <button
                   type="button"
                   onClick={stopRecording}
-                  aria-label="Stop recording"
+                  aria-label={t('videoNote.stopRecording')}
                   className="flex h-[72px] w-[72px] items-center justify-center rounded-full border-[3px] border-white transition-transform duration-fast active:scale-95"
                 >
                   <motion.span
@@ -348,11 +350,11 @@ export default function VideoNoteRecorder({
                     className="h-11 px-5"
                   >
                     <RotateCcw size={15} aria-hidden="true" />
-                    Re-record
+                    {t('videoNote.rerecord')}
                   </DarkSurfaceBtn>
                   <BtnPrimary onClick={() => void send()} disabled={phase === 'sending'} className="h-11 px-6">
                     <SendHorizontal size={15} aria-hidden="true" />
-                    {phase === 'sending' ? 'Sending…' : 'Send'}
+                    {phase === 'sending' ? t('videoNote.sending') : t('videoNote.send')}
                   </BtnPrimary>
                 </div>
               )}
@@ -362,7 +364,7 @@ export default function VideoNoteRecorder({
                   <AlertTriangle size={26} style={{ color: '#FFC95C' }} aria-hidden="true" />
                   <p className="t-body text-white/85">{cameraErrorMessage()}</p>
                   <DarkSurfaceBtn onClick={() => setRetryTick((t) => t + 1)} className="h-11 px-5">
-                    Retry
+                    {t('videoNote.retry')}
                   </DarkSurfaceBtn>
                 </div>
               )}
@@ -374,7 +376,7 @@ export default function VideoNoteRecorder({
             className={cn('t-caption px-8 text-center text-white/55')}
             style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))' }}
           >
-            Recorded live in-app — no uploads, no filters.
+            {t('videoNote.honestCaption')}
           </p>
         </motion.div>
       )}

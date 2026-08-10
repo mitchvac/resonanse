@@ -1,0 +1,417 @@
+{
+  "common": {
+    "back": "Retour",
+    "cancel": "Annuler",
+    "loadingSettings": "Chargement des réglages"
+  },
+  "language": {
+    "title": "Langue",
+    "caption": "Tout le site change : menus, boutons, tout."
+  },
+  "topBar": {
+    "settings": "Réglages"
+  },
+  "sections": {
+    "appearance": "Apparence",
+    "language": "Langue",
+    "discovery": "Découverte",
+    "notifications": "Notifications",
+    "privacySafety": "Confidentialité et sécurité",
+    "aiMatching": "IA et matching",
+    "accountSupport": "Compte et assistance"
+  },
+  "theme": {
+    "systemName": "Système ({{name}})",
+    "nightHud": "Night HUD",
+    "warmGlass": "Warm Glass",
+    "caption": "La scène refleurit dès que tu changes.",
+    "ariaLabel": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "systemOption": "Système"
+  },
+  "rows": {
+    "reduceMotion": {
+      "title": "Réduire les animations",
+      "caption": "Reprend le réglage de ton système ; le remplace ici quand c'est activé."
+    },
+    "reduceTransparency": {
+      "title": "Réduire la transparence",
+      "caption": "Les surfaces en verre deviennent opaques. Reprend le réglage de ton système quand c'est désactivé."
+    },
+    "location": {
+      "title": "Services de localisation",
+      "captionOn": "Jamais affichée exactement.",
+      "captionOff": "Désactivés dans les réglages système — active-les pour voir les gens à proximité."
+    },
+    "maxDistance": {
+      "title": "Distance max",
+      "caption": "Jusqu'où s'étend ta file.",
+      "aria": "Distance maximale en kilomètres",
+      "format": "{{value}} km"
+    },
+    "ageRange": {
+      "title": "Tranche d'âge",
+      "caption": "Qui apparaît dans ta file."
+    },
+    "showMe": {
+      "title": "Montre-moi",
+      "caption": "Choisis toutes les personnes que tu veux rencontrer.",
+      "women": "Femmes",
+      "men": "Hommes",
+      "nonbinary": "Non-binaire"
+    },
+    "globalTravel": {
+      "title": "Monde / Voyages",
+      "caption": "Rencontre des gens dans d'autres villes."
+    },
+    "womenFirst": {
+      "title": "Les femmes/non-hommes écrivent en premier",
+      "caption": "Quand c'est activé, les matchs attendent ton premier pas.",
+      "aria": "Les femmes et non-hommes écrivent en premier"
+    },
+    "dealbreakers": {
+      "title": "Critères rédhibitoires",
+      "caption": "Filtres stricts pour ta file."
+    },
+    "notificationsMaster": {
+      "title": "Notifications",
+      "caption": "Interrupteur principal pour tout ce qui suit.",
+      "aria": "Toutes les notifications"
+    },
+    "quietHours": {
+      "title": "Heures calmes",
+      "captionOn": "{{from}} – {{to}} · seuls les rappels de rendez-vous passent.",
+      "captionOff": "Désactivé — programme une plage où seuls les rappels de rendez-vous passent."
+    },
+    "photoVerification": {
+      "title": "Vérification des photos",
+      "captionVerified": "Vérifié — ton badge est visible.",
+      "captionNotVerified": "Pas encore vérifié.",
+      "verified": "Vérifié",
+      "reverify": "Re-vérifier"
+    },
+    "anonymity": {
+      "title": "Mode anonyme",
+      "ariaActive": "Anonymat actif",
+      "caption": "Invisible pour tous sauf les personnes que tu aimes. Les likes peuvent ralentir."
+    },
+    "hiddenWords": {
+      "title": "Mots masqués",
+      "captionMuted": "{{count}} masqués : {{words}}",
+      "captionMutedMore": "{{count}} masqués : {{words}}…",
+      "captionEmpty": "Les messages qui les contiennent sont filtrés vers un dossier masqué."
+    },
+    "screenshot": {
+      "title": "Alertes de captures d'écran",
+      "caption": "Tu es prévenu quand quelqu'un capture tes photos ou ton chat."
+    },
+    "ephemeral": {
+      "title": "Éphémère par défaut",
+      "caption": "Démarre les nouveaux chats en mode disparition 24 h."
+    },
+    "blocked": {
+      "title": "Comptes bloqués",
+      "captionCount": "{{count}} bloqués",
+      "captionEmpty": "Gère les personnes que tu as bloquées."
+    },
+    "download": {
+      "title": "Télécharger mes données",
+      "captionBusy": "Préparation de l'export…",
+      "caption": "Export RGPD/CCPA — téléchargé instantanément en JSON."
+    },
+    "deleteAccount": {
+      "title": "Supprimer le compte",
+      "caption": "Ton profil, tes matchs et tes messages sont supprimés."
+    },
+    "privacyPolicy": "Politique de confidentialité",
+    "cookiePreferences": "Préférences de cookies",
+    "aiStarters": {
+      "title": "Amorces IA",
+      "caption": "Premières phrases suggérées sur les nouveaux matchs."
+    },
+    "aiCoaching": {
+      "title": "Coaching IA",
+      "caption": "Retours sur ton profil et tes messages, adaptés à tes objectifs."
+    },
+    "weMet": {
+      "title": "Utiliser mes retours We Met",
+      "caption": "Tes bilans après rendez-vous apprennent à l'algorithme ce qui marche pour toi.",
+      "aria": "Utiliser les retours We Met"
+    },
+    "resetMatching": {
+      "title": "Réinitialiser l'historique de matching",
+      "caption": "Efface les préférences apprises. Ton profil reste."
+    },
+    "membership": {
+      "title": "Abonnement",
+      "upgrade": "Passer au niveau supérieur"
+    },
+    "wallet": {
+      "title": "Portefeuille",
+      "caption": "Solde Date-Coin, clés et interrupteur de l'écosystème."
+    },
+    "restorePurchases": {
+      "title": "Restaurer les achats",
+      "captionBusy": "Recherche des achats…"
+    },
+    "helpCenter": "Centre d'aide",
+    "communityGuidelines": "Règles de la communauté",
+    "safetyResources": {
+      "title": "Ressources de sécurité",
+      "caption": "Lignes d'écoute et aide d'experts, quand tu en as besoin."
+    },
+    "logout": "Se déconnecter"
+  },
+  "notifications": {
+    "itemAria": "Notifications : {{label}}",
+    "items": {
+      "newLikes": {
+        "title": "Nouveaux likes",
+        "caption": "Quand quelqu'un t'aime."
+      },
+      "matches": {
+        "title": "Matchs",
+        "caption": "Quand un like devient réciproque."
+      },
+      "messages": {
+        "title": "Messages",
+        "caption": "Nouveaux messages de chat."
+      },
+      "queueDrop": {
+        "title": "Nouvelle file",
+        "caption": "Chaque jour à midi, quand ta nouvelle file arrive."
+      },
+      "events": {
+        "title": "Événements",
+        "caption": "Réponses aux invitations et nouveaux événements près de chez toi."
+      },
+      "dateReminders": {
+        "title": "Rappels de rendez-vous",
+        "caption": "Petits rappels avant un rendez-vous prévu."
+      }
+    }
+  },
+  "hiddenWords": {
+    "title": "Mots masqués",
+    "intro": "Les messages qui les contiennent sont filtrés vers un dossier masqué que tu peux consulter.",
+    "empty": "Pas encore de mots masqués.",
+    "placeholder": "Ajoute un mot ou une phrase",
+    "inputAria": "Ajouter un mot ou une phrase masqué",
+    "addAria": "Ajouter un mot masqué",
+    "add": "Ajouter",
+    "hint": "Touche le × d'une pastille pour la retirer. Le filtrage est silencieux — les expéditeurs ne sont pas prévenus."
+  },
+  "blocked": {
+    "title": "Comptes bloqués",
+    "intro": "Les personnes bloquées ne peuvent ni te voir, ni te liker, ni t'écrire.",
+    "emptyTitle": "Aucun compte bloqué",
+    "emptyBody": "Si tu bloques quelqu'un, il apparaîtra ici.",
+    "memberFallback": "Membre",
+    "nearbyFallback": "À proximité",
+    "profileUnavailable": "Profil indisponible",
+    "unblock": "Débloquer",
+    "sheetTitle": "Débloquer cette personne ?",
+    "sheetBody": "Elle pourra revoir ton profil et t'écrire à nouveau. Tu peux la rebloquer à tout moment.",
+    "keepBlocked": "Garder bloquée"
+  },
+  "sheets": {
+    "anonymity": {
+      "title": "Activer le mode anonyme ?",
+      "p1": "Tu seras invisible pour tous, sauf pour les personnes que tu aimes.",
+      "p2": "Le compromis honnête : moins de gens te voient, donc les likes peuvent ralentir.",
+      "p3": "Tu peux revenir en arrière à tout moment — rien d'autre ne change.",
+      "confirm": "Activer l'anonymat",
+      "cancel": "Pas maintenant"
+    },
+    "quiet": {
+      "title": "Heures calmes",
+      "body": "Seuls les rappels de rendez-vous passent pendant les heures calmes.",
+      "on": "Heures calmes activées",
+      "toggleAria": "Heures calmes activées",
+      "from": "De",
+      "to": "À",
+      "save": "Enregistrer les heures calmes"
+    },
+    "reset": {
+      "title": "Réinitialiser l'historique de matching ?",
+      "body": "Cela efface ce que Resonance a appris de tes likes, tes passes et tes bilans We Met. Ton profil, tes matchs et tes messages restent.",
+      "hold": "Maintenir pour réinitialiser",
+      "holding": "Relâche quand c'est plein…",
+      "keep": "Garder mon historique"
+    },
+    "delete": {
+      "pausedTitle": "Compte en pause",
+      "pausedP1": "Tu n'apparaîtras dans la file de personne.",
+      "pausedP2": "Ton profil, tes matchs et tes messages sont exactement là où tu les as laissés.",
+      "resume": "Réactiver mon compte",
+      "continueDelete": "Continuer vers la suppression",
+      "continueAria": "Continuer vers la suppression du compte",
+      "beforeTitle": "Avant de partir",
+      "beforeP1": "Supprimer enlève ton profil, tes matchs, tes messages et tes Pulses. C'est irréversible.",
+      "beforeP2": "Si tu as juste besoin d'une pause, la mise en pause te cache sans rien perdre.",
+      "pauseInstead": "Plutôt mettre en pause",
+      "title": "Supprimer ton compte ?",
+      "deletedTitle": "Compte supprimé",
+      "deletedBody": "Tout a disparu. Merci pour le temps passé ici — nous espérons que tu as rencontré quelqu'un qui en valait la peine.",
+      "backToSignIn": "Retour à la connexion",
+      "lastStep": "Dernière étape. Maintiens en bas pour supprimer définitivement ton compte.",
+      "hold": "Maintenir pour supprimer le compte",
+      "holding": "Suppression…"
+    },
+    "safety": {
+      "title": "Ressources de sécurité",
+      "body": "Gratuit, confidentiel, 24 h/24 et 7 j/7. Tu n'as rien à affronter seul.",
+      "rainnCaption": "Ligne nationale d'aide aux victimes d'agressions sexuelles — 1-800-656-4673",
+      "crisisCaption": "Envoie HOME au 741741 — conseillers formés, pour toute crise",
+      "emergency": "En danger immédiat ? Appelle d'abord le numéro d'urgence local."
+    },
+    "help": {
+      "title": "Centre d'aide",
+      "body": "Un centre d'aide avec recherche arrive bientôt. D'ici là, « Télécharger mes données » et les outils de sécurité ci-dessus couvrent les demandes les plus fréquentes — et les ressources de sécurité sont toujours à un toucher.",
+      "emailSupport": "Contacter le support",
+      "emailCaption": "support@resonanse.app — réponse sous un jour ouvré",
+      "gotIt": "Compris"
+    }
+  },
+  "tiers": {
+    "free": "Gratuit"
+  },
+  "footer": "RESONANCE 1.0.0 · CONÇU POUR SE RENCONTRER DANS LA VRAIE VIE.",
+  "toasts": {
+    "quietSet": "Heures calmes définies — de {{from}} à {{to}}.",
+    "deleteError": "Impossible de supprimer ton compte — vérifie ta connexion et réessaie.",
+    "resetDone": "Ton historique de file a été réinitialisé.",
+    "resetError": "Impossible de réinitialiser ton historique de file — réessaie.",
+    "ephemeralOn": "Les nouveaux chats disparaîtront après 24 heures.",
+    "ephemeralOff": "Les nouveaux chats sont de nouveau permanents.",
+    "pauseError": "Impossible de mettre ton compte en pause — réessaie.",
+    "resumeError": "Impossible de réactiver — réessaie.",
+    "welcomeBack": "Bon retour — tu es de nouveau visible dans les files.",
+    "exportDone": "Ton export de données a été téléchargé sous resonance-data.json.",
+    "exportError": "Impossible d'exporter tes données — vérifie ta connexion et réessaie.",
+    "premiumRestored": "Achats restaurés — tu as Resonance+",
+    "noPurchase": "Aucun achat précédent trouvé",
+    "restoreError": "Impossible de vérifier les achats — réessaie.",
+    "anonymityOn": "Anonymat activé — seules les personnes que tu aimes peuvent te voir.",
+    "anonymityOff": "Anonymat désactivé — tu es de nouveau visible dans les files.",
+    "unblocked": "Débloqué. Cette personne peut réapparaître dans ta file.",
+    "hiddenWordAdded": "Les messages contenant ces mots seront signalés dans tes chats.",
+    "womenFirstOn": "Les matchs attendront ton premier message.",
+    "womenFirstOff": "Chacun peut écrire en premier."
+  },
+  "profile": {
+    "title": "Toi",
+    "settingsAria": "Réglages",
+    "shareAria": "Partager ton profil",
+    "loadingAria": "Chargement du profil",
+    "mainPhotoAlt": "Photo principale du profil de {{name}}",
+    "strengthLabel": "FORCE DU PROFIL {{pct}}%",
+    "strengthAria": "Force du profil {{pct}} pour cent",
+    "hiddenFromNonMatches": "Invisible pour les non-matchs",
+    "verificationPending": "Vérification en cours — on te prévient dès qu'elle est examinée.",
+    "idVerified": "Identité vérifiée ✓",
+    "verifyId": "Vérifie ton identité",
+    "verifyIdHint": "Scanné dans le navigateur — jamais conservé",
+    "editProfile": "Modifier le profil",
+    "previewAsOthers": "Voir comme les autres te voient",
+    "yourPhotos": "Tes photos",
+    "editPhotoAria": "Modifier la photo {{n}}",
+    "photoAria": "Photo {{n}}",
+    "photoAlt": "Photo de profil {{n}}",
+    "mainTag": "PRINCIPALE",
+    "addPhotoAria": "Ajouter une photo",
+    "thisWeek": "Cette semaine",
+    "matchesMicro": "MATCHS",
+    "likesMicro": "LIKES REÇUS",
+    "inLikesTab": "Dans ton onglet Likes",
+    "datesMicro": "RENDEZ-VOUS",
+    "datesGoal": "/{{goal}} objectif",
+    "met": "Rencontrés",
+    "photoInsightsAria": "Statistiques photo — fonctionnalité Resonance+",
+    "photoInsights": "Statistiques photo",
+    "photoInsightsCaption": "Vois quelles photos rapportent des likes.",
+    "photoPerformance": "Performance des photos",
+    "topTag": "TOP",
+    "photoTip": "La photo 3 (randonnée) surperforme de 2,4× — pense à la mettre en principale.",
+    "makeMain": "Mettre en principale",
+    "performanceGate": "La performance des photos est une fonctionnalité Resonance+ — vois exactement quelles photos rapportent tes likes.",
+    "upgrade": "Passer au niveau supérieur",
+    "upgradeAria": "Passer à Resonance+",
+    "datingGoal": "Objectif de rencontres",
+    "datesPerWeek_one": "{{count}} rendez-vous par semaine",
+    "datesPerWeek_other": "{{count}} rendez-vous par semaine",
+    "onTrack": "Dans les temps — 4 semaines d'affilée.",
+    "streakAria": "Série de {{done}} semaines sur {{total}} affichées",
+    "retakeReflections": "Refaire les Reflections",
+    "lastTaken": "FAIT IL Y A 3 SEMAINES — LES REFAIRE AMÉLIORE TA FILE",
+    "accountSection": "Compte",
+    "membership": "Abonnement",
+    "pulses": "Pulses",
+    "pulsesLeft": "{{count}} restants",
+    "wallet": "Portefeuille",
+    "setUpDateCoin": "Configurer Date-Coin",
+    "ecosystemOn": "Écosystème activé",
+    "ecosystemOff": "Écosystème désactivé",
+    "verificationStatus": "Statut de vérification",
+    "verified": "Vérifié",
+    "pending": "En attente",
+    "notVerified": "Non vérifié",
+    "constellation": "Constellation",
+    "linkedPartners_one": "{{count}} partenaire lié",
+    "linkedPartners_other": "{{count}} partenaires liés",
+    "linkPartner": "Lier un partenaire",
+    "notificationPrefs": "Préférences de notifications",
+    "toasts": {
+      "linkCopied": "Lien du profil copié.",
+      "linkCopyError": "Impossible de copier le lien — copie plutôt la barre d'adresse.",
+      "photoAdded": "Photo ajoutée.",
+      "photoUpdated": "Photo mise à jour.",
+      "photoSaveError": "Impossible d'enregistrer cette photo — réessaie.",
+      "photoRemoved": "Photo supprimée.",
+      "photoRemoveError": "Impossible de supprimer cette photo — réessaie.",
+      "goalSaved": "Objectif hebdomadaire enregistré."
+    },
+    "addPhotoSheet": {
+      "title": "Ajouter une photo",
+      "camera": "Appareil photo",
+      "cameraHint": "Prends-en une maintenant",
+      "library": "Galerie",
+      "libraryHint": "Choisis parmi tes photos"
+    },
+    "editPhotoSheet": {
+      "title": "Options de la photo",
+      "replace": "Remplacer",
+      "takeNew": "En prendre une nouvelle",
+      "remove": "Supprimer"
+    },
+    "goalSheet": {
+      "title": "Objectif de rencontres hebdomadaire",
+      "body": "On rythme ta file et tes rappels autour de ça. Les petits objectifs comptent aussi.",
+      "decreaseAria": "Diminuer l'objectif hebdomadaire",
+      "increaseAria": "Augmenter l'objectif hebdomadaire",
+      "save": "Enregistrer l'objectif"
+    },
+    "previewSheet": {
+      "title": "Comment les autres te voient",
+      "alt": "Aperçu de la carte de profil de {{name}}",
+      "bioFallback": "Là pour du vrai — un café d'abord, une rando ensuite.",
+      "cardNote": "C'est la carte sur laquelle les gens de ta file swipent.",
+      "done": "Terminé"
+    }
+  },
+  "profileSetup": {
+    "toasts": {
+      "draftSaveError": "Impossible d'enregistrer ton brouillon sur cet appareil — garde cet onglet ouvert.",
+      "photosSaveError": "Impossible d'enregistrer tes photos — réessaie.",
+      "saveError": "Échec de l'enregistrement — ton brouillon est en sécurité sur cet appareil."
+    },
+    "missingPhotos_one": "Ajoute encore {{count}} photo (4 minimum)",
+    "missingPhotos_other": "Ajoute encore {{count}} photos (4 minimum)",
+    "missingSentences_one": "Termine encore {{count}} phrase (3 minimum)",
+    "missingSentences_other": "Termine encore {{count}} phrases (3 minimum)",
+    "continue": "Continuer",
+    "publish": "Publier mon profil",
+    "preview": "Aperçu"
+  }
+}

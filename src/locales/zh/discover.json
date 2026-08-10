@@ -1,0 +1,340 @@
+{
+  "common": {
+    "them": "对方",
+    "themCap": "对方",
+    "someone": "神秘人",
+    "member": "会员",
+    "profile": "主页",
+    "their": "对方",
+    "photoOf": "{{name}}的照片",
+    "openProfile": "打开{{name}}的主页",
+    "noPhoto": "{{name}}（无照片）",
+    "photoHidden": "{{name}}（照片已隐藏）",
+    "leftToday": "今天还剩 {{count}} 次",
+    "compatible": "契合度 {{value}}",
+    "compatibleCap": "契合度 {{value}}",
+    "compatibleWord": "契合度",
+    "more": "展开",
+    "less": "收起"
+  },
+  "modes": {
+    "queue": "推荐",
+    "swipe": "滑卡",
+    "nearby": "附近"
+  },
+  "preview": {
+    "auto": "自动",
+    "free": "免费版",
+    "label": "演示预览",
+    "a11y": "会员等级预览"
+  },
+  "a11y": {
+    "filters": "筛选",
+    "travelMode": "旅行模式",
+    "discoveryMode": "发现模式",
+    "swipeMode": "滑卡模式",
+    "dailyQueue": "每日共鸣推荐",
+    "queueCards": "推荐卡片",
+    "dismiss": "关闭",
+    "loadingQueue": "正在加载你的推荐",
+    "loadingLikes": "正在加载喜欢",
+    "verifiedProfile": "已认证用户",
+    "activeNow": "当前在线",
+    "nearby": "附近",
+    "pulsesReceived": "收到的 Pulse",
+    "rosesReceived": "收到的玫瑰",
+    "wavesReceived": "收到的招呼",
+    "kissesReceived": "收到的亲亲",
+    "peopleWhoLikedYou": "喜欢你的人"
+  },
+  "queue": {
+    "eyebrow": "你的推荐 · 每天中午更新",
+    "heading": "{{count}} 位有缘人，精心挑选。",
+    "newQueueIn": "新一批推荐还有 {{countdown}}",
+    "mostCompatible": "今日最契合",
+    "bothAnswered": "你们对「{{question}}」的回答不谋而合。",
+    "answersResonate": "你们的答案产生共鸣。",
+    "view": "查看",
+    "likeCommentAria": "对「{{question}}」带评论点赞"
+  },
+  "nearby": {
+    "micro": "附近正在发生 · 实时更新"
+  },
+  "travel": {
+    "browsing": "正在浏览{{city}} · 旅行模式",
+    "change": "更换",
+    "eyebrow": "旅行模式",
+    "title": "浏览其他城市",
+    "backToMyCity": "← 回到我的城市",
+    "gateTitle": "与 Resonance+ 一起旅行",
+    "gateCaption": "落地前就把位置定到任何地方，你的推荐跟着你走。",
+    "gateCta": "解锁旅行"
+  },
+  "gates": {
+    "outOfLikesTitle": "今天的喜欢用完了",
+    "outOfLikesCaption": "Resonance+ 取消每日上限，而且你的推荐每天中午更新。",
+    "getPlus": "开通 Resonance+",
+    "backToQueue": "返回推荐",
+    "outOfFlowersTitle": "今天的花用完了",
+    "outOfFlowersCaption": "免费会员每天可送 3 朵花。Resonance+ 给你一座无限花园，而且花送达时从不模糊。",
+    "outOfPulsesTitle": "你的 Pulse 用完了",
+    "outOfPulsesCaption": "Pulse 会附上一句话，把你置顶到对方的喜欢列表——来一包，让信号持续满格。",
+    "getPulses": "获取 Pulse",
+    "notNow": "先不了",
+    "advancedFiltersSr": "高级筛选",
+    "advancedFiltersTitle": "高级筛选属于 Resonance+",
+    "advancedFiltersCaption": "政治立场、语言、星座等等——精准锁定你在意的。",
+    "unlockAdvancedFilters": "解锁高级筛选",
+    "unlockWithPlus": "用 Resonance+ 解锁",
+    "seeWhoTitle": "看看谁已经对你心动",
+    "seeWhoCaption": "看清每一个喜欢，按契合度排序，不再错过任何 Pulse。",
+    "sortGateSr": "按契合度排序",
+    "sortGateTitle": "按你在意的排序",
+    "sortGateCaption": "契合度、时间、距离——排序是 Resonance+ 的功能。"
+  },
+  "empty": {
+    "travelTitle": "{{city}}还没有人。",
+    "travelBody": "这座城市还在成长。关闭旅行模式，看看附近的人。",
+    "turnOffTravel": "关闭旅行模式",
+    "queueTitle": "今天的推荐就到这里。",
+    "queueBody": "七位有缘人，精心挑选——绝不是老虎机。",
+    "trySwipe": "试试滑卡模式"
+  },
+  "error": {
+    "loadQueueTitle": "推荐加载失败。",
+    "loadLikesTitle": "喜欢加载失败。",
+    "body": "请检查网络后重试。",
+    "retry": "重试"
+  },
+  "toasts": {
+    "waveSent": "你打了个招呼——对方会在喜欢里看到。",
+    "dozenSent": "一打玫瑰正在路上，卡片也带上了。",
+    "roseSent": "你的玫瑰正在路上——卡片已附上。",
+    "kissSent": "亲亲已送达——真大胆。对方会在喜欢里看到。",
+    "sendFailed": "发送失败——请检查网络后重试。",
+    "dozenLimit": "每天只有一打——留给那个让你心跳停止的人。",
+    "outOfKisses": "今天的亲亲用完了——午夜重置。",
+    "waveLimit": "招呼打太多啦——午夜重置。",
+    "profileGone": "这个人已经不在你的推荐里了",
+    "passedQuietly": "已悄悄略过——对方不会知道。",
+    "usedUp": "这个今天已经用完了。",
+    "linkCopied": "主页链接已复制。",
+    "reportSent": "举报已提交——我们的团队会审核。",
+    "blocked": "已屏蔽{{name}}，对方不会收到通知。"
+  },
+  "likes": {
+    "header": "谁喜欢你",
+    "countPeople": "{{count}} 人",
+    "countPulses": "{{count}} 个 PULSE",
+    "countRoses": "{{count}} 朵玫瑰",
+    "countWaves": "{{count}} 次招呼",
+    "countKisses": "{{count}} 个亲亲",
+    "sort": "排序",
+    "sortGateA11y": "排序——Resonance+ 功能",
+    "sortA11y": "给喜欢排序",
+    "firstLikeTitle": "你的第一个喜欢正在路上。",
+    "firstLikeBody": "喜欢永不过期——当有人与你共鸣，就会出现在这里。",
+    "boostProfile": "提升你的主页人气",
+    "someoneLikedPrompt": "有人赞了你的提问「{{ref}}」",
+    "someoneLikedPhoto": "有人赞了你的第 2 张照片",
+    "someoneLikedProfile": "有人赞了你的主页",
+    "peopleWhoLikedYou": "喜欢你的人",
+    "moreLikesA11y": "还有 {{count}} 个喜欢——解锁查看",
+    "footerNote": "喜欢永不过期。发 Pulse 的人永远排在最前面。",
+    "howPulsesWork": "Pulse 怎么玩"
+  },
+  "rails": {
+    "pulsesReceived": "收到的 Pulse",
+    "rosesReceived": "收到的玫瑰",
+    "wavesReceived": "向你打招呼的人",
+    "kissesReceived": "收到的亲亲",
+    "labels": {
+      "pulse": "PULSE",
+      "dozenRoses": "一打玫瑰",
+      "rose": "一朵玫瑰",
+      "wave": "招呼",
+      "kiss": "亲亲"
+    }
+  },
+  "context": {
+    "waved": "向你打了个招呼",
+    "kiss": "送了你一个亲亲",
+    "dozenRoses": "送了你一打玫瑰",
+    "rose": "送了你一朵玫瑰",
+    "likedAnswer": "赞了你的回答「{{ref}}」",
+    "likedPhoto": "赞了你的照片",
+    "likedProfile": "赞了你的主页"
+  },
+  "teaser": {
+    "someoneLikesYou": "有人喜欢你",
+    "summary": "{{context}} · 距离 {{km}} 公里 · {{compatibility}}",
+    "body": "Resonance+ 让你看清每一个喜欢——包括这一个。"
+  },
+  "explainer": {
+    "title": "Pulse 怎么玩",
+    "body1": "Pulse 是附带一句话的喜欢——是表达「我就喜欢你这一点」的最强信号。Pulse 从不模糊，并且永远置顶在本页。",
+    "body2": "从对方主页的 Pulse 按钮发送。回赞一个 Pulse，立刻配对成功。"
+  },
+  "quickActions": {
+    "fallbackTitle": "快捷操作",
+    "likeBack": "回赞",
+    "passQuietly": "悄悄略过"
+  },
+  "sort": {
+    "title": "给喜欢排序",
+    "orderA11y": "排序方式",
+    "options": {
+      "compatibility": "契合度",
+      "mostRecent": "最新",
+      "nearby": "附近优先",
+      "newestMembers": "新会员"
+    }
+  },
+  "gestures": {
+    "respondTo": "回应{{name}}",
+    "waveBackAria": "回{{name}}一个招呼——说声嗨",
+    "waveSayHi": "打招呼——说声嗨",
+    "sendRosesTo": "送玫瑰给{{name}}",
+    "sendRosesToLeft": "送玫瑰给{{name}}——今天还剩 {{count}} 朵",
+    "sendRoses": "送玫瑰",
+    "sendRosesLeft": "送玫瑰——今天还剩 {{count}} 朵",
+    "sendKissTo": "送{{name}}一个亲亲",
+    "sendKissToLeft": "送{{name}}一个亲亲——今天还剩 {{count}} 个",
+    "sendKiss": "送亲亲",
+    "sendKissLeft": "送亲亲——今天还剩 {{count}} 个",
+    "likeBack": "回赞",
+    "likeBackTo": "回赞{{name}}",
+    "pass": "略过",
+    "like": "喜欢",
+    "sendPulse": "发送 Pulse"
+  },
+  "dock": {
+    "unlimitedLikes": "RESONANCE+ 喜欢不限量",
+    "likesLeft": "今天还剩 {{count}} 个喜欢",
+    "sendRosesCount": "送玫瑰（剩 {{count}} 朵）",
+    "sendKissCount": "送亲亲（剩 {{count}} 个）",
+    "sendPulseCount": "发送 Pulse（剩 {{count}} 个）"
+  },
+  "roseSheet": {
+    "sentDozenTitle": "一打玫瑰，正在路上",
+    "sentSingleTitle": "你的玫瑰正在路上",
+    "sentBody": "{{name}}会连同卡片一起收到。",
+    "eyebrow": "让心意抵达",
+    "title": "送玫瑰给{{name}}",
+    "subtitle": "是真花——还附一张卡片。",
+    "sendOneAria": "送一朵玫瑰",
+    "sendDozenAria": "送一打玫瑰",
+    "oneRose": "一朵玫瑰",
+    "dozen": "一打玫瑰",
+    "noneLeft": "今天已送完",
+    "theClassic": "经典之选",
+    "backTomorrow": "明天再来",
+    "dozenPerDay": "每天 {{count}} 次——隆重的心意",
+    "grandGesture": "隆重的心意",
+    "altOneRose": "一朵长茎红玫瑰，附带心意卡",
+    "altDozen": "一束十二朵红玫瑰，附带心意卡"
+  },
+  "composer": {
+    "eyebrow": "带评论的喜欢",
+    "theirProfile": "{{name}}的主页",
+    "yourComment": "你的评论",
+    "placeholder": "说点具体的…",
+    "sendLike": "发送喜欢",
+    "sendPulse": "发送 Pulse",
+    "pulsesLeft": "剩 {{count}} 个"
+  },
+  "filters": {
+    "title": "筛选",
+    "dealbreaker": "硬性条件",
+    "dealbreakerNote": "设为硬性条件后，不符合的人将在所有模式中隐藏。",
+    "makeDealbreaker": "设为硬性条件",
+    "removeDealbreaker": "取消硬性条件",
+    "lockedAria": "{{title}}——Resonance+ 筛选",
+    "groups": {
+      "intent": "意向",
+      "age": "年龄",
+      "distance": "距离",
+      "relationship": "关系类型",
+      "family": "家庭计划",
+      "verified": "仅看已认证",
+      "politics": "政治立场"
+    },
+    "intentOptions": {
+      "serious": "认真的",
+      "casual": "随意些",
+      "explore": "探索中",
+      "friendship": "交朋友",
+      "enm": "ENM"
+    },
+    "relTypeOptions": {
+      "monogamous": "一对一",
+      "nonMonogamous": "非一对一",
+      "openToBoth": "两者皆可"
+    },
+    "familyOptions": {
+      "wantKids": "想要孩子",
+      "open": "随缘",
+      "noKids": "不要孩子",
+      "haveKids": "已有孩子"
+    },
+    "politicsOptions": {
+      "liberal": "自由派",
+      "moderate": "中间派",
+      "conservative": "保守派",
+      "apolitical": "不关心政治"
+    },
+    "minAge": "最小年龄",
+    "maxAge": "最大年龄",
+    "maxDistance": "最远距离",
+    "withinKm": "{{km}} 公里以内",
+    "thisCityOnly": "仅限本市",
+    "showVerifiedOnly": "只显示已认证主页",
+    "reset": "重置",
+    "showPeople": "查看人选"
+  },
+  "match": {
+    "title": "配对成功",
+    "body": "你和{{name}}互相喜欢了。",
+    "cta": "发出第一句话",
+    "keepBrowsing": "继续逛逛",
+    "yourPhoto": "你的照片",
+    "you": "你"
+  },
+  "profileSheet": {
+    "photoAlt": "{{name}}的第 {{index}} 张照片",
+    "photoDot": "第 {{index}} 张",
+    "activeToday": "今日活跃",
+    "lifestyle": "生活方式",
+    "share": "分享",
+    "shareAria": "分享主页",
+    "reportBlock": "举报 / 屏蔽",
+    "reportBlockAria": "举报或屏蔽"
+  },
+  "safety": {
+    "title": "举报或屏蔽",
+    "reportName": "举报{{name}}",
+    "reasonA11y": "举报原因",
+    "cancel": "取消",
+    "sending": "发送中…",
+    "sendReport": "提交举报",
+    "blockName": "屏蔽{{name}}",
+    "blockNote": "安静且立即生效，对方不会收到通知。",
+    "blocking": "屏蔽中…",
+    "block": "屏蔽",
+    "reasons": {
+      "spam": "垃圾信息",
+      "abuse": "辱骂骚扰",
+      "fake": "假账号",
+      "under18": "未满 18 岁",
+      "other": "其他"
+    }
+  },
+  "swipe": {
+    "like": "喜欢",
+    "nope": "略过",
+    "pulse": "PULSE"
+  },
+  "likeTile": {
+    "blurredAria": "有人喜欢你——契合度 {{value}}。解锁看看是谁。"
+  }
+}

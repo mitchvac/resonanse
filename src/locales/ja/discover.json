@@ -1,0 +1,340 @@
+{
+  "common": {
+    "them": "相手",
+    "themCap": "相手",
+    "someone": "誰か",
+    "member": "メンバー",
+    "profile": "プロフィール",
+    "their": "相手",
+    "photoOf": "{{name}}の写真",
+    "openProfile": "{{name}}のプロフィールを開く",
+    "noPhoto": "{{name}}（写真なし）",
+    "photoHidden": "{{name}}（写真は非公開）",
+    "leftToday": "今日は残り{{count}}回",
+    "compatible": "相性{{value}}",
+    "compatibleCap": "相性{{value}}",
+    "compatibleWord": "相性",
+    "more": "もっと見る",
+    "less": "閉じる"
+  },
+  "modes": {
+    "queue": "キュー",
+    "swipe": "スワイプ",
+    "nearby": "近くの人"
+  },
+  "preview": {
+    "auto": "自動",
+    "free": "無料",
+    "label": "デモプレビュー",
+    "a11y": "プランのプレビュー"
+  },
+  "a11y": {
+    "filters": "フィルター",
+    "travelMode": "トラベルモード",
+    "discoveryMode": "探すモード",
+    "swipeMode": "スワイプモード",
+    "dailyQueue": "今日のResonanceキュー",
+    "queueCards": "キューのカード",
+    "dismiss": "閉じる",
+    "loadingQueue": "キューを読み込み中",
+    "loadingLikes": "いいねを読み込み中",
+    "verifiedProfile": "認証済みプロフィール",
+    "activeNow": "オンライン中",
+    "nearby": "近くの人",
+    "pulsesReceived": "届いたPulse",
+    "rosesReceived": "届いたバラ",
+    "wavesReceived": "届いたウェーブ",
+    "kissesReceived": "届いたキス",
+    "peopleWhoLikedYou": "あなたにいいねした人"
+  },
+  "queue": {
+    "eyebrow": "あなたのキュー・正午に更新",
+    "heading": "{{count}}人。厳選しました。",
+    "newQueueIn": "新しいキューまで {{countdown}}",
+    "mostCompatible": "今日いちばん相性がいい人",
+    "bothAnswered": "「{{question}}」への答えがふたりとも同じでした。",
+    "answersResonate": "ふたりの答えが響き合っています。",
+    "view": "見る",
+    "likeCommentAria": "「{{question}}」にコメント付きでいいね"
+  },
+  "nearby": {
+    "micro": "あなたの近くでいま・リアルタイム更新"
+  },
+  "travel": {
+    "browsing": "{{city}}を表示中・トラベルモード",
+    "change": "変更",
+    "eyebrow": "トラベルモード",
+    "title": "別の街を見てみる",
+    "backToMyCity": "← 自分の街に戻る",
+    "gateTitle": "Resonance+で旅する",
+    "gateCaption": "着く前にどこにでも現在地を設定できます。キューはあなたについてきます。",
+    "gateCta": "トラベルを解放"
+  },
+  "gates": {
+    "outOfLikesTitle": "今日のいいねは使い切りました",
+    "outOfLikesCaption": "Resonance+なら1日の上限なし。キューは正午に更新されます。",
+    "getPlus": "Resonance+を始める",
+    "backToQueue": "キューに戻る",
+    "outOfFlowersTitle": "今日のお花は使い切りました",
+    "outOfFlowersCaption": "無料メンバーは1日3本まで。Resonance+なら無限のガーデン。お花はいつもぼかしなしで届きます。",
+    "outOfPulsesTitle": "Pulseを使い切りました",
+    "outOfPulsesCaption": "Pulseはメモ付きで相手のいいね一覧の一番上にピン留めされます。パックを入手して、シグナルを強く保ちましょう。",
+    "getPulses": "Pulseを入手",
+    "notNow": "今はいい",
+    "advancedFiltersSr": "高度なフィルター",
+    "advancedFiltersTitle": "高度なフィルターはResonance+限定",
+    "advancedFiltersCaption": "政治・言語・星座など、大切な条件にズームイン。",
+    "unlockAdvancedFilters": "高度なフィルターを解放",
+    "unlockWithPlus": "Resonance+で解放",
+    "seeWhoTitle": "すでにあなたに夢中な人を見る",
+    "seeWhoCaption": "すべてのいいねをクリアに表示し、相性で並べ替え。Pulseも見逃しません。",
+    "sortGateSr": "相性で並べ替え",
+    "sortGateTitle": "大切な基準で並べ替え",
+    "sortGateCaption": "相性・新着・距離。並べ替えはResonance+の機能です。"
+  },
+  "empty": {
+    "travelTitle": "{{city}}にはまだ誰もいません。",
+    "travelBody": "この街はまだこれから。トラベルモードをオフにすると、近くの人が見られます。",
+    "turnOffTravel": "トラベルモードをオフ",
+    "queueTitle": "今日のキューはこれで全部です。",
+    "queueBody": "7人、厳選。スロットマシンじゃありません。",
+    "trySwipe": "スワイプモードを試す"
+  },
+  "error": {
+    "loadQueueTitle": "キューを読み込めませんでした。",
+    "loadLikesTitle": "いいねを読み込めませんでした。",
+    "body": "接続を確認して、もう一度お試しください。",
+    "retry": "再試行"
+  },
+  "toasts": {
+    "waveSent": "ウェーブしました。相手のいいねに表示されます。",
+    "dozenSent": "12本のバラがカードごと届きます。",
+    "roseSent": "あなたのバラがカードと一緒に届きます。",
+    "kissSent": "キスを送りました。大胆ですね。相手のいいねに表示されます。",
+    "sendFailed": "送信できませんでした。接続を確認して、もう一度お試しください。",
+    "dozenLimit": "12本束は1日1回。心を止められる人にとっておきましょう。",
+    "outOfKisses": "今日のキスは使い切りました。深夜0時にリセットされます。",
+    "waveLimit": "たくさんのこんにちは。ウェーブは深夜0時にリセットされます。",
+    "profileGone": "そのプロフィールはキューにありません",
+    "passedQuietly": "パスしました。相手には知られません。",
+    "usedUp": "今日分は使い切りました。",
+    "linkCopied": "プロフィールのリンクをコピーしました。",
+    "reportSent": "報告を送信しました。チームが確認します。",
+    "blocked": "{{name}}をブロックしました。相手には通知されません。"
+  },
+  "likes": {
+    "header": "あなたへのいいね",
+    "countPeople": "{{count}}人",
+    "countPulses": "PULSE {{count}}",
+    "countRoses": "バラ {{count}}",
+    "countWaves": "ウェーブ {{count}}",
+    "countKisses": "キス {{count}}",
+    "sort": "並べ替え",
+    "sortGateA11y": "並べ替え（Resonance+の機能）",
+    "sortA11y": "いいねを並べ替え",
+    "firstLikeTitle": "最初のいいねが届くのはもうすぐ。",
+    "firstLikeBody": "いいねに期限はありません。響き合う人が現れたら、ここに届きます。",
+    "boostProfile": "プロフィールをブースト",
+    "someoneLikedPrompt": "あなたのお題「{{ref}}」にいいね",
+    "someoneLikedPhoto": "あなたの2枚目の写真にいいね",
+    "someoneLikedProfile": "あなたのプロフィールにいいね",
+    "peopleWhoLikedYou": "あなたにいいねした人",
+    "moreLikesA11y": "あと{{count}}件のいいね。解放して見る",
+    "footerNote": "いいねに期限はありません。Pulseの送信者はいつも一番上に表示されます。",
+    "howPulsesWork": "Pulseの仕組み"
+  },
+  "rails": {
+    "pulsesReceived": "届いたPulse",
+    "rosesReceived": "届いたバラ",
+    "wavesReceived": "こんにちはのウェーブ",
+    "kissesReceived": "届いたキス",
+    "labels": {
+      "pulse": "PULSE",
+      "dozenRoses": "12本のバラ",
+      "rose": "1本のバラ",
+      "wave": "ウェーブ",
+      "kiss": "キス"
+    }
+  },
+  "context": {
+    "waved": "あなたにウェーブしました",
+    "kiss": "あなたにキスを送りました",
+    "dozenRoses": "あなたに12本のバラを送りました",
+    "rose": "あなたにバラを送りました",
+    "likedAnswer": "あなたの回答「{{ref}}」にいいね",
+    "likedPhoto": "あなたの写真にいいね",
+    "likedProfile": "あなたのプロフィールにいいね"
+  },
+  "teaser": {
+    "someoneLikesYou": "誰かがあなたにいいねしました",
+    "summary": "{{context}}・{{km}}km先・{{compatibility}}",
+    "body": "Resonance+なら、このいいねを含むすべてがクリアに見えます。"
+  },
+  "explainer": {
+    "title": "Pulseの仕組み",
+    "body1": "Pulseはメモ付きのいいね。「あなたのこの部分が好き」を伝える、いちばん確かな方法です。Pulseはぼかされず、いつもこのページの一番上にピン留めされます。",
+    "body2": "プロフィールのPulseボタンから送れます。Pulseにいいね返しすると、即マッチです。"
+  },
+  "quickActions": {
+    "fallbackTitle": "クイックアクション",
+    "likeBack": "いいね返し",
+    "passQuietly": "そっとパス"
+  },
+  "sort": {
+    "title": "いいねを並べ替え",
+    "orderA11y": "並べ替え順",
+    "options": {
+      "compatibility": "相性",
+      "mostRecent": "新着順",
+      "nearby": "近くの人",
+      "newestMembers": "新しいメンバー"
+    }
+  },
+  "gestures": {
+    "respondTo": "{{name}}に返す",
+    "waveBackAria": "{{name}}にウェーブ返し。こんにちはを伝えよう",
+    "waveSayHi": "ウェーブ。こんにちはを伝えよう",
+    "sendRosesTo": "{{name}}にバラを送る",
+    "sendRosesToLeft": "{{name}}にバラを送る（今日は残り{{count}}本）",
+    "sendRoses": "バラを送る",
+    "sendRosesLeft": "バラを送る（今日は残り{{count}}本）",
+    "sendKissTo": "{{name}}にキスを送る",
+    "sendKissToLeft": "{{name}}にキスを送る（今日は残り{{count}}回）",
+    "sendKiss": "キスを送る",
+    "sendKissLeft": "キスを送る（今日は残り{{count}}回）",
+    "likeBack": "いいね返し",
+    "likeBackTo": "{{name}}にいいね返し",
+    "pass": "パス",
+    "like": "いいね",
+    "sendPulse": "Pulseを送る"
+  },
+  "dock": {
+    "unlimitedLikes": "RESONANCE+でいいね無制限",
+    "likesLeft": "今日のいいね残り{{count}}回",
+    "sendRosesCount": "バラを送る（残り{{count}}本）",
+    "sendKissCount": "キスを送る（残り{{count}}回）",
+    "sendPulseCount": "Pulseを送る（残り{{count}}回）"
+  },
+  "roseSheet": {
+    "sentDozenTitle": "12本のバラ、届きます",
+    "sentSingleTitle": "あなたのバラが届きます",
+    "sentBody": "{{name}}にはカード付きで届きます。",
+    "eyebrow": "想いを届けよう",
+    "title": "{{name}}にバラを送る",
+    "subtitle": "本物のバラに、カードを添えて。",
+    "sendOneAria": "バラを1本送る",
+    "sendDozenAria": "12本のバラを送る",
+    "oneRose": "バラ1本",
+    "dozen": "12本のバラ",
+    "noneLeft": "今日はもうありません",
+    "theClassic": "定番の一本",
+    "backTomorrow": "明日また",
+    "dozenPerDay": "1日{{count}}回の、とっておきの演出",
+    "grandGesture": "とっておきの演出",
+    "altOneRose": "ギフトカード付きの長い茎の赤いバラ1本",
+    "altDozen": "ギフトカード付きの赤いバラ12本の花束"
+  },
+  "composer": {
+    "eyebrow": "コメント付きいいね",
+    "theirProfile": "{{name}}のプロフィール",
+    "yourComment": "あなたのコメント",
+    "placeholder": "具体的にひとこと…",
+    "sendLike": "いいねを送る",
+    "sendPulse": "Pulseを送る",
+    "pulsesLeft": "残り{{count}}回"
+  },
+  "filters": {
+    "title": "フィルター",
+    "dealbreaker": "譲れない条件",
+    "dealbreakerNote": "譲れない条件に合わない人は、すべてのモードで非表示になります。",
+    "makeDealbreaker": "譲れない条件にする",
+    "removeDealbreaker": "譲れない条件を解除",
+    "lockedAria": "{{title}}（Resonance+のフィルター）",
+    "groups": {
+      "intent": "目的",
+      "age": "年齢",
+      "distance": "距離",
+      "relationship": "関係の形",
+      "family": "家族の計画",
+      "verified": "認証済みのみ",
+      "politics": "政治"
+    },
+    "intentOptions": {
+      "serious": "真剣",
+      "casual": "カジュアル",
+      "explore": "探り探り",
+      "friendship": "友達",
+      "enm": "ENM"
+    },
+    "relTypeOptions": {
+      "monogamous": "一夫一妻",
+      "nonMonogamous": "非一夫一妻",
+      "openToBoth": "どちらでもOK"
+    },
+    "familyOptions": {
+      "wantKids": "子どもが欲しい",
+      "open": "おおらか",
+      "noKids": "子どもはいらない",
+      "haveKids": "子どもがいる"
+    },
+    "politicsOptions": {
+      "liberal": "リベラル",
+      "moderate": "中道",
+      "conservative": "保守",
+      "apolitical": "無関心"
+    },
+    "minAge": "最小年齢",
+    "maxAge": "最大年齢",
+    "maxDistance": "最大距離",
+    "withinKm": "{{km}}km以内",
+    "thisCityOnly": "この街のみ",
+    "showVerifiedOnly": "認証済みプロフィールのみ表示",
+    "reset": "リセット",
+    "showPeople": "人を表示"
+  },
+  "match": {
+    "title": "マッチしました",
+    "body": "あなたと{{name}}は、お互いにいいねしました。",
+    "cta": "最初のメッセージを送る",
+    "keepBrowsing": "探し続ける",
+    "yourPhoto": "あなたの写真",
+    "you": "あなた"
+  },
+  "profileSheet": {
+    "photoAlt": "{{name}}の写真{{index}}",
+    "photoDot": "写真{{index}}",
+    "activeToday": "今日アクティブ",
+    "lifestyle": "ライフスタイル",
+    "share": "シェア",
+    "shareAria": "プロフィールをシェア",
+    "reportBlock": "報告 / ブロック",
+    "reportBlockAria": "報告またはブロック"
+  },
+  "safety": {
+    "title": "報告またはブロック",
+    "reportName": "{{name}}を報告",
+    "reasonA11y": "報告理由",
+    "cancel": "キャンセル",
+    "sending": "送信中…",
+    "sendReport": "報告を送信",
+    "blockName": "{{name}}をブロック",
+    "blockNote": "静かに、すぐに。相手には通知されません。",
+    "blocking": "ブロック中…",
+    "block": "ブロック",
+    "reasons": {
+      "spam": "スパム",
+      "abuse": "嫌がらせ",
+      "fake": "偽アカウント",
+      "under18": "18歳未満",
+      "other": "その他"
+    }
+  },
+  "swipe": {
+    "like": "LIKE",
+    "nope": "パス",
+    "pulse": "PULSE"
+  },
+  "likeTile": {
+    "blurredAria": "誰かがあなたにいいねしました。相性{{value}}。解放して確認しましょう。"
+  }
+}

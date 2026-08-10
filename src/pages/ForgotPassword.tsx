@@ -9,6 +9,7 @@ import StageBackdrop from '@/components/StageBackdrop';
 import { BtnPrimary } from '@/components/ui/buttons';
 import { trpc } from '@/providers/trpc';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -23,6 +24,7 @@ const inputClass = cn(
  * whether or not the account exists (no email enumeration).
  */
 export default function ForgotPassword() {
+  const { t } = useTranslation('landing');
   const [email, setEmail] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -38,7 +40,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     if (requestMutation.isPending) return;
     if (!EMAIL_RE.test(email.trim())) {
-      setFieldError('Enter a valid email address');
+      setFieldError(t('forgotPassword.emailInvalid'));
       return;
     }
     setFieldError(null);
@@ -72,18 +74,17 @@ export default function ForgotPassword() {
                 <MailCheck size={22} style={{ color: 'var(--text)' }} aria-hidden="true" />
               </div>
               <h1 className="t-title" style={{ color: 'var(--text)' }}>
-                Check your inbox.
+                {t('forgotPassword.sentTitle')}
               </h1>
               <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-                If an account exists for that email, a reset link is on its way. The link
-                expires in 30 minutes.
+                {t('forgotPassword.sentBody')}
               </p>
               <Link
                 to="/signin"
                 className="t-button mt-6 inline-flex min-h-[44px] items-center justify-center transition-opacity duration-fast hover:opacity-70"
                 style={{ color: 'var(--text)' }}
               >
-                Back to sign in
+                {t('forgotPassword.backToSignIn')}
               </Link>
             </div>
           ) : (
@@ -104,7 +105,7 @@ export default function ForgotPassword() {
                     className="t-caption mb-1.5 block font-bold"
                     style={{ color: 'var(--text)' }}
                   >
-                    Email
+                    {t('forgotPassword.emailLabel')}
                   </span>
                   <input
                     type="email"
@@ -126,12 +127,12 @@ export default function ForgotPassword() {
                   type="submit"
                   disabled={requestMutation.isPending}
                   className="w-full"
-                  ariaLabel="Send reset link"
+                  ariaLabel={t('forgotPassword.send')}
                 >
                   {requestMutation.isPending && (
                     <Loader2 size={18} className="animate-spin" aria-hidden="true" />
                   )}
-                  {requestMutation.isPending ? 'Sending…' : 'Send reset link'}
+                  {requestMutation.isPending ? t('forgotPassword.sending') : t('forgotPassword.send')}
                 </BtnPrimary>
               </form>
 
@@ -141,7 +142,7 @@ export default function ForgotPassword() {
                   className="t-caption inline-flex min-h-[44px] items-center transition-opacity duration-fast hover:opacity-70"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  Back to sign in
+                  {t('forgotPassword.backToSignIn')}
                 </Link>
               </p>
             </>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { BadgeCheck, Check, Clapperboard, IdCard, Minus, Shield, Video } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
 import { BtnGhost, BtnGlass, BtnPrimary } from '@/components/ui/buttons';
@@ -26,6 +27,7 @@ function CheckRow({
   explainer: string;
   ok: boolean;
 }) {
+  const { t } = useTranslation('connect');
   return (
     <li
       className="flex items-center gap-3 rounded-[16px] px-3.5 py-3"
@@ -50,19 +52,19 @@ function CheckRow({
         <span
           className="t-micro flex shrink-0 items-center gap-1 font-bold"
           style={{ color: 'var(--ok)' }}
-          aria-label={`${name}: done`}
+          aria-label={t('trust.done', { name })}
         >
           <Check size={11} strokeWidth={3} aria-hidden="true" />
-          VERIFIED
+          {t('trust.verified')}
         </span>
       ) : (
         <span
           className="t-micro flex shrink-0 items-center gap-1"
           style={{ color: 'var(--text-secondary)' }}
-          aria-label={`${name}: not yet`}
+          aria-label={t('trust.notYet', { name })}
         >
           <Minus size={11} aria-hidden="true" />
-          NOT YET
+          {t('trust.notYetLabel')}
         </span>
       )}
     </li>
@@ -86,34 +88,35 @@ export default function TrustSheet({
   onVideoNote: () => void;
   onSafety: () => void;
 }) {
+  const { t } = useTranslation('connect');
   return (
     <GlassSheet open={open} onClose={onClose} labelledBy="trust-title">
       <div className="px-5 pb-7 pt-1">
         <h2 id="trust-title" className="t-title flex items-center gap-2" style={{ color: 'var(--text)' }}>
           <Shield size={19} style={{ color: 'var(--violet)' }} aria-hidden="true" />
-          Ways to verify {peerName}
+          {t('trust.title', { name: peerName })}
         </h2>
         <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-          Three independent checks — the more that are green, the surer you can be.
+          {t('trust.caption')}
         </p>
 
         <ul className="mt-4 flex flex-col gap-2">
           <CheckRow
             icon={BadgeCheck}
-            name="Photo verified"
-            explainer="A live selfie matched their profile photos."
+            name={t('trust.photoName')}
+            explainer={t('trust.photoExplainer')}
             ok={state.photoVerified}
           />
           <CheckRow
             icon={IdCard}
-            name="ID verified"
-            explainer="Government ID checked in their browser — the photo is never stored."
+            name={t('trust.idName')}
+            explainer={t('trust.idExplainer')}
             ok={state.idVerified}
           />
           <CheckRow
             icon={Video}
-            name="Video verified"
-            explainer="You two talked on a live video call for 30+ seconds."
+            name={t('trust.videoName')}
+            explainer={t('trust.videoExplainer')}
             ok={state.videoVerified}
           />
         </ul>
@@ -121,14 +124,14 @@ export default function TrustSheet({
         <div className="mt-5 flex flex-col gap-2">
           <BtnPrimary onClick={onVideoCall} className="h-12 w-full">
             <Video size={16} aria-hidden="true" />
-            Start a video call
+            {t('trust.startVideoCall')}
           </BtnPrimary>
           <BtnGlass onClick={onVideoNote} className="h-12 w-full">
             <Clapperboard size={16} aria-hidden="true" />
-            Send a video note
+            {t('trust.sendVideoNote')}
           </BtnGlass>
           <BtnGhost onClick={onSafety} className="mx-auto">
-            Safety &amp; reporting
+            {t('trust.safetyReporting')}
           </BtnGhost>
         </div>
       </div>

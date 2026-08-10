@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "primary": "Navigation principale",
+    "discover": "Découvrir",
+    "likes": "Likes",
+    "matches": "Matchs",
+    "events": "Événements",
+    "community": "Communauté",
+    "profile": "Profil",
+    "likesBadge": "{{count}} likes",
+    "unreadMessages": "Messages non lus"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "backHome": "Retour à l'accueil"
+  },
+  "onboarding": {
+    "continue": "Continuer",
+    "saving": "Enregistrement…",
+    "saveExit": "Enregistrer et quitter",
+    "saveError": "Impossible d'enregistrer — vérifie ta connexion et réessaie.",
+    "demoHint": "Mode démo — connecte-toi pour sauvegarder ta progression"
+  },
+  "footer": {
+    "tagline": "Des rencontres intentionnelles",
+    "description": "Une sélection quotidienne de personnes qui partagent ton intention — et les outils pour transformer un match en premier rendez-vous.",
+    "product": "Produit",
+    "company": "Entreprise",
+    "legal": "Mentions légales",
+    "safety": "Sécurité",
+    "copyright": "© Resonance. Conçu pour se rencontrer dans la vraie vie.",
+    "themeNote": "Warm Glass le jour, Night HUD la nuit — change dans les Réglages.",
+    "signIn": "Se connecter",
+    "links": {
+      "dailyQueue": "Sélection du jour",
+      "modes": "Modes",
+      "events": "Événements",
+      "about": "À propos",
+      "careers": "Carrières",
+      "press": "Presse",
+      "contact": "Contact",
+      "privacy": "Confidentialité",
+      "terms": "Conditions",
+      "cookies": "Cookies",
+      "dataRequests": "Demandes de données",
+      "verification": "Vérification",
+      "communityRules": "Règles de la communauté",
+      "report": "Signaler",
+      "consentTools": "Outils de consentement"
+    }
+  }
+}

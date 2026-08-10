@@ -9,6 +9,7 @@ import StageBackdrop from '@/components/StageBackdrop';
 import { BtnPrimary } from '@/components/ui/buttons';
 import { trpc } from '@/providers/trpc';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const inputClass = cn(
   't-body h-12 w-full rounded-2xl px-4 outline-none transition-shadow duration-fast',
@@ -30,6 +31,7 @@ function PasswordField({
   autoComplete: string;
 }) {
   const [show, setShow] = useState(false);
+  const { t } = useTranslation('landing');
   return (
     <label className="block">
       <span className="t-caption mb-1.5 block font-bold" style={{ color: 'var(--text)' }}>
@@ -48,7 +50,7 @@ function PasswordField({
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
-          aria-label={show ? 'Hide password' : 'Show password'}
+          aria-label={show ? t('resetPassword.hidePassword') : t('resetPassword.showPassword')}
           className="absolute inset-y-0 right-0 flex w-12 items-center justify-center transition-opacity duration-fast hover:opacity-70"
           style={{ color: 'var(--text-secondary)' }}
         >
@@ -70,6 +72,7 @@ function PasswordField({
  * via history, referrer, or analytics.
  */
 export default function ResetPassword() {
+  const { t } = useTranslation('landing');
   const [params] = useSearchParams();
   const navigate = useNavigate();
   // undefined = not yet read from the URL; null = read but missing.
@@ -83,9 +86,9 @@ export default function ResetPassword() {
 
   // Lift the token out of the query string exactly once.
   useEffect(() => {
-    const t = params.get('token');
-    setToken(t && t.length > 0 ? t : null);
-    if (t) {
+    const tokenParam = params.get('token');
+    setToken(tokenParam && tokenParam.length > 0 ? tokenParam : null);
+    if (tokenParam) {
       window.history.replaceState(null, '', window.location.pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,10 +102,10 @@ export default function ResetPassword() {
   const validate = (): boolean => {
     const errors: typeof fieldErrors = {};
     if (password.length < 8) {
-      errors.password = 'At least 8 characters';
+      errors.password = t('resetPassword.errors.passwordShort');
     }
     if (confirm !== password) {
-      errors.confirm = 'Passwords don’t match';
+      errors.confirm = t('resetPassword.errors.confirmMismatch');
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -117,18 +120,17 @@ export default function ResetPassword() {
   const requestNewLink = (
     <div className="text-center">
       <h1 className="t-title" style={{ color: 'var(--text)' }}>
-        This link isn’t valid.
+        {t('resetPassword.invalidTitle')}
       </h1>
       <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-        This reset link is invalid or has expired. Request a fresh one and we’ll send it to
-        your inbox.
+        {t('resetPassword.invalidBody')}
       </p>
       <BtnPrimary
         onClick={() => navigate('/forgot-password')}
         className="mt-6 w-full"
-        ariaLabel="Request a new link"
+        ariaLabel={t('resetPassword.requestNew')}
       >
-        Request a new link
+        {t('resetPassword.requestNew')}
       </BtnPrimary>
       <p className="mt-4">
         <Link
@@ -136,7 +138,7 @@ export default function ResetPassword() {
           className="t-caption inline-flex min-h-[44px] items-center transition-opacity duration-fast hover:opacity-70"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Back to sign in
+          {t('resetPassword.backToSignIn')}
         </Link>
       </p>
     </div>
@@ -171,41 +173,41 @@ export default function ResetPassword() {
                 <ShieldCheck size={22} style={{ color: 'var(--text)' }} aria-hidden="true" />
               </div>
               <h1 className="t-title" style={{ color: 'var(--text)' }}>
-                Password updated.
+                {t('resetPassword.doneTitle')}
               </h1>
               <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-                Your password has been reset. Sign in with your new password.
+                {t('resetPassword.doneBody')}
               </p>
               <BtnPrimary
                 onClick={() => navigate('/signin')}
                 className="mt-6 w-full"
-                ariaLabel="Go to sign in"
+                ariaLabel={t('resetPassword.goToSignIn')}
               >
-                Go to sign in
+                {t('resetPassword.goToSignIn')}
               </BtnPrimary>
             </div>
           ) : (
             <>
               <h1 className="t-title text-center" style={{ color: 'var(--text)' }}>
-                Choose a new password.
+                {t('resetPassword.title')}
               </h1>
               <p
                 className="t-body mt-2 text-center"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                At least 8 characters.
+                {t('resetPassword.subtitle')}
               </p>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
                 <PasswordField
-                  label="New password"
+                  label={t('resetPassword.newLabel')}
                   value={password}
                   onChange={setPassword}
                   error={fieldErrors.password}
                   autoComplete="new-password"
                 />
                 <PasswordField
-                  label="Confirm new password"
+                  label={t('resetPassword.confirmLabel')}
                   value={confirm}
                   onChange={setConfirm}
                   error={fieldErrors.confirm}
@@ -216,12 +218,12 @@ export default function ResetPassword() {
                   type="submit"
                   disabled={resetMutation.isPending}
                   className="w-full"
-                  ariaLabel="Reset password"
+                  ariaLabel={t('resetPassword.submit')}
                 >
                   {resetMutation.isPending && (
                     <Loader2 size={18} className="animate-spin" aria-hidden="true" />
                   )}
-                  {resetMutation.isPending ? 'Updating…' : 'Reset password'}
+                  {resetMutation.isPending ? t('resetPassword.updating') : t('resetPassword.submit')}
                 </BtnPrimary>
               </form>
             </>

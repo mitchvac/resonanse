@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "primary": "主导航",
+    "discover": "发现",
+    "likes": "喜欢",
+    "matches": "配对",
+    "events": "活动",
+    "community": "社区",
+    "profile": "我的",
+    "likesBadge": "{{count}} 个喜欢",
+    "unreadMessages": "未读消息"
+  },
+  "notFound": {
+    "title": "页面不存在",
+    "backHome": "返回首页"
+  },
+  "onboarding": {
+    "continue": "继续",
+    "saving": "保存中…",
+    "saveExit": "保存并退出",
+    "saveError": "保存失败——请检查网络连接后重试。",
+    "demoHint": "演示模式——登录即可保存你的进度"
+  },
+  "footer": {
+    "tagline": "带着诚意去约会",
+    "description": "每天为你推荐与你心意相投的人——并提供把配对变成第一次约会的工具。",
+    "product": "产品",
+    "company": "公司",
+    "legal": "法律",
+    "safety": "安全",
+    "copyright": "© Resonance。为真实的相遇而生。",
+    "themeNote": "白天 Warm Glass，夜晚 Night HUD——可在设置中切换。",
+    "signIn": "登录",
+    "links": {
+      "dailyQueue": "每日推荐",
+      "modes": "模式",
+      "events": "活动",
+      "about": "关于我们",
+      "careers": "加入我们",
+      "press": "媒体",
+      "contact": "联系我们",
+      "privacy": "隐私政策",
+      "terms": "服务条款",
+      "cookies": "Cookie",
+      "dataRequests": "数据请求",
+      "verification": "身份验证",
+      "communityRules": "社区规范",
+      "report": "举报",
+      "consentTools": "知情同意工具"
+    }
+  }
+}

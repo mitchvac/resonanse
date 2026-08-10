@@ -1,44 +1,45 @@
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import type { CSSProperties } from 'react';
 import BrandMark from '@/components/BrandMark';
 
-type FooterLink = { label: string; to: string; external?: boolean };
+type FooterLink = { labelKey?: string; label?: string; to: string; external?: boolean };
 
-const COLUMNS: { title: string; links: FooterLink[] }[] = [
+const COLUMNS: { titleKey: string; links: FooterLink[] }[] = [
   {
-    title: 'Product',
+    titleKey: 'footer.product',
     links: [
-      { label: 'Daily Queue', to: '/#philosophy' },
-      { label: 'Modes', to: '/#modes' },
-      { label: 'Events', to: '/#philosophy' },
+      { labelKey: 'footer.links.dailyQueue', to: '/#philosophy' },
+      { labelKey: 'footer.links.modes', to: '/#modes' },
+      { labelKey: 'footer.links.events', to: '/#philosophy' },
       { label: 'Resonance+', to: '/#pricing' },
     ],
   },
   {
-    title: 'Company',
+    titleKey: 'footer.company',
     links: [
-      { label: 'About', to: '/#philosophy' },
-      { label: 'Careers', to: 'mailto:press@resonanse.app', external: true },
-      { label: 'Press', to: 'mailto:press@resonanse.app', external: true },
-      { label: 'Contact', to: 'mailto:hello@resonanse.app', external: true },
+      { labelKey: 'footer.links.about', to: '/#philosophy' },
+      { labelKey: 'footer.links.careers', to: 'mailto:press@resonanse.app', external: true },
+      { labelKey: 'footer.links.press', to: 'mailto:press@resonanse.app', external: true },
+      { labelKey: 'footer.links.contact', to: 'mailto:hello@resonanse.app', external: true },
     ],
   },
   {
-    title: 'Legal',
+    titleKey: 'footer.legal',
     links: [
-      { label: 'Privacy', to: '/privacy' },
-      { label: 'Terms', to: '/terms' },
-      { label: 'Cookies', to: '/cookies' },
-      { label: 'Data requests', to: '/data' },
+      { labelKey: 'footer.links.privacy', to: '/privacy' },
+      { labelKey: 'footer.links.terms', to: '/terms' },
+      { labelKey: 'footer.links.cookies', to: '/cookies' },
+      { labelKey: 'footer.links.dataRequests', to: '/data' },
     ],
   },
   {
-    title: 'Safety',
+    titleKey: 'footer.safety',
     links: [
-      { label: 'Verification', to: '/#safety' },
-      { label: 'Community rules', to: '/guidelines' },
-      { label: 'Report', to: '/report' },
-      { label: 'Consent tools', to: '/report' },
+      { labelKey: 'footer.links.verification', to: '/#safety' },
+      { labelKey: 'footer.links.communityRules', to: '/guidelines' },
+      { labelKey: 'footer.links.report', to: '/report' },
+      { labelKey: 'footer.links.consentTools', to: '/report' },
     ],
   },
 ];
@@ -60,6 +61,7 @@ const linkHover = {
  * Night HUD.
  */
 export default function Footer() {
+  const { t } = useTranslation('common');
   return (
     <footer className="relative z-10 mt-24">
       <div
@@ -75,33 +77,35 @@ export default function Footer() {
                 </span>
                 <BrandMark size={26} />
               </div>
-              <p className="t-eyebrow mt-4">Date with intent</p>
+              <p className="t-eyebrow mt-4">{t('footer.tagline')}</p>
               <p className="t-caption mt-3 text-secondary">
-                A daily queue of people who match your intent — and the tools to
-                turn a match into a first date.
+                {t('footer.description')}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
               {COLUMNS.map((col) => (
-                <div key={col.title}>
+                <div key={col.titleKey}>
                   <h3 className="t-micro uppercase" style={{ color: 'var(--text-secondary)' }}>
-                    {col.title}
+                    {t(col.titleKey)}
                   </h3>
                   <ul className="mt-3 space-y-2.5">
-                    {col.links.map((link) => (
-                      <li key={link.label}>
-                        {link.external ? (
-                          <a href={link.to} className={linkClass} style={linkStyle} {...linkHover}>
-                            {link.label}
-                          </a>
-                        ) : (
-                          <Link to={link.to} className={linkClass} style={linkStyle} {...linkHover}>
-                            {link.label}
-                          </Link>
-                        )}
-                      </li>
-                    ))}
+                    {col.links.map((link) => {
+                      const label = link.labelKey ? t(link.labelKey) : link.label;
+                      return (
+                        <li key={label}>
+                          {link.external ? (
+                            <a href={link.to} className={linkClass} style={linkStyle} {...linkHover}>
+                              {label}
+                            </a>
+                          ) : (
+                            <Link to={link.to} className={linkClass} style={linkStyle} {...linkHover}>
+                              {label}
+                            </Link>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}
@@ -122,7 +126,7 @@ export default function Footer() {
         </div>
       </div>
       <Link to="/login" className="sr-only">
-        Sign in
+        {t('footer.signIn')}
       </Link>
     </footer>
   );

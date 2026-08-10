@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Check, CheckCheck, Hourglass, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,15 +18,16 @@ import { relTime } from '@/components/chat/types';
 export type TickState = 'sent' | 'delivered' | 'read';
 
 export function Ticks({ state }: { state: TickState }) {
+  const { t } = useTranslation('connect');
   if (state === 'sent') {
-    return <Check size={12} style={{ color: 'var(--text-secondary)' }} aria-label="Sent" />;
+    return <Check size={12} style={{ color: 'var(--text-secondary)' }} aria-label={t('chat.tickSent')} />;
   }
   if (state === 'delivered') {
     return (
-      <CheckCheck size={12} style={{ color: 'var(--text-secondary)' }} aria-label="Delivered" />
+      <CheckCheck size={12} style={{ color: 'var(--text-secondary)' }} aria-label={t('chat.tickDelivered')} />
     );
   }
-  return <CheckCheck size={12} style={{ color: 'var(--ok)' }} aria-label="Read" />;
+  return <CheckCheck size={12} style={{ color: 'var(--ok)' }} aria-label={t('chat.tickRead')} />;
 }
 
 export default function MessageBubble({
@@ -41,6 +43,7 @@ export default function MessageBubble({
   ephemeral: boolean;
   index: number;
 }) {
+  const { t } = useTranslation('connect');
   return (
     <motion.div
       className={cn('flex w-full', own ? 'justify-end' : 'justify-start')}
@@ -78,7 +81,7 @@ export default function MessageBubble({
                 size={12}
                 className="mb-0.5 shrink-0"
                 style={{ color: own ? 'rgba(255,255,255,0.75)' : 'var(--warn)' }}
-                aria-label="Vanishes after 24h"
+                aria-label={t('chat.vanishAria')}
               />
             )}
           </span>
@@ -87,7 +90,7 @@ export default function MessageBubble({
           className="t-caption mt-1 flex items-center gap-1 px-1"
           style={{ color: 'var(--text-secondary)' }}
         >
-          {relTime(message.createdAt)}
+          {relTime(message.createdAt, t)}
           {own && tick && <Ticks state={tick} />}
         </span>
       </div>

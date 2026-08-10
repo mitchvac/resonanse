@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
 
 /**
@@ -18,6 +19,7 @@ export default function CompatibilityArc({
   /** Changing this key retriggers the draw animation */
   animateKey?: string | number;
 }) {
+  const { t } = useTranslation('discover');
   const reduced = useReducedMotion();
   const r = (size - 4) / 2;
   const cx = size / 2;
@@ -40,7 +42,7 @@ export default function CompatibilityArc({
     <span
       className="relative inline-flex items-center justify-center"
       style={{ width: size, height: size }}
-      aria-label={`${value} compatible`}
+      aria-label={t('common.compatible', { value })}
       role="img"
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">

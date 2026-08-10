@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Loader2, Play } from 'lucide-react';
 import { trpc } from '@/providers/trpc';
@@ -29,6 +30,7 @@ export default function VideoNoteBubble({
   own: boolean;
   index: number;
 }) {
+  const { t } = useTranslation('connect');
   const meta = (message.meta as VideoNoteMeta | null) ?? {};
   const noteId = meta.noteId ?? 0;
   const durationSec = meta.durationSec ?? 0;
@@ -82,7 +84,7 @@ export default function VideoNoteBubble({
                 else setRequested(true);
               }}
               className="relative block aspect-video w-full bg-[#07070D]"
-              aria-label={`Play video note, ${durationSec} seconds`}
+              aria-label={t('videoNote.playAria', { seconds: durationSec })}
             >
               {/* LIVE CAMERA chip */}
               <span
@@ -90,7 +92,7 @@ export default function VideoNoteBubble({
                 style={{ background: 'rgba(255,255,255,0.14)' }}
               >
                 <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#63D98A' }} aria-hidden="true" />
-                LIVE CAMERA
+                {t('videoNote.liveCamera')}
               </span>
               {/* Duration chip */}
               <span
@@ -106,7 +108,7 @@ export default function VideoNoteBubble({
                   style={{ background: 'var(--violet)', boxShadow: 'var(--violet-glow)' }}
                 >
                   {requested && noteQuery.isLoading ? (
-                    <Loader2 size={20} className="animate-spin" aria-label="Loading video note" />
+                    <Loader2 size={20} className="animate-spin" aria-label={t('videoNote.loading')} />
                   ) : (
                     <Play size={20} className="ml-0.5" aria-hidden="true" />
                   )}
@@ -114,14 +116,14 @@ export default function VideoNoteBubble({
               </span>
               {requested && noteQuery.error && (
                 <span className="t-caption absolute inset-x-3 bottom-8 text-center text-white/75">
-                  Couldn&rsquo;t load — tap to retry
+                  {t('videoNote.loadError')}
                 </span>
               )}
             </button>
           )}
         </div>
         <span className="t-caption mt-1 px-1" style={{ color: 'var(--text-secondary)' }}>
-          {relTime(message.createdAt)}
+          {relTime(message.createdAt, t)}
         </span>
       </div>
     </motion.div>

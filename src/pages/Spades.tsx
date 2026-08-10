@@ -10,6 +10,7 @@ import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 type CardT = { s: number; r: number };
 type TrickPlay = { p: number; c: CardT };
@@ -42,18 +43,39 @@ const BOT_HEADS: (string | null)[] = [null, '/bot-heads/riley.png', '/bot-heads/
 
 // ---- Table chat (local table: you + labelled bots) ----
 type ChatMsg = { id: number; p: number; text: string };
-const CANNED = ['Good job', 'Perfect hand', "You're the best", 'Good luck', 'Well played', 'Thanks', 'Good game'];
-const BOT_GREETS = ['Good luck, have fun!', 'GL HF — may the best hand win.', 'Good luck out there!'];
-const BOT_PRAISE = ['Good job', 'Perfect hand', "You're the best", 'Nice one!', 'Well played'];
-const BOT_REPLIES = ['Thanks!', 'You too!', 'Appreciate it', 'Right back at you', 'Thanks, good luck to you too'];
-const BOT_GG = ['Good game!', 'GG — well played.', 'Good game! Rematch?'];
-const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+const SEAT_KEYS = ['seats.you', 'seats.botRiley', 'seats.botMaya', 'seats.botSam'] as const;
+const CANNED_KEYS = [
+  'spades.chat.canned.goodJob',
+  'spades.chat.canned.perfectHand',
+  'spades.chat.canned.youreTheBest',
+  'spades.chat.canned.goodLuck',
+  'spades.chat.canned.wellPlayed',
+  'spades.chat.canned.thanks',
+  'spades.chat.canned.goodGame',
+] as const;
+const BOT_GREET_KEYS = ['spades.chat.greet1', 'spades.chat.greet2', 'spades.chat.greet3'] as const;
+const BOT_PRAISE_KEYS = [
+  'spades.chat.canned.goodJob',
+  'spades.chat.canned.perfectHand',
+  'spades.chat.canned.youreTheBest',
+  'spades.chat.praiseNiceOne',
+  'spades.chat.canned.wellPlayed',
+] as const;
+const BOT_REPLY_KEYS = [
+  'spades.chat.replyThanks',
+  'spades.chat.replyYouToo',
+  'spades.chat.replyAppreciate',
+  'spades.chat.replyRightBack',
+  'spades.chat.replyThanksGl',
+] as const;
+const BOT_GG_KEYS = ['spades.chat.gg1', 'spades.chat.gg2', 'spades.chat.gg3'] as const;
+const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)];
 const randomBot = () => 1 + Math.floor(Math.random() * 3);
 const rankOf = (c: CardT) => FACE[c.r] ?? String(c.r);
 const isRed = (c: CardT) => c.s === 1 || c.s === 2;
 const teamOf = (p: number): Side => (p % 2 === 0 ? 'us' : 'them');
 
-function freshGame(): Game {
+function freshGame(dealingMsg: string): Game {
   return {
     hands: [[], [], [], []],
     bids: [null, null, null, null],
@@ -67,12 +89,12 @@ function freshGame(): Game {
     dealer: 0,
     score: { us: 0, them: 0 },
     bags: { us: 0, them: 0 },
-    msg: 'Dealing…',
+    msg: dealingMsg,
     gameOver: false,
   };
 }
 
-function dealInto(g: Game) {
+function dealInto(g: Game, biddingMsg: string) {
   const deck: CardT[] = [];
   for (let s = 0; s < 4; s++) for (let r = 2; r <= 14; r++) deck.push({ s, r });
   for (let i = deck.length - 1; i > 0; i--) {
@@ -92,7 +114,7 @@ function dealInto(g: Game) {
   g.turn = g.leader;
   g.phase = 'bid';
   g.gameOver = false;
-  g.msg = 'Bidding…';
+  g.msg = biddingMsg;
 }
 
 function botBid(h: CardT[]) {
@@ -172,7 +194,9 @@ function CardFace({ card, mini = false }: { card: CardT; mini?: boolean }) {
 }
 
 export default function Spades() {
+  const { t } = useTranslation('games');
   const navigate = useNavigate();
+  const seatName = (p: number) => t(SEAT_KEYS[p] ?? 'seats.you');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [, bump] = useReducer((x: number) => x + 1, 0);
 
@@ -207,7 +231,7 @@ export default function Spades() {
   const passConsumed = useRef(false);
   const consumeMut = trpc.ads.consumePass.useMutation();
 
-  const game = useRef<Game>(freshGame());
+  const game = useRef<Game>(freshGame(t('spades.msg.dealing')));
   const timers = useRef<number[]>([]);
 
   const clearTimers = useCallback(() => {
@@ -239,13 +263,13 @@ export default function Spades() {
 
   const sendChat = useCallback(
     (text: string) => {
-      const t = text.trim().slice(0, 120);
-      if (!t) return;
-      say(0, t);
+      const trimmed = text.trim().slice(0, 120);
+      if (!trimmed) return;
+      say(0, trimmed);
       setDraft('');
       // Local table: a random labelled bot replies. Stage 2 backend will carry
       // real player-to-player messages.
-      botSayLater(randomBot(), pick(BOT_REPLIES), 900 + Math.random() * 900);
+      botSayLater(randomBot(), t(pick(BOT_REPLY_KEYS)), 900 + Math.random() * 900);
     },
     [say, botSayLater],
   );
@@ -282,13 +306,13 @@ export default function Spades() {
     }
     g.phase = 'over';
     g.gameOver = g.score.us >= 250 || g.score.them >= 250;
-    if (g.bids[0] === 0 && g.tricks[0] === 0) botSayLater(2, "You're the best — nil made!", 900);
-    if (g.gameOver) botSayLater(randomBot(), pick(BOT_GG), 1700);
+    if (g.bids[0] === 0 && g.tricks[0] === 0) botSayLater(2, t('spades.chat.nilMade'), 900);
+    if (g.gameOver) botSayLater(randomBot(), t(pick(BOT_GG_KEYS)), 1700);
     g.msg = g.gameOver
       ? g.score.us > g.score.them
-        ? 'You and BOT Maya take the game.'
-        : 'BOT Riley and BOT Sam take the game.'
-      : 'Hand over.';
+        ? t('spades.msg.youTakeGame')
+        : t('spades.msg.botsTakeGame')
+      : t('spades.msg.handOver');
     renderNow();
   }, [renderNow, botSayLater]);
 
@@ -298,7 +322,7 @@ export default function Spades() {
       if (g.bids.every((b) => b !== null)) {
         g.phase = 'play';
         g.turn = g.leader;
-        g.msg = g.turn === 0 ? 'Your lead. Spades not broken.' : `${NAMES[g.turn]} leads…`;
+        g.msg = g.turn === 0 ? t('spades.msg.yourLead') : t('spades.msg.leads', { name: NAMES[g.turn] });
         renderNow();
         later(step, 0);
         return;
@@ -306,12 +330,12 @@ export default function Spades() {
       if (g.bidTurn !== 0) {
         g.bids[g.bidTurn] = botBid(g.hands[g.bidTurn]);
         g.bidTurn = (g.bidTurn + 1) % 4;
-        g.msg = 'Bidding…';
+        g.msg = t('spades.msg.bidding');
         renderNow();
         later(step, 430);
         return;
       }
-      g.msg = 'Your bid. Nil scores +100 if you take no tricks, −100 if you take any.';
+      g.msg = t('spades.msg.yourBid');
       renderNow();
       return;
     }
@@ -343,11 +367,11 @@ export default function Spades() {
 
       if (g.trick.length === 4) {
         const w = winnerOf(g.trick);
-        g.msg = w === 0 ? 'You take it.' : `${NAMES[w]} takes it.`;
+        g.msg = w === 0 ? t('spades.msg.youTakeIt') : t('spades.msg.takesIt', { name: NAMES[w] });
         renderNow();
         later(() => {
           g.tricks[w]++;
-          if (w === 0 && Math.random() < 0.35) botSayLater(2, pick(BOT_PRAISE), 500);
+          if (w === 0 && Math.random() < 0.35) botSayLater(2, t(pick(BOT_PRAISE_KEYS)), 500);
           g.leader = w;
           g.turn = w;
           g.trick = [];
@@ -375,8 +399,8 @@ export default function Spades() {
       passConsumed.current = false; // new match → first bid consumes a fresh pass
       setMatchUnlocked(false);
     }
-    dealInto(g);
-    if (resetScores) botSayLater(randomBot(), pick(BOT_GREETS), 1000);
+    dealInto(g, t('spades.msg.bidding'));
+    if (resetScores) botSayLater(randomBot(), t(pick(BOT_GREET_KEYS)), 1000);
     renderNow();
     later(step, 0);
   }, [clearTimers, later, renderNow, step, botSayLater]);
@@ -420,9 +444,13 @@ export default function Spades() {
   const teamInfo = (side: Side) => {
     const ps = side === 'us' ? [0, 2] : [1, 3];
     const bid = ps.every((p) => g.bids[p] !== null)
-      ? ps.map((p) => (g.bids[p] === 0 ? 'nil' : g.bids[p])).join('+')
+      ? ps.map((p) => (g.bids[p] === 0 ? t('spades.nil') : g.bids[p])).join('+')
       : '—';
-    return `bid ${bid} · ${ps.reduce((sum, p) => sum + g.tricks[p], 0)} tricks · ${g.bags[side]} bags`;
+    return t('spades.teamInfo', {
+      bid,
+      tricks: ps.reduce((sum, p) => sum + g.tricks[p], 0),
+      bags: g.bags[side],
+    });
   };
 
   const SPOT: Record<number, { left: string; top: string; scale: string }> = {
@@ -445,7 +473,7 @@ export default function Spades() {
           <div className="glass flex h-[52px] items-center rounded-full pl-1 pr-4">
             <button
               type="button"
-              aria-label="Back to Community"
+              aria-label={t('shared.backToCommunity')}
               onClick={() => navigate('/community')}
               className="glass-content flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
@@ -456,7 +484,7 @@ export default function Spades() {
               className="t-value flex-1 text-center font-bold"
               style={{ color: 'var(--text)', position: 'relative', zIndex: 1 }}
             >
-              Spades
+              {t('spades.title')}
             </span>
             {/* V88 — LiveKit voice. Bot table → disabled state; a human table
                 passes its matchId and the mic pill goes live (consent = tap). */}
@@ -465,13 +493,12 @@ export default function Spades() {
         </div>
 
         <header className="mt-6 px-5">
-          <p className="t-eyebrow">LOCAL TABLE</p>
+          <p className="t-eyebrow">{t('shared.localTable')}</p>
           <h1 className="t-heading mt-2" style={{ color: 'var(--text-ink)' }}>
-            You + BOT Maya vs BOT Riley + BOT Sam.
+            {t('spades.header')}
           </h1>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Playable now on this device. Every non-you seat is labelled BOT. Live
-            multiplayer Spades arrives with the Stage 2 community backend.
+            {t('spades.intro')}
           </p>
         </header>
 
@@ -484,9 +511,9 @@ export default function Spades() {
         {!accessLoading && !isAuthenticated && (
           <section className="mt-6 px-5">
             <GlassCard className="p-5">
-              <h2 className="t-title-sm">Sign in to take a seat.</h2>
+              <h2 className="t-title-sm">{t('shared.signInToSeat')}</h2>
               <BtnPrimary to={LOGIN_PATH} className="mt-4 w-full">
-                Sign in
+                {t('shared.signIn')}
               </BtnPrimary>
             </GlassCard>
           </section>
@@ -495,25 +522,24 @@ export default function Spades() {
         {!accessLoading && isAuthenticated && !canPlay && (
           <section className="mt-6 px-5">
             <GlassCard edge="amber" className="p-5">
-              <p className="t-eyebrow">OUT OF GAMES</p>
-              <h2 className="t-title-sm mt-1">Watch an ad, take a seat.</h2>
+              <p className="t-eyebrow">{t('spades.outOfGames')}</p>
+              <h2 className="t-title-sm mt-1">{t('spades.watchAdSeat')}</h2>
               <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                One short ad earns one game pass — or go ad-free with Resonance+ or X.
-                Dating core stays free, always.
+                {t('spades.watchAdBody')}
               </p>
               <BtnPrimary className="mt-4 w-full" onClick={() => setAdOpen(true)}>
                 <Clapperboard size={16} aria-hidden="true" />
-                Watch ad · get 1 game
+                {t('spades.watchAdGetGame')}
               </BtnPrimary>
               <BtnGlass to="/premium" className="mt-2.5 w-full">
-                Go ad-free
+                {t('spades.goAdFree')}
               </BtnGlass>
             </GlassCard>
           </section>
         )}
 
         {!accessLoading && isAuthenticated && canPlay && (
-          <section className="mt-6 px-3" aria-label="Spades game">
+          <section className="mt-6 px-3" aria-label={t('spades.gameAria')}>
             {!entitled && (
               <div
                 className="mb-3 flex items-center justify-between gap-3 rounded-[16px] px-4 py-3"
@@ -521,7 +547,7 @@ export default function Spades() {
               >
                 <p className="t-caption flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                   <Ticket size={15} style={{ color: '#FFD88F' }} aria-hidden="true" />
-                  {passes === 1 ? '1 game pass left' : `${passes} game passes left`} · one ad = one game
+                  {t('spades.passesLeft', { count: passes })} · {t('spades.oneAdOneGame')}
                 </p>
                 {passes < maxBanked && (
                   <button
@@ -530,7 +556,7 @@ export default function Spades() {
                     className="t-caption min-h-[36px] shrink-0 rounded-full px-3 font-semibold"
                     style={{ background: 'rgba(255,206,138,.14)', color: '#FFD88F' }}
                   >
-                    Watch ad
+                    {t('spades.watchAd')}
                   </button>
                 )}
               </div>
@@ -600,17 +626,17 @@ export default function Spades() {
                                 background: 'radial-gradient(120% 120% at 30% 20%, #7C93DE, #2C3970)',
                               }}
                             >
-                              <span className="t-caption font-bold text-white">YOU</span>
+                              <span className="t-caption font-bold text-white">{t('shared.youBadge')}</span>
                             </span>
                           )}
                         </span>
                       </div>
                       <div className="mt-2">
                         <b className="t-caption block text-white">
-                          {ISBOT[p] ? `BOT · ${NAMES[p]}` : NAMES[p]}
+                          {seatName(p)}
                         </b>
                         <span className="t-micro block text-white/60">
-                          {g.bids[p] !== null ? (g.bids[p] === 0 ? 'nil' : `bid ${g.bids[p]}`) : '—'} · {g.tricks[p]} won
+                          {g.bids[p] !== null ? (g.bids[p] === 0 ? t('spades.nil') : t('spades.bidN', { n: g.bids[p] })) : '—'} · {t('spades.wonCount', { count: g.tricks[p] })}
                         </span>
                       </div>
                     </div>
@@ -632,7 +658,7 @@ export default function Spades() {
                     className="t-heading"
                     style={{ color: '#FFE9C2', textShadow: '0 3px 22px rgba(255,170,60,.65)' }}
                   >
-                    {g.score.us > g.score.them ? 'You + BOT Maya win' : 'BOT Riley + BOT Sam win'}
+                    {g.score.us > g.score.them ? t('spades.youWinBanner') : t('spades.botsWinBanner')}
                   </div>
                   <div className="t-caption mt-1 uppercase tracking-[0.14em] text-white/80">
                     {g.score.us} – {g.score.them}
@@ -645,14 +671,14 @@ export default function Spades() {
               <GlassCard
                 className={cn('flex-1 p-3', teamOf(g.turn) === 'us' && g.phase === 'play' && 'glass-edge')}
               >
-                <p className="t-micro">YOU & BOT MAYA</p>
+                <p className="t-micro">{t('spades.youAndBotMaya')}</p>
                 <p className="t-title mt-1" style={{ color: 'var(--text)' }}>{g.score.us}</p>
                 <p className="t-micro mt-1" style={{ color: 'var(--text-secondary)' }}>{teamInfo('us')}</p>
               </GlassCard>
               <GlassCard
                 className={cn('flex-1 p-3', teamOf(g.turn) === 'them' && g.phase === 'play' && 'glass-edge')}
               >
-                <p className="t-micro">BOT RILEY & BOT SAM</p>
+                <p className="t-micro">{t('spades.botRileyAndBotSam')}</p>
                 <p className="t-title mt-1" style={{ color: 'var(--text)' }}>{g.score.them}</p>
                 <p className="t-micro mt-1" style={{ color: 'var(--text-secondary)' }}>{teamInfo('them')}</p>
               </GlassCard>
@@ -660,9 +686,9 @@ export default function Spades() {
 
             <GlassCard className="mt-4 p-4">
               <div className="flex items-baseline justify-between gap-2">
-                <p className="t-micro">TABLE CHAT</p>
+                <p className="t-micro">{t('spades.chat.title')}</p>
                 <p className="t-micro text-right" style={{ color: 'var(--text-secondary)' }}>
-                  local table — bot messages are labelled
+                  {t('spades.chat.note')}
                 </p>
               </div>
               <div
@@ -672,7 +698,7 @@ export default function Spades() {
               >
                 {chat.length === 0 && (
                   <p className="t-caption" style={{ color: 'var(--text-secondary)' }}>
-                    Say hi — tap a quick message below or type your own.
+                    {t('spades.chat.empty')}
                   </p>
                 )}
                 {chat.map((m) => (
@@ -682,7 +708,7 @@ export default function Spades() {
                         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white"
                         style={{ background: 'radial-gradient(120% 120% at 30% 20%, #7C93DE, #2C3970)' }}
                       >
-                        YOU
+                        {t('shared.youBadge')}
                       </span>
                     ) : (
                       <span className="relative h-7 w-7 shrink-0">
@@ -697,7 +723,7 @@ export default function Spades() {
                     )}
                     <div className="min-w-0">
                       <p className="t-micro" style={{ color: m.p === 0 ? 'var(--text-secondary)' : '#B07A2A' }}>
-                        {m.p === 0 ? 'You' : `BOT · ${NAMES[m.p]}`}
+                        {seatName(m.p)}
                       </p>
                       <p
                         className="t-caption mt-0.5 inline-block whitespace-pre-wrap break-words rounded-[10px] px-2.5 py-1.5"
@@ -709,16 +735,16 @@ export default function Spades() {
                   </div>
                 ))}
               </div>
-              <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Quick messages">
-                {CANNED.map((c) => (
+              <div className="mt-3 flex flex-wrap gap-1.5" aria-label={t('spades.chat.quickAria')}>
+                {CANNED_KEYS.map((k) => (
                   <button
-                    key={c}
+                    key={k}
                     type="button"
                     className="t-caption min-h-[36px] rounded-full px-3"
                     style={{ background: 'var(--field)', color: 'var(--text)' }}
-                    onClick={() => sendChat(c)}
+                    onClick={() => sendChat(t(k))}
                   >
-                    {c}
+                    {t(k)}
                   </button>
                 ))}
               </div>
@@ -733,12 +759,12 @@ export default function Spades() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   maxLength={120}
-                  placeholder="Type a message…"
-                  aria-label="Type a table message"
+                  placeholder={t('spades.chat.placeholder')}
+                  aria-label={t('spades.chat.inputAria')}
                   className="t-caption h-11 min-w-0 flex-1 rounded-[12px] px-3 outline-none"
                   style={{ background: 'var(--field)', color: 'var(--text)' }}
                 />
-                <BtnPrimary type="submit" className="h-11 min-h-[44px] min-w-[44px] px-3.5" ariaLabel="Send message">
+                <BtnPrimary type="submit" className="h-11 min-h-[44px] min-w-[44px] px-3.5" ariaLabel={t('spades.chat.sendAria')}>
                   <Send size={16} aria-hidden="true" />
                 </BtnPrimary>
               </form>
@@ -749,7 +775,7 @@ export default function Spades() {
             </p>
 
             {g.phase === 'bid' && g.bidTurn === 0 && (
-              <div className="mt-1 flex flex-wrap justify-center gap-1.5" aria-label="Your bid">
+              <div className="mt-1 flex flex-wrap justify-center gap-1.5" aria-label={t('spades.yourBidAria')}>
                 {Array.from({ length: 14 }, (_, i) => (
                   <button
                     key={i}
@@ -759,13 +785,13 @@ export default function Spades() {
                     onClick={() => placeBid(i)}
                     disabled={consumeMut.isPending}
                   >
-                    {i === 0 ? 'Nil' : i}
+                    {i === 0 ? t('spades.nilBid') : i}
                   </button>
                 ))}
               </div>
             )}
 
-            <div className="mt-4 flex justify-center overflow-visible pt-3" aria-label="Your hand">
+            <div className="mt-4 flex justify-center overflow-visible pt-3" aria-label={t('spades.yourHandAria')}>
               {g.hands[0].map((card, i) => {
                 const enabled = legalHand.includes(card);
                 return (
@@ -774,7 +800,7 @@ export default function Spades() {
                     type="button"
                     disabled={!enabled}
                     onClick={() => play(0, card)}
-                    aria-label={`${rankOf(card)} of ${SUIT_NAME[card.s]}`}
+                    aria-label={t('spades.cardAria', { rank: rankOf(card), suit: t(`spades.suit.${SUIT_NAME[card.s]}`) })}
                     className={cn(
                       'relative h-[66px] w-[47px] shrink-0 rounded-[6px] shadow-xl transition-transform duration-fast',
                       i > 0 && '-ml-[18px]',
@@ -793,15 +819,15 @@ export default function Spades() {
               <div className="mt-5 flex justify-center">
                 <BtnPrimary className="h-11 px-6" onClick={() => newTable(g.gameOver)}>
                   <RotateCcw size={16} aria-hidden="true" />
-                  {g.gameOver ? 'New game' : 'Next hand'}
+                  {g.gameOver ? t('shared.newGame') : t('spades.nextHand')}
                 </BtnPrimary>
               </div>
             )}
             {g.phase !== 'over' && (
               <div className="mt-5 flex justify-center">
-                <BtnGlass className="h-11 px-5" onClick={() => newTable(true)} ariaLabel="Restart table">
+                <BtnGlass className="h-11 px-5" onClick={() => newTable(true)} ariaLabel={t('spades.restartAria')}>
                   <RotateCcw size={16} aria-hidden="true" />
-                  Restart
+                  {t('spades.restart')}
                 </BtnGlass>
               </div>
             )}

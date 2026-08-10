@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Check, Languages, Loader2, Pause, Play } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
@@ -33,20 +34,21 @@ export function TranslateTargetSheet({
   onPick: (code: string) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation('connect');
   const current = open ? lastTarget() : null;
   return (
     <GlassSheet open={open} onClose={onClose} labelledBy="translate-target-title">
       <div className="px-5 pb-6 pt-1">
         <h2 id="translate-target-title" className="t-title" style={{ color: 'var(--text)' }}>
-          Translate to
+          {t('translate.title')}
         </h2>
         <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-          Resonance Translate keeps everything in-app.
+          {t('translate.caption')}
         </p>
         <div className="mt-3 flex flex-col gap-1.5">
           {languages.length === 0 && (
             <p className="t-caption py-2" style={{ color: 'var(--text-secondary)' }}>
-              No languages available.
+              {t('translate.none')}
             </p>
           )}
           {languages.map((lang) => {
@@ -78,7 +80,7 @@ export function TranslateTargetSheet({
                   {lang.code}
                 </span>
                 {active && (
-                  <Check size={14} style={{ color: 'var(--violet)' }} aria-label="Last used" />
+                  <Check size={14} style={{ color: 'var(--violet)' }} aria-label={t('translate.lastUsed')} />
                 )}
               </button>
             );
@@ -102,6 +104,7 @@ export function TextTranslation({
   source?: string;
   onError: (unconfigured: boolean) => void;
 }) {
+  const { t } = useTranslation('connect');
   const reduced = useReducedMotion();
   const [showing, setShowing] = useState(true);
   const translateQuery = trpc.translate.text.useQuery(
@@ -123,7 +126,7 @@ export function TextTranslation({
         role="status"
       >
         <Loader2 size={12} className="animate-spin" aria-hidden="true" />
-        Translating…
+        {t('translate.translating')}
       </p>
     );
   }
@@ -144,7 +147,7 @@ export function TextTranslation({
             {data.translation}
           </p>
           <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-            Translated from {from} · Resonance Translate
+            {t('translate.from', { source: from })}
           </p>
         </>
       ) : null}
@@ -154,7 +157,7 @@ export function TextTranslation({
         className="t-micro font-bold underline"
         style={{ color: 'var(--text-secondary)' }}
       >
-        {showing ? 'Show original' : 'Show translation'}
+        {showing ? t('translate.showOriginal') : t('translate.showTranslation')}
       </button>
     </motion.div>
   );
@@ -172,6 +175,7 @@ export function VideoNoteTranslation({
   target: string;
   onError: (unconfigured: boolean) => void;
 }) {
+  const { t } = useTranslation('connect');
   const reduced = useReducedMotion();
   const voiceMut = trpc.translate.voice.useMutation();
   const firedRef = useRef(false);
@@ -196,7 +200,7 @@ export function VideoNoteTranslation({
         role="status"
       >
         <Loader2 size={12} className="animate-spin" aria-hidden="true" />
-        Listening &amp; translating…
+        {t('translate.listening')}
       </p>
     );
   }
@@ -218,14 +222,14 @@ export function VideoNoteTranslation({
       transition={{ duration: 0.2 }}
     >
       <p className="t-caption" style={{ color: 'var(--text-secondary)' }}>
-        <span className="font-bold">Heard: </span>
+        <span className="font-bold">{t('translate.heard')} </span>
         {data.transcript}
       </p>
       <p className="t-caption italic" style={{ color: 'var(--text)' }}>
         {data.translation}
       </p>
       <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-        Translated from {data.detectedSource ?? 'auto'} · Resonance Translate
+        {t('translate.from', { source: data.detectedSource ?? 'auto' })}
       </p>
       {data.audioDataUrl && (
         <>
@@ -244,14 +248,14 @@ export function VideoNoteTranslation({
               't-caption mt-1 flex min-h-[44px] items-center gap-1.5 rounded-full px-3.5 py-1.5',
             )}
             style={{ background: 'var(--field)', color: 'var(--text)' }}
-            aria-label={playing ? 'Pause translated audio' : 'Play translated audio'}
+            aria-label={playing ? t('translate.pauseAria') : t('translate.playAria')}
           >
             {playing ? (
               <Pause size={12} aria-hidden="true" />
             ) : (
               <Play size={12} aria-hidden="true" />
             )}
-            Play translated
+            {t('translate.playTranslated')}
           </button>
         </>
       )}

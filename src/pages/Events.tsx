@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { UIEvent } from 'react';
 import {
   AnimatePresence,
@@ -34,13 +35,13 @@ import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
 
 const CATEGORIES = [
-  { key: 'all', label: 'All' },
-  { key: 'tonight', label: 'Tonight' },
-  { key: 'mixers', label: 'Mixers' },
-  { key: 'classes', label: 'Classes' },
-  { key: 'outdoors', label: 'Outdoors' },
-  { key: 'culture', label: 'Culture' },
-  { key: 'food', label: 'Food & Drink' },
+  { key: 'all', labelKey: 'events.catAll' },
+  { key: 'tonight', labelKey: 'events.catTonight' },
+  { key: 'mixers', labelKey: 'events.catMixers' },
+  { key: 'classes', labelKey: 'events.catClasses' },
+  { key: 'outdoors', labelKey: 'events.catOutdoors' },
+  { key: 'culture', labelKey: 'events.catCulture' },
+  { key: 'food', labelKey: 'events.catFood' },
 ] as const;
 
 type CategoryKey = (typeof CATEGORIES)[number]['key'];
@@ -71,6 +72,7 @@ function matchesCategory(e: EventItem, filter: CategoryKey): boolean {
 }
 
 export default function Events() {
+  const { t } = useTranslation('connect');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const utils = trpc.useUtils();
   const reduced = useReducedMotion();
@@ -152,7 +154,7 @@ export default function Events() {
     },
     onSuccess: () =>
       showToast(
-        'See you there — attendees can now message you via the event thread.',
+        t('events.toastRsvp'),
         <BadgeCheck size={14} style={{ color: 'var(--ok)' }} aria-hidden="true" />,
       ),
     onSettled: () => utils.events.feed.invalidate(),
@@ -185,13 +187,13 @@ export default function Events() {
       if (ctx?.prev)
         utils.events.feed.setData({ area: selectedArea }, ctx.prev);
     },
-    onSuccess: () => showToast('RSVP removed.'),
+    onSuccess: () => showToast(t('events.toastRsvpRemoved')),
     onSettled: () => utils.events.feed.invalidate(),
   });
 
   const feedbackMutation = trpc.events.feedback.useMutation({
-    onSuccess: () => showToast('Logged toward your weekly goal.'),
-    onError: () => showToast("Couldn't save that — try again."),
+    onSuccess: () => showToast(t('events.toastFeedback')),
+    onError: () => showToast(t('events.toastSaveError')),
   });
 
   const submitFeedback = useCallback(
@@ -243,7 +245,7 @@ export default function Events() {
   const loading = authLoading || (isAuthenticated && feedQuery.isLoading);
 
   const feedArea = feedQuery.data?.area ?? null;
-  const feedFreshness = feedArea ? fmtAgo(feedArea.lastUpdatedAt) : null;
+  const feedFreshness = feedArea ? fmtAgo(feedArea.lastUpdatedAt, t) : null;
 
   return (
     <div className="relative h-full overflow-hidden">
@@ -252,16 +254,16 @@ export default function Events() {
         <header className="flex items-start justify-between px-5 pt-4">
           <div>
             <h1 className="t-heading" style={{ color: 'var(--text-ink)' }}>
-              Events
+              {t('events.header')}
             </h1>
             <button
               type="button"
               className="t-micro -mx-2 mt-0.5 flex min-h-[36px] items-center px-2"
               style={{ color: 'var(--text-secondary)' }}
               onClick={() => setAreaSheetOpen(true)}
-              aria-label="Change area"
+              aria-label={t('events.changeArea')}
             >
-              {selectedAreaName ? selectedAreaName.toUpperCase() : 'ALL CITIES'}
+              {selectedAreaName ? selectedAreaName.toUpperCase() : t('events.allCities')}
             </button>
             {/* — Engine freshness line — */}
             {feedArea && (
@@ -270,14 +272,14 @@ export default function Events() {
                 style={{ color: 'var(--text-secondary)' }}
               >
                 {feedFreshness
-                  ? `Updated ${feedFreshness} · kept fresh by the event agent`
-                  : 'Updating… · kept fresh by the event agent'}
+                  ? t('events.freshnessUpdated', { ago: feedFreshness })
+                  : t('events.freshnessUpdating')}
               </p>
             )}
           </div>
           <button
             type="button"
-            aria-label="Filter events"
+            aria-label={t('events.filterAria')}
             className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
             style={{ color: 'var(--text-ink)' }}
             onClick={() => setFilterSheetOpen(true)}
@@ -290,7 +292,7 @@ export default function Events() {
         <div
           className="no-scrollbar mt-3 flex gap-2 overflow-x-auto px-5"
           role="tablist"
-          aria-label="Event categories"
+          aria-label={t('events.categoriesAria')}
         >
           {CATEGORIES.map((c, i) => {
             const selected = filter === c.key;
@@ -320,7 +322,7 @@ export default function Events() {
                     : undefined,
                 }}
               >
-                {c.label}
+                {t(c.labelKey)}
               </motion.button>
             );
           })}
@@ -336,11 +338,11 @@ export default function Events() {
               exit={reduced ? { opacity: 0 } : { opacity: 0, y: -16, height: 0 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
               className="mt-4 overflow-hidden px-5"
-              aria-label="My RSVPs"
+              aria-label={t('events.myRsvps')}
             >
               <GlassCard className="p-4">
                 <p className="t-micro" style={{ color: 'var(--text)' }}>
-                  GOING · {myRsvps.length}
+                  {t('events.goingCount', { count: myRsvps.length })}
                 </p>
                 <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto">
                   {myRsvps.map((e) => (
@@ -374,7 +376,7 @@ export default function Events() {
 
         {/* — Loading skeleton — */}
         {loading && (
-          <div className="mt-5 flex flex-col gap-4 px-5" aria-label="Loading events">
+          <div className="mt-5 flex flex-col gap-4 px-5" aria-label={t('events.loading')}>
             <div className="glass skeleton-shimmer h-72 rounded-[28px]" />
             {[0, 1, 2].map((i) => (
               <div
@@ -397,7 +399,7 @@ export default function Events() {
               duration: 0.42,
               ease: [0.34, 1.56, 0.64, 1],
             }}
-            aria-label="Featured event"
+            aria-label={t('events.featured')}
           >
             <div className="relative aspect-[3/2] overflow-hidden rounded-[28px]">
               <motion.img
@@ -413,15 +415,15 @@ export default function Events() {
             </div>
             <GlassCard edge="amber" className="relative z-10 mx-3 -mt-20 p-5">
               <p className="t-eyebrow">
-                FEATURED · {fmtEyebrowDate(eventDate(heroEvent))}
+                {t('events.featuredEyebrow', { date: fmtEyebrowDate(eventDate(heroEvent)) })}
               </p>
               <h2 className="t-title-sm mt-1.5">{heroEvent.title}</h2>
               <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-                {heroEvent.goingCount} verified attendees · 2 km
-                {heroEvent.hostName ? ` · Hosted by ${heroEvent.hostName}` : ''}
+                {t('events.attendees', { count: heroEvent.goingCount })}
+                {heroEvent.hostName ? ` · ${t('events.hostedBy', { name: heroEvent.hostName })}` : ''}
               </p>
               <div className="mt-4 flex items-center justify-between gap-3">
-                <div className="flex items-center" aria-label="Attendee preview">
+                <div className="flex items-center" aria-label={t('events.attendeePreview')}>
                   {ATTENDEE_AVATARS.map((src, i) => (
                     <motion.img
                       key={src}
@@ -454,7 +456,7 @@ export default function Events() {
                 </div>
                 <RsvpButton
                   variant="primary"
-                  label="RSVP — free"
+                  label={t('events.rsvpFree')}
                   going={heroEvent.myRsvp === 'going'}
                   pending={rsvpMutation.isPending || cancelMutation.isPending}
                   onToggle={() => toggleRsvp(heroEvent)}
@@ -466,7 +468,7 @@ export default function Events() {
 
         {/* — §2 Event list — */}
         {!loading && listEvents.length > 0 && (
-          <section className="mt-5 flex flex-col gap-3 px-5" aria-label="Upcoming events">
+          <section className="mt-5 flex flex-col gap-3 px-5" aria-label={t('events.upcomingEvents')}>
             {listEvents.map((e, i) => (
               <motion.button
                 key={e.id}
@@ -503,13 +505,13 @@ export default function Events() {
                       style={{ background: 'var(--field-focus)', color: 'var(--text)' }}
                     >
                       <Users size={12} aria-hidden="true" />
-                      {e.goingCount} attending
+                      {t('events.attending', { count: e.goingCount })}
                     </span>
                     <span
                       className="t-caption inline-flex items-center rounded-full px-2 py-1"
                       style={{ background: 'var(--field-focus)', color: 'var(--text)' }}
                     >
-                      2 people match your intent
+                      {t('events.intentMatch')}
                     </span>
                   </span>
                 </span>
@@ -528,8 +530,7 @@ export default function Events() {
           <section className="mt-16 flex flex-col items-center gap-3 px-8 text-center">
             <BrandMark size={56} />
             <h2 className="t-title-sm" style={{ color: 'var(--text-ink)' }}>
-              The agent is setting up {selectedAreaName ?? 'this area'} — check
-              back in a moment
+              {t('events.emptyAgentTitle', { area: selectedAreaName ?? t('events.thisArea') })}
             </h2>
             <BtnGlass
               onClick={() => {
@@ -537,7 +538,7 @@ export default function Events() {
                 areasQuery.refetch();
               }}
             >
-              Refresh
+              {t('events.refresh')}
             </BtnGlass>
           </section>
         )}
@@ -545,22 +546,22 @@ export default function Events() {
           <section className="mt-16 flex flex-col items-center gap-3 px-8 text-center">
             <BrandMark size={56} />
             <h2 className="t-title-sm" style={{ color: 'var(--text-ink)' }}>
-              No events here yet.
+              {t('events.emptyTitle')}
             </h2>
             <p className="t-body" style={{ color: 'var(--text-secondary)' }}>
-              New gatherings land every week — worth the wait.
+              {t('events.emptyBody')}
             </p>
-            <BtnGlass onClick={() => showToast("We'll let you know when something lands.")}>
-              Get notified
+            <BtnGlass onClick={() => showToast(t('events.notifyToast'))}>
+              {t('events.getNotified')}
             </BtnGlass>
           </section>
         )}
 
         {/* — Recently (past events collapse, subdued) — */}
         {!loading && past.length > 0 && (
-          <section className="mt-8 px-5 opacity-70" aria-label="Recently">
+          <section className="mt-8 px-5 opacity-70" aria-label={t('events.recentlyAria')}>
             <p className="t-micro mb-2" style={{ color: 'var(--text-secondary)' }}>
-              RECENTLY
+              {t('events.recently')}
             </p>
             <div className="flex flex-col gap-3">
               {past.map((e) => (
@@ -581,21 +582,21 @@ export default function Events() {
                         {e.title}
                       </p>
                       <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                        {fmtListDate(eventDate(e))} · {e.goingCount} went
+                        {fmtListDate(eventDate(e))} · {t('events.went', { count: e.goingCount })}
                       </p>
                     </div>
                   </div>
                   {e.myRsvp === 'going' && (
                     <div>
                       <p className="t-caption" style={{ color: 'var(--text)' }}>
-                        How was {e.title}?
+                        {t('events.howWas', { title: e.title })}
                       </p>
                       <div className="mt-1.5 flex items-center gap-1">
                         {[1, 2, 3, 4, 5].map((star, i) => (
                           <motion.button
                             key={star}
                             type="button"
-                            aria-label={`${star} stars`}
+                            aria-label={t('events.stars', { count: star })}
                             className="flex min-h-[44px] min-w-[44px] items-center justify-center"
                             initial={reduced ? false : { opacity: 0, scale: 0.6 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -630,7 +631,7 @@ export default function Events() {
                             setMetAnyone((m) => ({ ...m, [e.id]: !m[e.id] }))
                           }
                         >
-                          Met anyone?
+                          {t('events.metAnyone')}
                         </button>
                         <button
                           type="button"
@@ -639,7 +640,7 @@ export default function Events() {
                           style={{ background: 'var(--violet)' }}
                           onClick={() => submitFeedback(e)}
                         >
-                          {feedbackMutation.isPending ? 'Saving…' : 'Submit'}
+                          {feedbackMutation.isPending ? t('events.saving') : t('events.submit')}
                         </button>
                       </div>
                     </div>
@@ -655,9 +656,9 @@ export default function Events() {
           <section className="mt-16 flex flex-col items-center gap-4 px-8 text-center">
             <BrandMark size={56} />
             <h2 className="t-title-sm" style={{ color: 'var(--text-ink)' }}>
-              Sign in to see events near you.
+              {t('events.authTitle')}
             </h2>
-            <BtnPrimary to={LOGIN_PATH}>Sign in</BtnPrimary>
+            <BtnPrimary to={LOGIN_PATH}>{t('events.signIn')}</BtnPrimary>
           </section>
         )}
       </div>
@@ -682,7 +683,7 @@ export default function Events() {
       >
         <div className="px-5 pb-8">
           <h2 id="event-filter-title" className="t-title-sm mt-2">
-            Categories
+            {t('events.categories')}
           </h2>
           <div className="mt-4 flex flex-wrap gap-2">
             {CATEGORIES.map((c) => {
@@ -707,7 +708,7 @@ export default function Events() {
                     setFilterSheetOpen(false);
                   }}
                 >
-                  {c.label}
+                  {t(c.labelKey)}
                 </button>
               );
             })}
@@ -731,14 +732,14 @@ export default function Events() {
       >
         <div className="px-5 pb-8">
           <h2 id="rsvp-consent-title" className="t-title-sm mt-2">
-            Before you RSVP
+            {t('events.consentTitle')}
           </h2>
           <p className="t-body mt-2" style={{ color: 'var(--text)' }}>
-            Your photo will be visible to attendees for this event.
+            {t('events.consentBody')}
           </p>
           <div className="mt-5 flex gap-2">
             <BtnGlass className="flex-1" onClick={() => setConsentEvent(null)}>
-              Not now
+              {t('events.notNow')}
             </BtnGlass>
             <BtnPrimary
               className="flex-1"
@@ -750,7 +751,7 @@ export default function Events() {
                 setConsentEvent(null);
               }}
             >
-              Got it — RSVP
+              {t('events.consentRsvp')}
             </BtnPrimary>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { Flag, Ban, Share2, BookOpen, Check } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
@@ -6,7 +7,14 @@ import { trpc } from '@/providers/trpc';
 import { firstNameOf } from '@/components/chat/types';
 import { cn } from '@/lib/utils';
 
-const REASONS = ['Spam', 'Abuse', 'Fake', 'Under 18', 'Other'];
+/* Values are sent to the server as-is — only the labels are localized. */
+const REASONS = [
+  { value: 'Spam', labelKey: 'safety.reasonSpam' },
+  { value: 'Abuse', labelKey: 'safety.reasonAbuse' },
+  { value: 'Fake', labelKey: 'safety.reasonFake' },
+  { value: 'Under 18', labelKey: 'safety.reasonUnder18' },
+  { value: 'Other', labelKey: 'safety.reasonOther' },
+] as const;
 
 /**
  * SafetySheet — chat.md §6
@@ -28,11 +36,12 @@ export default function SafetySheet({
   onToast: (text: string) => void;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation('connect');
   const [reason, setReason] = useState<string | null>(null);
   const [detail, setDetail] = useState('');
   const report = trpc.safety.report.useMutation();
   const block = trpc.safety.block.useMutation();
-  const name = firstNameOf(peerName);
+  const name = firstNameOf(peerName, t('chat.them'));
 
   const submitReport = () => {
     if (!peerUserId || !reason) return;
@@ -40,7 +49,7 @@ export default function SafetySheet({
       { targetUserId: peerUserId, reason, detail: detail.trim() || undefined },
       {
         onSuccess: () => {
-          onToast('Report sent — our team will review.');
+          onToast(t('safety.toastReportSent'));
           onClose();
         },
       },
@@ -53,7 +62,7 @@ export default function SafetySheet({
       { targetUserId: peerUserId },
       {
         onSuccess: () => {
-          onToast(`${name} blocked. They won't be notified.`);
+          onToast(t('safety.toastBlocked', { name }));
           onClose();
           navigate('/matches');
         },
@@ -66,37 +75,37 @@ export default function SafetySheet({
     if (navigator.clipboard) {
       navigator.clipboard.writeText(link).catch(() => undefined);
     }
-    onToast('Emergency context link copied.');
+    onToast(t('safety.toastLinkCopied'));
   };
 
   return (
     <GlassSheet open={open} onClose={onClose} labelledBy="safety-title">
       <div className="max-h-[74dvh] overflow-y-auto px-5 pb-6 pt-1">
         <h2 id="safety-title" className="t-title" style={{ color: 'var(--text)' }}>
-          Safety tools
+          {t('safety.title')}
         </h2>
 
         {/* Report */}
         <section className="mt-4">
           <p className="t-caption flex items-center gap-1.5 font-bold" style={{ color: 'var(--text)' }}>
             <Flag size={13} style={{ color: 'var(--danger)' }} aria-hidden="true" />
-            Report {name}
+            {t('safety.reportName', { name })}
           </p>
-          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Report reason">
+          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t('safety.reportReasonAria')}>
             {REASONS.map((r) => (
               <button
-                key={r}
+                key={r.value}
                 type="button"
-                onClick={() => setReason(r)}
-                className={cn('t-caption min-h-[44px] rounded-full px-3 py-1.5', reason === r && 'font-bold')}
+                onClick={() => setReason(r.value)}
+                className={cn('t-caption min-h-[44px] rounded-full px-3 py-1.5', reason === r.value && 'font-bold')}
                 style={{
                   background: 'var(--field)',
                   color: 'var(--text)',
-                  boxShadow: reason === r ? 'inset 0 0 0 1.5px var(--violet)' : 'none',
+                  boxShadow: reason === r.value ? 'inset 0 0 0 1.5px var(--violet)' : 'none',
                 }}
-                aria-pressed={reason === r}
+                aria-pressed={reason === r.value}
               >
-                {r}
+                {t(r.labelKey)}
               </button>
             ))}
           </div>
@@ -104,10 +113,10 @@ export default function SafetySheet({
             value={detail}
             onChange={(e) => setDetail(e.target.value)}
             rows={2}
-            placeholder="Anything else we should know? (optional)"
+            placeholder={t('safety.detailsPlaceholder')}
             className="t-body mt-2 w-full resize-none rounded-2xl px-3.5 py-2.5 outline-none focus:ring-1 focus:ring-[var(--violet)]"
             style={{ background: 'var(--field)', color: 'var(--text)' }}
-            aria-label="Report details"
+            aria-label={t('safety.detailsAria')}
           />
           <button
             type="button"
@@ -116,7 +125,7 @@ export default function SafetySheet({
             className="t-button mt-2 h-11 min-h-[44px] w-full rounded-full disabled:opacity-50"
             style={{ color: 'var(--danger)', boxShadow: 'inset 0 0 0 1px var(--danger)' }}
           >
-            {report.isPending ? 'Sending…' : 'Send report'}
+            {report.isPending ? t('safety.sending') : t('safety.sendReport')}
           </button>
         </section>
 
@@ -127,10 +136,10 @@ export default function SafetySheet({
         >
           <p className="t-caption flex items-center gap-1.5 font-bold" style={{ color: 'var(--text)' }}>
             <Ban size={13} style={{ color: 'var(--danger)' }} aria-hidden="true" />
-            Block {name}
+            {t('safety.blockName', { name })}
           </p>
           <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Quiet and immediate. They won't be notified.
+            {t('safety.blockExplainer')}
           </p>
           <button
             type="button"
@@ -139,7 +148,7 @@ export default function SafetySheet({
             className="t-button mt-2 h-11 min-h-[44px] w-full rounded-full disabled:opacity-50"
             style={{ color: 'var(--danger)', boxShadow: 'inset 0 0 0 1px var(--danger)' }}
           >
-            {block.isPending ? 'Blocking…' : `Block ${name}`}
+            {block.isPending ? t('safety.blocking') : t('safety.blockName', { name })}
           </button>
         </section>
 
@@ -155,7 +164,7 @@ export default function SafetySheet({
             style={{ background: 'var(--field)', color: 'var(--text)' }}
           >
             <Share2 size={15} aria-hidden="true" />
-            Share chat with a friend
+            {t('safety.shareChat')}
           </button>
           <a
             href="https://www.rainn.org/articles/what-is-consent"
@@ -165,11 +174,11 @@ export default function SafetySheet({
             style={{ background: 'var(--field)', color: 'var(--text)' }}
           >
             <BookOpen size={15} aria-hidden="true" />
-            Learn about consent tools
+            {t('safety.consentTools')}
           </a>
           {report.isSuccess && (
             <p className="t-caption mt-2 flex items-center gap-1.5" style={{ color: 'var(--ok)' }}>
-              <Check size={12} aria-hidden="true" /> Report received.
+              <Check size={12} aria-hidden="true" /> {t('safety.reportReceived')}
             </p>
           )}
         </section>

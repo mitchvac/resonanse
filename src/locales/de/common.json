@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "primary": "Hauptnavigation",
+    "discover": "Entdecken",
+    "likes": "Likes",
+    "matches": "Matches",
+    "events": "Events",
+    "community": "Community",
+    "profile": "Profil",
+    "likesBadge": "{{count}} Likes",
+    "unreadMessages": "Ungelesene Nachrichten"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "backHome": "Zurück zur Startseite"
+  },
+  "onboarding": {
+    "continue": "Weiter",
+    "saving": "Speichern…",
+    "saveExit": "Speichern & beenden",
+    "saveError": "Konnte nicht gespeichert werden — prüfe deine Verbindung und versuche es erneut.",
+    "demoHint": "Demo-Modus — melde dich an, um deinen Fortschritt zu speichern"
+  },
+  "footer": {
+    "tagline": "Dating mit Absicht",
+    "description": "Eine tägliche Auswahl an Menschen, die deine Absicht teilen — und die Tools, um aus einem Match ein erstes Date zu machen.",
+    "product": "Produkt",
+    "company": "Unternehmen",
+    "legal": "Rechtliches",
+    "safety": "Sicherheit",
+    "copyright": "© Resonance. Gemacht für echte Begegnungen.",
+    "themeNote": "Warm Glass am Tag, Night HUD in der Nacht — wechsle in den Einstellungen.",
+    "signIn": "Anmelden",
+    "links": {
+      "dailyQueue": "Tägliche Auswahl",
+      "modes": "Modi",
+      "events": "Events",
+      "about": "Über uns",
+      "careers": "Karriere",
+      "press": "Presse",
+      "contact": "Kontakt",
+      "privacy": "Datenschutz",
+      "terms": "AGB",
+      "cookies": "Cookies",
+      "dataRequests": "Datenanfragen",
+      "verification": "Verifizierung",
+      "communityRules": "Community-Regeln",
+      "report": "Melden",
+      "consentTools": "Consent-Tools"
+    }
+  }
+}

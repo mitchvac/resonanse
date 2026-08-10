@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
@@ -35,6 +36,7 @@ type Seat =
   | { kind: 'locked' };
 
 function SeatAvatar({ seat, size = 40 }: { seat: Seat; size?: number }) {
+  const { t } = useTranslation('connect');
   if (seat.kind === 'person') {
     return (
       <span className="relative">
@@ -50,7 +52,7 @@ function SeatAvatar({ seat, size = 40 }: { seat: Seat; size?: number }) {
             size={14}
             className="absolute -bottom-0.5 -right-0.5 rounded-full"
             style={{ color: 'var(--ok)', background: 'var(--stage-base)' }}
-            aria-label="Verified"
+            aria-label={t('community.verified')}
           />
         )}
       </span>
@@ -67,7 +69,7 @@ function SeatAvatar({ seat, size = 40 }: { seat: Seat; size?: number }) {
           color: 'var(--text-secondary)',
           boxShadow: '0 0 0 1.5px var(--ring-stroke)',
         }}
-        aria-label="Labelled bot"
+        aria-label={t('community.labelledBot')}
       >
         B
       </span>
@@ -83,7 +85,7 @@ function SeatAvatar({ seat, size = 40 }: { seat: Seat; size?: number }) {
           background: 'var(--field)',
           color: 'var(--text-secondary)',
         }}
-        aria-label="Seat opens with Stage 2"
+        aria-label={t('community.seatStage2')}
       >
         <Lock size={14} aria-hidden="true" />
       </span>
@@ -98,18 +100,18 @@ function SeatAvatar({ seat, size = 40 }: { seat: Seat; size?: number }) {
         background: 'var(--field)',
         color: 'var(--text-secondary)',
       }}
-      aria-label="Open seat"
+      aria-label={t('community.openSeatAria')}
     >
       <Plus size={16} aria-hidden="true" />
     </span>
   );
 }
 
-function seatLabel(seat: Seat) {
+function seatLabel(seat: Seat, t: (key: string) => string) {
   if (seat.kind === 'person') return seat.handle;
   if (seat.kind === 'bot') return seat.handle; // always prefixed BOT ·
-  if (seat.kind === 'locked') return 'Stage 2';
-  return 'open seat';
+  if (seat.kind === 'locked') return t('community.stage2');
+  return t('community.openSeat');
 }
 
 /* ------------------------------------------------------------------ */
@@ -132,12 +134,13 @@ function TableRoom({
   live?: boolean;
   onSeat: () => void;
 }) {
+  const { t } = useTranslation('connect');
   return (
     <button
       type="button"
       onClick={onSeat}
       className="block w-full text-left"
-      aria-label={`${title} — ${status}`}
+      aria-label={t('community.roomAria', { title, status })}
     >
       <div
         className="relative mx-auto w-full max-w-[320px] rounded-[40px] px-4 pb-3 pt-5"
@@ -188,7 +191,7 @@ function TableRoom({
                   className="t-micro text-center leading-tight"
                   style={{ color: seat.kind === 'person' ? 'var(--text)' : 'var(--text-secondary)' }}
                 >
-                  {seatLabel(seat)}
+                  {seatLabel(seat, t)}
                 </span>
               </span>
             );
@@ -206,6 +209,7 @@ function TableRoom({
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function Community() {
+  const { t } = useTranslation('connect');
   const navigate = useNavigate();
   const reduced = useReducedMotion();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -218,12 +222,12 @@ export default function Community() {
   const trial = entitlementsQuery.data?.trial ?? null;
 
   const status = !isAuthenticated
-    ? 'Sign in to take a seat'
+    ? t('community.statusSignIn')
     : trial?.active
-      ? `Free trial · ${trial.daysLeft} day${trial.daysLeft === 1 ? '' : 's'} left`
+      ? t('community.statusTrial', { count: trial.daysLeft })
       : entitlement && entitlement.tier !== 'free'
-        ? 'Community access on'
-        : 'Lobby visible · seating locked';
+        ? t('community.statusAccessOn')
+        : t('community.statusLocked');
 
   const rise = (delay = 0) =>
     ({
@@ -241,44 +245,43 @@ export default function Community() {
               <span className="flex items-center gap-2">
                 <BrandMark size={24} />
                 <span className="t-value font-bold" style={{ color: 'var(--text)' }}>
-                  Community
+                  {t('community.title')}
                 </span>
               </span>
               <span
                 className="t-micro rounded-full px-2.5 py-1"
                 style={{ background: 'var(--field)', color: 'var(--text-secondary)' }}
               >
-                {authLoading ? 'Loading…' : status}
+                {authLoading ? t('community.loading') : status}
               </span>
             </span>
           </div>
 
           <motion.div className="mt-7" {...rise(0.05)}>
-            <p className="t-eyebrow">THE GAME ROOM</p>
+            <p className="t-eyebrow">{t('community.gameRoomEyebrow')}</p>
             <h1 className="t-heading mt-2" style={{ color: 'var(--text-ink)' }}>
-              Pull up a chair.
+              {t('community.headline')}
             </h1>
             <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-              No names, no profiles — a favourite picture, a four-digit number, and a
-              clearly labelled bot when a seat needs filling.
+              {t('community.intro')}
             </p>
           </motion.div>
         </header>
 
         {/* ---- Playable now ---------------------------------------- */}
-        <section className="mt-7 flex flex-col gap-4 px-5" aria-label="Playable now">
+        <section className="mt-7 flex flex-col gap-4 px-5" aria-label={t('community.playableNow')}>
           <motion.div {...rise(0.1)}>
             <GlassCard className="p-5" ringX={0}>
               <div className="flex flex-col gap-4">
                 <div className="flex items-baseline justify-between gap-3">
                   <div>
-                    <p className="t-eyebrow">TRICK-TAKING · LIVE</p>
+                    <p className="t-eyebrow">{t('community.eyebrowSpades')}</p>
                     <h2 className="t-title mt-1" style={{ color: 'var(--text)' }}>
-                      Spades
+                      {t('community.gameSpades')}
                     </h2>
                   </div>
                   <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                    You + 3 labelled bots
+                    {t('community.youAndBots')}
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -289,14 +292,14 @@ export default function Community() {
                           seat={s === 'you' ? { kind: 'open' } : { kind: 'bot', handle: s }}
                         />
                         <span className="t-micro text-center" style={{ color: 'var(--text-secondary)' }}>
-                          {s === 'you' ? 'your seat' : s}
+                          {s === 'you' ? t('community.yourSeat') : s}
                         </span>
                       </span>
                     ))}
                   </div>
                   <BtnPrimary className="h-11 px-5" onClick={() => navigate('/community/spades')}>
                     <Spade size={16} aria-hidden="true" />
-                    Play
+                    {t('community.play')}
                   </BtnPrimary>
                 </div>
               </div>
@@ -308,13 +311,13 @@ export default function Community() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-baseline justify-between gap-3">
                   <div>
-                    <p className="t-eyebrow">TWO PLAYERS · LIVE</p>
+                    <p className="t-eyebrow">{t('community.eyebrowConcentration')}</p>
                     <h2 className="t-title mt-1" style={{ color: 'var(--text)' }}>
-                      Concentration
+                      {t('community.gameConcentration')}
                     </h2>
                   </div>
                   <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                    Open seat
+                    {t('community.openSeatCap')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -328,13 +331,13 @@ export default function Community() {
                     <span className="flex w-[54px] flex-col items-center gap-1">
                       <SeatAvatar seat={{ kind: 'open' }} />
                       <span className="t-micro text-center" style={{ color: 'var(--text-secondary)' }}>
-                        open seat
+                        {t('community.openSeat')}
                       </span>
                     </span>
                   </div>
                   <BtnPrimary className="h-11 px-5" onClick={() => navigate('/community/concentration')}>
                     <Brain size={16} aria-hidden="true" />
-                    Play
+                    {t('community.play')}
                   </BtnPrimary>
                 </div>
               </div>
@@ -346,13 +349,13 @@ export default function Community() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-baseline justify-between gap-3">
                   <div>
-                    <p className="t-eyebrow">STRATEGY · LIVE</p>
+                    <p className="t-eyebrow">{t('community.eyebrowChess')}</p>
                     <h2 className="t-title mt-1" style={{ color: 'var(--text)' }}>
-                      Chess
+                      {t('community.gameChess')}
                     </h2>
                   </div>
                   <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                    You vs BOT · Riley
+                    {t('community.youVsBot', { bot: 'BOT · Riley' })}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -360,7 +363,7 @@ export default function Community() {
                     <span className="flex w-[54px] flex-col items-center gap-1">
                       <SeatAvatar seat={{ kind: 'open' }} />
                       <span className="t-micro text-center" style={{ color: 'var(--text-secondary)' }}>
-                        your seat
+                        {t('community.yourSeat')}
                       </span>
                     </span>
                     <span className="flex w-[54px] flex-col items-center gap-1">
@@ -372,7 +375,7 @@ export default function Community() {
                   </div>
                   <BtnPrimary className="h-11 px-5" onClick={() => navigate('/community/chess')}>
                     <ChessKnight size={16} aria-hidden="true" />
-                    Play
+                    {t('community.play')}
                   </BtnPrimary>
                 </div>
               </div>
@@ -384,13 +387,13 @@ export default function Community() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-baseline justify-between gap-3">
                   <div>
-                    <p className="t-eyebrow">DICE · LIVE</p>
+                    <p className="t-eyebrow">{t('community.eyebrowDice')}</p>
                     <h2 className="t-title mt-1" style={{ color: 'var(--text)' }}>
-                      Liar's Dice
+                      {t('community.gameLiarsDice')}
                     </h2>
                   </div>
                   <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                    You + 3 labelled bots
+                    {t('community.youAndBots')}
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -401,14 +404,14 @@ export default function Community() {
                           seat={s === 'you' ? { kind: 'open' } : { kind: 'bot', handle: s }}
                         />
                         <span className="t-micro text-center" style={{ color: 'var(--text-secondary)' }}>
-                          {s === 'you' ? 'your seat' : s}
+                          {s === 'you' ? t('community.yourSeat') : s}
                         </span>
                       </span>
                     ))}
                   </div>
                   <BtnPrimary className="h-11 px-5" onClick={() => navigate('/community/liars-dice')}>
                     <Dices size={16} aria-hidden="true" />
-                    Play
+                    {t('community.play')}
                   </BtnPrimary>
                 </div>
               </div>
@@ -417,15 +420,14 @@ export default function Community() {
         </section>
 
         {/* ---- The game room (Stage 2 preview) ----------------------- */}
-        <section className="mt-9 px-5" aria-label="The game room">
+        <section className="mt-9 px-5" aria-label={t('community.theRoomAria')}>
           <motion.div {...rise(0.2)}>
-            <p className="t-eyebrow">THE ROOM</p>
+            <p className="t-eyebrow">{t('community.theRoomEyebrow')}</p>
             <h2 className="t-title mt-1.5" style={{ color: 'var(--text-ink)' }}>
-              Every table is live.
+              {t('community.roomTitle')}
             </h2>
             <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-              Take any seat below and the board opens. Real multiplayer seating,
-              spectating and hosting arrive with the Stage 2 community backend.
+              {t('community.roomCaption')}
             </p>
           </motion.div>
 
@@ -433,16 +435,16 @@ export default function Community() {
             <motion.div {...rise(0.26)}>
               <GlassCard className="p-5" ringX={34}>
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="t-eyebrow">TABLE 1 · SPADES</p>
+                  <p className="t-eyebrow">{t('community.tableEyebrow', { number: 1, game: t('community.gameSpades') })}</p>
                   <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                    in progress
+                    {t('community.inProgress')}
                   </span>
                 </div>
                 <div className="mt-4">
                   <TableRoom
                     icon={<Spade size={18} aria-hidden="true" />}
-                    title="Spades"
-                    status="Playable now"
+                    title={t('community.gameSpades')}
+                    status={t('community.statusPlayableNow')}
                     live
                     seats={[
                       { kind: 'person', handle: 'ember line', photo: '/avatar-03.jpg', verified: true },
@@ -459,16 +461,16 @@ export default function Community() {
             <motion.div {...rise(0.32)}>
               <GlassCard className="p-5" ringX={48}>
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="t-eyebrow">TABLE 2 · CONCENTRATION</p>
+                  <p className="t-eyebrow">{t('community.tableEyebrow', { number: 2, game: t('community.gameConcentration') })}</p>
                   <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                    seating · 1 open
+                    {t('community.seatingOpen')}
                   </span>
                 </div>
                 <div className="mt-4">
                   <TableRoom
                     icon={<Brain size={18} aria-hidden="true" />}
-                    title="Concentration"
-                    status="Take a seat"
+                    title={t('community.gameConcentration')}
+                    status={t('community.statusTakeSeat')}
                     live
                     seats={[
                       { kind: 'person', handle: 'morning fog', photo: '/avatar-08.jpg', verified: true },
@@ -483,16 +485,16 @@ export default function Community() {
             <motion.div {...rise(0.38)}>
               <GlassCard className="p-5" ringX={62}>
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="t-eyebrow">TABLE 3 · LIAR'S DICE</p>
+                  <p className="t-eyebrow">{t('community.tableEyebrow', { number: 3, game: t('community.gameLiarsDice') })}</p>
                   <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                    seating · your seat open
+                    {t('community.seatingYours')}
                   </span>
                 </div>
                 <div className="mt-4">
                   <TableRoom
                     icon={<Dices size={18} aria-hidden="true" />}
-                    title="Liar's Dice"
-                    status="Take a seat"
+                    title={t('community.gameLiarsDice')}
+                    status={t('community.statusTakeSeat')}
                     live
                     seats={[
                       { kind: 'open' },
@@ -509,16 +511,16 @@ export default function Community() {
             <motion.div {...rise(0.44)}>
               <GlassCard className="p-5" ringX={76}>
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="t-eyebrow">TABLE 4 · CHESS</p>
+                  <p className="t-eyebrow">{t('community.tableEyebrow', { number: 4, game: t('community.gameChess') })}</p>
                   <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                    seating · your seat open
+                    {t('community.seatingYours')}
                   </span>
                 </div>
                 <div className="mt-4">
                   <TableRoom
                     icon={<ChessKnight size={18} aria-hidden="true" />}
-                    title="Chess"
-                    status="Take a seat"
+                    title={t('community.gameChess')}
+                    status={t('community.statusTakeSeat')}
                     live
                     seats={[{ kind: 'open' }, { kind: 'bot', handle: 'BOT · Riley' }]}
                     onSeat={() => navigate('/community/chess')}
@@ -530,11 +532,11 @@ export default function Community() {
         </section>
 
         {/* ---- How seating works ------------------------------------- */}
-        <section className="mt-9 px-5" aria-label="How seating works">
+        <section className="mt-9 px-5" aria-label={t('community.seatingAria')}>
           <motion.div {...rise(0.42)}>
-            <p className="t-eyebrow">HOUSE RULES</p>
+            <p className="t-eyebrow">{t('community.houseRules')}</p>
             <h2 className="t-title mt-1.5" style={{ color: 'var(--text-ink)' }}>
-              How seating works.
+              {t('community.seatingTitle')}
             </h2>
           </motion.div>
           <motion.div className="mt-4" {...rise(0.46)}>
@@ -542,23 +544,23 @@ export default function Community() {
               {[
                 {
                   icon: <ImageIcon size={16} aria-hidden="true" />,
-                  title: 'Permanent picture identity',
-                  body: 'One favourite picture and a four-digit number per table — never your dating profile, never your name.',
+                  title: t('community.rule1Title'),
+                  body: t('community.rule1Body'),
                 },
                 {
                   icon: <Bot size={16} aria-hidden="true" />,
-                  title: 'Bots are always labelled',
-                  body: 'Every bot seat reads BOT · name in plain text. No fake people, ever — at any table, in any game.',
+                  title: t('community.rule2Title'),
+                  body: t('community.rule2Body'),
                 },
                 {
                   icon: <ShieldCheck size={16} aria-hidden="true" />,
-                  title: 'Block checks at seating',
-                  body: 'Stage 2 checks blocks server-side before anyone sits — people you blocked can never land at your table.',
+                  title: t('community.rule3Title'),
+                  body: t('community.rule3Body'),
                 },
                 {
                   icon: <Timer size={16} aria-hidden="true" />,
-                  title: 'Games always finish',
-                  body: 'Trial or subscription expiry locks new seats, but a game already in progress always plays out.',
+                  title: t('community.rule4Title'),
+                  body: t('community.rule4Body'),
                 },
               ].map((rule) => (
                 <div key={rule.title} className="flex items-start gap-3">
@@ -583,28 +585,27 @@ export default function Community() {
         </section>
 
         {/* ---- Start a table (subscribers) ---------------------------- */}
-        <section className="mt-9 px-5" aria-label="Start a table">
+        <section className="mt-9 px-5" aria-label={t('community.startTableAria')}>
           <motion.div {...rise(0.5)}>
             <GlassCard edge="amber" className="min-h-[188px] p-5" ringX={46}>
               <div className="flex h-full flex-col justify-between gap-5">
                 <div>
-                  <p className="t-eyebrow">SUBSCRIBERS</p>
+                  <p className="t-eyebrow">{t('community.subscribers')}</p>
                   <h2 className="t-title mt-1" style={{ color: 'var(--text)' }}>
-                    Start a table
+                    {t('community.startTable')}
                   </h2>
                   <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                    Anyone verified can take an open seat. Hosting is what the
-                    subscription buys, so the room stays full while the community grows.
+                    {t('community.startTableBody')}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <BtnPrimary className="h-11 px-5" onClick={() => setPreviewOpen(true)}>
                     <Crown size={16} aria-hidden="true" />
-                    Open a game
+                    {t('community.openGame')}
                   </BtnPrimary>
                   {!isAuthenticated && (
                     <BtnGlass to={LOGIN_PATH} className="h-11 px-5">
-                      Sign in
+                      {t('community.signIn')}
                     </BtnGlass>
                   )}
                 </div>
@@ -617,11 +618,9 @@ export default function Community() {
         <section className="mt-6 px-5">
           <motion.div {...rise(0.54)}>
             <GlassCard className="p-5">
-              <h2 className="t-title-sm">Free stays in the dating core.</h2>
+              <h2 className="t-title-sm">{t('community.freeTitle')}</h2>
               <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                Daily queue, matches, conversations and the match share board stay free.
-                Community seating follows the same rule as the trial: full access during
-                the 7-day trial, subscription after, in-progress games always finish.
+                {t('community.freeBody')}
               </p>
             </GlassCard>
           </motion.div>
@@ -637,20 +636,17 @@ export default function Community() {
       >
         <div className="px-5 pb-8">
           <h2 id="community-preview-title" className="t-title-sm mt-2">
-            The game room opens with Stage 2.
+            {t('community.previewTitle')}
           </h2>
           <p className="t-caption mt-2" style={{ color: 'var(--text-secondary)' }}>
-            The room is placed and the layout is final. The next build wires the real
-            tables: permanent picture identity, server-side block checks at seating,
-            labelled bots, and trial expiry that locks new seats without interrupting
-            a game.
+            {t('community.previewBody')}
           </p>
           <div className="mt-5 flex gap-2">
             <BtnGlass className="flex-1" onClick={() => setPreviewOpen(false)}>
-              Got it
+              {t('community.gotIt')}
             </BtnGlass>
             <BtnPrimary to="/premium" className="flex-1">
-              See access
+              {t('community.seeAccess')}
             </BtnPrimary>
           </div>
         </div>

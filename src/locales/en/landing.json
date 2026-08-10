@@ -1,0 +1,259 @@
+{
+  "hero": {
+    "eyebrow": "Dating, de-noised",
+    "title": "Less swiping. More meeting.",
+    "subtitle": "A daily queue of 5–10 people chosen for mutual intent — not an endless deck designed to keep you single and scrolling.",
+    "getStarted": "Get started",
+    "seeHow": "See how it works ↓",
+    "caption": "Free to start · Photo-verified community · All genders, all structures",
+    "offerAria": "Founding member offer: 10,000 Date Coins",
+    "offerMeta": "Resonance · founding offer",
+    "offerGrows": "Grows every year",
+    "offerTitle": "10,000 Date Coins",
+    "offerFor": "For our first 100,000 founding members",
+    "offerDesc": "A discount that grows every year you’re with us.",
+    "offerPill": "Founding Member Exclusive"
+  },
+  "problem": {
+    "eyebrow": "The problem",
+    "heading": "Endless decks. Mixed intents. Dead chats.",
+    "body": "Legacy apps monetize your loneliness. Volume over quality, paywalls over outcomes, and a swipe economy that rewards never meeting.",
+    "stat1": { "suffix": " min", "label": "SWIPING / DAY" },
+    "stat2": { "suffix": "%", "label": "MATCH → DATE" },
+    "stat3": { "static": "1 in 2", "label": "FEEL WORSE" }
+  },
+  "loop": {
+    "eyebrow": "The Resonance loop",
+    "heading": "Four steps. One direction: offline.",
+    "step1": {
+      "title": "State your intent",
+      "body": "Serious, casual, explore, ENM, friendship — declared up front, matched on mutuality."
+    },
+    "step2": {
+      "title": "Get your daily queue",
+      "body": "5–10 curated profiles. Compatibility, intent alignment, and real behavioral signals."
+    },
+    "step3": {
+      "title": "Send signal, not spam",
+      "body": "Limited likes. Comment on prompts. Spend a Pulse when someone really matters."
+    },
+    "step4": {
+      "title": "Meet in real life",
+      "body": "AI starters, date ideas, and a We Met loop that keeps tuning your matches."
+    }
+  },
+  "modes": {
+    "eyebrow": "Modes",
+    "heading": "One app, every way to meet",
+    "tierFree": "FREE",
+    "tapForDetails": "{{title}} — tap for details",
+    "queue": {
+      "title": "Daily Queue",
+      "caption": "Your 5–10 best shots at something real. Refreshes at noon.",
+      "bullet1": "Curated on intent + compatibility",
+      "bullet2": "Refreshes at noon",
+      "bullet3": "Filters & dealbreakers included"
+    },
+    "swipe": {
+      "title": "Classic Swipe",
+      "caption": "Volume mode, when you want it. Intent filters still on.",
+      "bullet1": "Full deck access",
+      "bullet2": "Intent filters stay on",
+      "bullet3": "Same limited likes"
+    },
+    "nearby": {
+      "title": "Nearby Feed",
+      "caption": "Real-time, local, now.",
+      "bullet1": "Live local grid",
+      "bullet2": "Activity-based surfacing",
+      "bullet3": "Same safety rules"
+    },
+    "events": {
+      "title": "Events",
+      "caption": "RSVP and meet IRL, low pressure.",
+      "bullet1": "Curated local events",
+      "bullet2": "See who else is going",
+      "bullet3": "Group-first formats"
+    },
+    "travel": {
+      "title": "Travel",
+      "caption": "Change your city before you land.",
+      "bullet1": "Set your destination early",
+      "bullet2": "Queue pre-builds on arrival",
+      "bullet3": "Local date ideas ready"
+    }
+  },
+  "outcomes": {
+    "alt": "A couple mid-laugh at a small café table in the evening",
+    "eyebrow": "Outcomes, not engagement",
+    "heading": "The metric we optimize is your first date.",
+    "body": "Our We Met loop asks how it went — and every answer makes the next queue sharper.",
+    "stats": "68% match→conversation · 31% conversation→date · 4.6★ match quality (beta cohort)"
+  },
+  "safety": {
+    "eyebrow": "Safety & intent",
+    "heading": "Safety isn’t a settings page.",
+    "body": "Verification, consent, and reporting are first-class UI — visible where you browse, match, and chat. Never buried three menus deep.",
+    "rows": {
+      "verification": {
+        "title": "Photo verification",
+        "body": "Mandatory selfie + live check. No badge, no browsing."
+      },
+      "screenshots": {
+        "title": "Screenshot alerts",
+        "body": "If someone screenshots your chat or photos, you know."
+      },
+      "hiddenWords": {
+        "title": "Hidden words",
+        "body": "Filter the phrases you never want to receive."
+      },
+      "anonymity": {
+        "title": "Anonymity mode",
+        "body": "Browse unseen until you choose to be seen."
+      },
+      "scam": {
+        "title": "AI scam defense",
+        "body": "Romance-scam patterns flagged before they reach you."
+      },
+      "consent": {
+        "title": "Consent tools",
+        "body": "Clear, in-app ways to set and respect boundaries."
+      }
+    }
+  },
+  "testimonials": {
+    "eyebrow": "Early signals",
+    "heading": "People who stopped scrolling",
+    "headshotAlt": "{{name}} headshot",
+    "q1": { "quote": "The daily cap felt limiting for a day. Then it felt like relief." },
+    "q2": { "quote": "Prompts did what my opening lines never could. We met in five days." },
+    "q3": { "quote": "First app where stating my intent upfront didn’t scare people off — it attracted the right ones." }
+  },
+  "pricing": {
+    "eyebrow": "Pricing",
+    "heading": "Free is real. Plus is power. X is wings.",
+    "body": "Resonance works without paying. Resonance+ and Resonance X add depth for people who want more signal, more reach, and more places.",
+    "tierFree": "FREE",
+    "free": {
+      "title": "Start with intent",
+      "features": "Daily queue · Limited likes · Full safety stack · Events RSVP"
+    },
+    "plus": {
+      "title": "Deeper signal",
+      "features": "See who likes you · More Pulses · Advanced filters · Nearby feed"
+    },
+    "x": {
+      "title": "Go anywhere",
+      "features": "Everything in + · Travel mode · Priority placement · X-only events"
+    },
+    "compare": "Compare plans →"
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "heading": "Fair questions",
+    "q1": {
+      "q": "Is Resonance free?",
+      "a": "Yes. The daily queue, limited likes, messaging, events, and the full safety stack are free forever. Resonance+ and X add convenience and reach — never core safety."
+    },
+    "q2": {
+      "q": "Why a daily limit?",
+      "a": "Because attention is the ingredient. A small queue means every profile gets read, every like means something, and the app can optimize for dates instead of time-on-screen."
+    },
+    "q3": {
+      "q": "How does photo verification work?",
+      "a": "During onboarding you take a selfie and pass a quick live check. Verified members get a badge; unverified accounts can’t browse or be seen. It takes under a minute."
+    },
+    "q4": {
+      "q": "What is a Pulse?",
+      "a": "A Pulse is a super-like with weight. It pins you to the top of their Likes You grid with a violet underline. They’re intentionally scarce — free members get a few per week."
+    },
+    "q5": {
+      "q": "Which modes are free?",
+      "a": "Daily Queue, Classic Swipe, and Events are free. Nearby Feed is Resonance+. Travel mode is Resonance X. Filters and dealbreakers are free in every mode."
+    }
+  },
+  "finalCta": {
+    "heading": "Your queue opens tomorrow at noon.",
+    "body": "Build your profile tonight. Wake up to people worth meeting.",
+    "button": "Create your profile",
+    "caption": "Free to start · Takes two minutes · Photo verification required",
+    "share": "Share with a friend who needs this"
+  },
+  "login": {
+    "welcome": "Welcome",
+    "kimi": "Sign in with Kimi",
+    "google": "Continue with Google"
+  },
+  "signIn": {
+    "oauthGoogleNotConfigured": "Google sign-in isn’t available yet — use email or Kimi instead.",
+    "oauthGoogleFailed": "Google sign-in didn’t complete. Try again, or use email or Kimi.",
+    "titleIn": "Welcome back.",
+    "titleUp": "Create your account.",
+    "subtitleIn": "Pick up where you left off.",
+    "subtitleUp": "A quieter way to meet people worth meeting.",
+    "tabAria": "Sign in or create account",
+    "tabIn": "Sign in",
+    "tabUp": "Create account",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your first name",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "passwordHint": "At least 8 characters",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "forgot": "Forgot password?",
+    "pending": "One moment…",
+    "or": "or",
+    "continueKimi": "Continue with Kimi",
+    "continueGoogle": "Continue with Google",
+    "errors": {
+      "nameRequired": "Tell us your name",
+      "emailInvalid": "Enter a valid email address",
+      "passwordShort": "At least 8 characters",
+      "passwordRequired": "Enter your password"
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot your password?",
+    "subtitle": "Enter your email and we’ll send you a reset link.",
+    "emailLabel": "Email",
+    "send": "Send reset link",
+    "sending": "Sending…",
+    "emailInvalid": "Enter a valid email address",
+    "sentTitle": "Check your inbox.",
+    "sentBody": "If an account exists for that email, a reset link is on its way. The link expires in 30 minutes.",
+    "backToSignIn": "Back to sign in"
+  },
+  "resetPassword": {
+    "title": "Choose a new password.",
+    "subtitle": "At least 8 characters.",
+    "newLabel": "New password",
+    "confirmLabel": "Confirm new password",
+    "submit": "Reset password",
+    "updating": "Updating…",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "errors": {
+      "passwordShort": "At least 8 characters",
+      "confirmMismatch": "Passwords don’t match"
+    },
+    "invalidTitle": "This link isn’t valid.",
+    "invalidBody": "This reset link is invalid or has expired. Request a fresh one and we’ll send it to your inbox.",
+    "requestNew": "Request a new link",
+    "doneTitle": "Password updated.",
+    "doneBody": "Your password has been reset. Sign in with your new password.",
+    "goToSignIn": "Go to sign in",
+    "backToSignIn": "Back to sign in"
+  },
+  "authLayout": {
+    "signInTitle": "Sign in to continue",
+    "signInBody": "Access to this dashboard requires authentication. Continue to launch the login flow.",
+    "signIn": "Sign in",
+    "toggleNav": "Toggle navigation",
+    "navigation": "Navigation",
+    "page1": "Page 1",
+    "page2": "Page 2",
+    "signOut": "Sign out",
+    "menu": "Menu"
+  }
+}

@@ -1,8 +1,17 @@
+import { useTranslation } from 'react-i18next';
 import GlassSheet from '@/components/GlassSheet';
 import { Check } from 'lucide-react';
 
 export const SORT_OPTIONS = ['Compatibility', 'Most recent', 'Nearby', 'Newest members'] as const;
 export type SortMode = (typeof SORT_OPTIONS)[number];
+
+/** SortMode values are data (never translated) — map to display-label keys. */
+const OPTION_KEYS: Record<SortMode, string> = {
+  Compatibility: 'compatibility',
+  'Most recent': 'mostRecent',
+  Nearby: 'nearby',
+  'Newest members': 'newestMembers',
+};
 
 /**
  * SortSheet — likes-you.md §3
@@ -20,13 +29,14 @@ export default function SortSheet({
   onChange: (v: SortMode) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation('discover');
   return (
     <GlassSheet open={open} onClose={onClose} labelledBy="sort-title">
       <div className="px-6 pb-8 pt-2">
         <h3 id="sort-title" className="t-title-sm" style={{ color: 'var(--text)' }}>
-          Sort likes
+          {t('sort.title')}
         </h3>
-        <div className="mt-3 flex flex-col" role="radiogroup" aria-label="Sort order">
+        <div className="mt-3 flex flex-col" role="radiogroup" aria-label={t('sort.orderA11y')}>
           {SORT_OPTIONS.map((option) => {
             const active = option === value;
             return (
@@ -49,7 +59,7 @@ export default function SortSheet({
                     fontWeight: active ? 700 : 400,
                   }}
                 >
-                  {option}
+                  {t(`sort.options.${OPTION_KEYS[option]}`)}
                 </span>
                 <span
                   className="flex h-5 w-5 items-center justify-center rounded-full"

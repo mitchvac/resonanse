@@ -1,0 +1,417 @@
+{
+  "common": {
+    "back": "返回",
+    "cancel": "取消",
+    "loadingSettings": "正在加载设置"
+  },
+  "language": {
+    "title": "语言",
+    "caption": "整个网站都会切换——菜单、按钮，全部内容。"
+  },
+  "topBar": {
+    "settings": "设置"
+  },
+  "sections": {
+    "appearance": "外观",
+    "language": "语言",
+    "discovery": "发现",
+    "notifications": "通知",
+    "privacySafety": "隐私与安全",
+    "aiMatching": "AI 与匹配",
+    "accountSupport": "账户与支持"
+  },
+  "theme": {
+    "systemName": "跟随系统（{{name}}）",
+    "nightHud": "Night HUD",
+    "warmGlass": "Warm Glass",
+    "caption": "切换的瞬间，整个界面即刻焕然一新。",
+    "ariaLabel": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "systemOption": "跟随系统"
+  },
+  "rows": {
+    "reduceMotion": {
+      "title": "减弱动态效果",
+      "caption": "跟随系统设置；开启后以此处为准。"
+    },
+    "reduceTransparency": {
+      "title": "降低透明度",
+      "caption": "玻璃质感表面变为纯色。关闭时跟随系统设置。"
+    },
+    "location": {
+      "title": "位置服务",
+      "captionOn": "绝不会精确显示。",
+      "captionOff": "已在系统设置中关闭——开启后才能看到附近的人。"
+    },
+    "maxDistance": {
+      "title": "最远距离",
+      "caption": "你的队列能覆盖多远。",
+      "aria": "最远距离（公里）",
+      "format": "{{value}} 公里"
+    },
+    "ageRange": {
+      "title": "年龄范围",
+      "caption": "谁会出现在你的队列中。"
+    },
+    "showMe": {
+      "title": "向我展示",
+      "caption": "选择你想认识的所有对象。",
+      "women": "女性",
+      "men": "男性",
+      "nonbinary": "非二元性别"
+    },
+    "globalTravel": {
+      "title": "全球 / 旅行",
+      "caption": "认识其他城市的人。"
+    },
+    "womenFirst": {
+      "title": "女性/非男性先发消息",
+      "caption": "开启后，匹配对象会等你先迈出第一步。",
+      "aria": "女性和非男性先发消息"
+    },
+    "dealbreakers": {
+      "title": "硬性条件",
+      "caption": "队列的严格筛选条件。"
+    },
+    "notificationsMaster": {
+      "title": "通知",
+      "caption": "以下所有通知的总开关。",
+      "aria": "所有通知"
+    },
+    "quietHours": {
+      "title": "安静时段",
+      "captionOn": "{{from}} – {{to}} · 只有约会提醒会推送。",
+      "captionOff": "已关闭——设置一个只接收约会提醒的时段。"
+    },
+    "photoVerification": {
+      "title": "照片认证",
+      "captionVerified": "已认证——你的徽章可见。",
+      "captionNotVerified": "尚未认证。",
+      "verified": "已认证",
+      "reverify": "重新认证"
+    },
+    "anonymity": {
+      "title": "匿名模式",
+      "ariaActive": "匿名已开启",
+      "caption": "除了你喜欢的人，其他人都看不到你。收到的喜欢可能会变少。"
+    },
+    "hiddenWords": {
+      "title": "屏蔽词",
+      "captionMuted": "已屏蔽 {{count}} 个：{{words}}",
+      "captionMutedMore": "已屏蔽 {{count}} 个：{{words}}…",
+      "captionEmpty": "包含这些词的消息会被过滤到隐藏文件夹。"
+    },
+    "screenshot": {
+      "title": "截图提醒",
+      "caption": "当有人截图你的照片或聊天时，你会收到通知。"
+    },
+    "ephemeral": {
+      "title": "默认阅后即焚",
+      "caption": "新聊天默认开启 24 小时后消失模式。"
+    },
+    "blocked": {
+      "title": "已屏蔽账户",
+      "captionCount": "已屏蔽 {{count}} 人",
+      "captionEmpty": "管理你屏蔽过的人。"
+    },
+    "download": {
+      "title": "下载我的数据",
+      "captionBusy": "正在准备导出…",
+      "caption": "GDPR/CCPA 导出——立即以 JSON 格式下载。"
+    },
+    "deleteAccount": {
+      "title": "删除账户",
+      "caption": "你的个人资料、匹配和消息都会被移除。"
+    },
+    "privacyPolicy": "隐私政策",
+    "cookiePreferences": "Cookie 偏好设置",
+    "aiStarters": {
+      "title": "AI 开场白",
+      "caption": "为新匹配对象建议第一句话。"
+    },
+    "aiCoaching": {
+      "title": "AI 辅导",
+      "caption": "根据你的目标提供资料和消息反馈。"
+    },
+    "weMet": {
+      "title": "使用我的 We Met 反馈",
+      "caption": "你约会后的打卡反馈会帮助匹配系统了解什么适合你。",
+      "aria": "使用 We Met 反馈"
+    },
+    "resetMatching": {
+      "title": "重置匹配历史",
+      "caption": "清除已学习的偏好。你的个人资料会保留。"
+    },
+    "membership": {
+      "title": "会员",
+      "upgrade": "升级"
+    },
+    "wallet": {
+      "title": "钱包",
+      "caption": "Date-Coin 余额、密钥和生态开关。"
+    },
+    "restorePurchases": {
+      "title": "恢复购买",
+      "captionBusy": "正在查找购买记录…"
+    },
+    "helpCenter": "帮助中心",
+    "communityGuidelines": "社区准则",
+    "safetyResources": {
+      "title": "安全资源",
+      "caption": "热线与专家帮助，随时为你提供支持。"
+    },
+    "logout": "退出登录"
+  },
+  "notifications": {
+    "itemAria": "{{label}}通知",
+    "items": {
+      "newLikes": {
+        "title": "新的喜欢",
+        "caption": "当有人喜欢你时。"
+      },
+      "matches": {
+        "title": "匹配",
+        "caption": "当喜欢变成双向时。"
+      },
+      "messages": {
+        "title": "消息",
+        "caption": "新的聊天消息。"
+      },
+      "queueDrop": {
+        "title": "新队列",
+        "caption": "每天中午新队列送达时。"
+      },
+      "events": {
+        "title": "活动",
+        "caption": "报名动态和附近的新活动。"
+      },
+      "dateReminders": {
+        "title": "约会提醒",
+        "caption": "约会前的小提醒。"
+      }
+    }
+  },
+  "hiddenWords": {
+    "title": "屏蔽词",
+    "intro": "包含这些词的消息会被过滤到隐藏文件夹，你可以随时查看。",
+    "empty": "还没有屏蔽词。",
+    "placeholder": "添加一个词或短语",
+    "inputAria": "添加屏蔽词或短语",
+    "addAria": "添加屏蔽词",
+    "add": "添加",
+    "hint": "点击标签上的 × 即可移除。过滤是无声的——发送者不会收到任何提示。"
+  },
+  "blocked": {
+    "title": "已屏蔽账户",
+    "intro": "被屏蔽的人无法看到你、喜欢你或给你发消息。",
+    "emptyTitle": "没有已屏蔽的账户",
+    "emptyBody": "如果你屏蔽了某人，会显示在这里。",
+    "memberFallback": "成员",
+    "nearbyFallback": "附近",
+    "profileUnavailable": "资料不可用",
+    "unblock": "取消屏蔽",
+    "sheetTitle": "取消屏蔽这个人？",
+    "sheetBody": "对方将能再次查看你的资料并给你发消息。你可以随时重新屏蔽。",
+    "keepBlocked": "保持屏蔽"
+  },
+  "sheets": {
+    "anonymity": {
+      "title": "开启匿名模式？",
+      "p1": "除了你喜欢的人，其他人都看不到你。",
+      "p2": "坦诚地说：看到你的人变少了，收到的喜欢可能会减少。",
+      "p3": "你可以随时切换回来——其他一切不变。",
+      "confirm": "开启匿名",
+      "cancel": "暂不"
+    },
+    "quiet": {
+      "title": "安静时段",
+      "body": "安静时段内只有约会提醒会推送。",
+      "on": "安静时段已开启",
+      "toggleAria": "安静时段已启用",
+      "from": "开始",
+      "to": "结束",
+      "save": "保存安静时段"
+    },
+    "reset": {
+      "title": "重置匹配历史？",
+      "body": "这会清除 Resonance 从你的喜欢、跳过和 We Met 打卡中学到的内容。你的个人资料、匹配和消息都会保留。",
+      "hold": "长按以重置",
+      "holding": "蓄满后松开…",
+      "keep": "保留我的历史"
+    },
+    "delete": {
+      "pausedTitle": "账户已暂停",
+      "pausedP1": "你不会出现在任何人的队列中。",
+      "pausedP2": "你的个人资料、匹配和消息都原封不动地保留着。",
+      "resume": "恢复我的账户",
+      "continueDelete": "继续删除",
+      "continueAria": "继续删除账户",
+      "beforeTitle": "离开之前",
+      "beforeP1": "删除将移除你的个人资料、匹配、消息和 Pulses，且无法撤销。",
+      "beforeP2": "如果你只是想休息一下，暂停账户可以隐藏你，且不会丢失任何内容。",
+      "pauseInstead": "改为暂停",
+      "title": "删除你的账户？",
+      "deletedTitle": "账户已删除",
+      "deletedBody": "一切都已清除。感谢你在这里度过的时光——希望你遇见了值得遇见的人。",
+      "backToSignIn": "返回登录",
+      "lastStep": "最后一步。长按下方按钮，永久删除你的账户。",
+      "hold": "长按以删除账户",
+      "holding": "正在删除…"
+    },
+    "safety": {
+      "title": "安全资源",
+      "body": "免费、保密、全天候。你不必独自面对任何事。",
+      "rainnCaption": "全国性侵援助热线 — 1-800-656-4673",
+      "crisisCaption": "发送 HOME 至 741741 — 专业咨询师，应对任何危机",
+      "emergency": "情况紧急？请先拨打当地紧急电话。"
+    },
+    "help": {
+      "title": "帮助中心",
+      "body": "可搜索的帮助中心即将上线。在此之前，“下载我的数据”和上方的安全工具可以满足最常见的需求——安全资源也始终触手可及。",
+      "emailSupport": "邮件联系客服",
+      "emailCaption": "support@resonanse.app — 我们会在一个工作日内回复",
+      "gotIt": "知道了"
+    }
+  },
+  "tiers": {
+    "free": "免费版"
+  },
+  "footer": "RESONANCE 1.0.0 · 为真实相遇而生。",
+  "toasts": {
+    "quietSet": "安静时段已设置——{{from}} 至 {{to}}。",
+    "deleteError": "无法删除你的账户——请检查网络后重试。",
+    "resetDone": "你的队列历史已重置。",
+    "resetError": "无法重置你的队列历史——请重试。",
+    "ephemeralOn": "新聊天将在 24 小时后消失。",
+    "ephemeralOff": "新聊天将恢复为永久保留。",
+    "pauseError": "无法暂停你的账户——请重试。",
+    "resumeError": "无法恢复——请重试。",
+    "welcomeBack": "欢迎回来——你重新在队列中可见了。",
+    "exportDone": "你的数据已导出为 resonance-data.json。",
+    "exportError": "无法导出你的数据——请检查网络后重试。",
+    "premiumRestored": "购买已恢复——你正在使用 Resonance+",
+    "noPurchase": "未找到之前的购买记录",
+    "restoreError": "无法查询购买记录——请重试。",
+    "anonymityOn": "匿名已开启——只有你喜欢的人能看到你。",
+    "anonymityOff": "匿名已关闭——你重新在队列中可见了。",
+    "unblocked": "已取消屏蔽。对方可能再次出现在你的队列中。",
+    "hiddenWordAdded": "包含这些词的消息将在你的聊天中被标记。",
+    "womenFirstOn": "匹配对象会等你先发消息。",
+    "womenFirstOff": "双方都可以先发消息。"
+  },
+  "profile": {
+    "title": "你",
+    "settingsAria": "设置",
+    "shareAria": "分享你的资料",
+    "loadingAria": "正在加载资料",
+    "mainPhotoAlt": "{{name}} 的主照片",
+    "strengthLabel": "资料完整度 {{pct}}%",
+    "strengthAria": "资料完整度百分之 {{pct}}",
+    "hiddenFromNonMatches": "对未匹配的人隐藏",
+    "verificationPending": "认证审核中——审核完成后我们会通知你。",
+    "idVerified": "身份已认证 ✓",
+    "verifyId": "认证你的身份",
+    "verifyIdHint": "在浏览器内扫描——绝不存储",
+    "editProfile": "编辑资料",
+    "previewAsOthers": "预览别人眼中的你",
+    "yourPhotos": "你的照片",
+    "editPhotoAria": "编辑第 {{n}} 张照片",
+    "photoAria": "第 {{n}} 张照片",
+    "photoAlt": "个人资料照片 {{n}}",
+    "mainTag": "主照片",
+    "addPhotoAria": "添加照片",
+    "thisWeek": "本周",
+    "matchesMicro": "匹配",
+    "likesMicro": "收到的喜欢",
+    "inLikesTab": "在你的“喜欢”标签页中",
+    "datesMicro": "约会",
+    "datesGoal": "/目标 {{goal}} 次",
+    "met": "已见面",
+    "photoInsightsAria": "照片洞察——Resonance+ 功能",
+    "photoInsights": "照片洞察",
+    "photoInsightsCaption": "看看哪些照片更受欢迎。",
+    "photoPerformance": "照片表现",
+    "topTag": "最佳",
+    "photoTip": "第 3 张照片（徒步）表现高出 2.4 倍——建议设为主照片。",
+    "makeMain": "设为主照片",
+    "performanceGate": "照片表现是 Resonance+ 功能——看看究竟是哪些照片为你赢得了喜欢。",
+    "upgrade": "升级",
+    "upgradeAria": "升级到 Resonance+",
+    "datingGoal": "约会目标",
+    "datesPerWeek_one": "每周 {{count}} 次约会",
+    "datesPerWeek_other": "每周 {{count}} 次约会",
+    "onTrack": "进展顺利——已连续 4 周。",
+    "streakAria": "共显示 {{total}} 周，已连续 {{done}} 周",
+    "retakeReflections": "重做 Reflections",
+    "lastTaken": "上次完成于 3 周前——重做可以优化你的队列",
+    "accountSection": "账户",
+    "membership": "会员",
+    "pulses": "Pulses",
+    "pulsesLeft": "剩余 {{count}} 个",
+    "wallet": "钱包",
+    "setUpDateCoin": "设置 Date-Coin",
+    "ecosystemOn": "生态已开启",
+    "ecosystemOff": "生态已关闭",
+    "verificationStatus": "认证状态",
+    "verified": "已认证",
+    "pending": "审核中",
+    "notVerified": "未认证",
+    "constellation": "Constellation",
+    "linkedPartners_one": "已关联 {{count}} 位伴侣",
+    "linkedPartners_other": "已关联 {{count}} 位伴侣",
+    "linkPartner": "关联伴侣",
+    "notificationPrefs": "通知偏好设置",
+    "toasts": {
+      "linkCopied": "资料链接已复制。",
+      "linkCopyError": "无法复制链接——请改为复制地址栏。",
+      "photoAdded": "照片已添加。",
+      "photoUpdated": "照片已更新。",
+      "photoSaveError": "无法保存该照片——请重试。",
+      "photoRemoved": "照片已移除。",
+      "photoRemoveError": "无法移除该照片——请重试。",
+      "goalSaved": "每周目标已保存。"
+    },
+    "addPhotoSheet": {
+      "title": "添加照片",
+      "camera": "相机",
+      "cameraHint": "现在就拍一张",
+      "library": "相册",
+      "libraryHint": "从你的照片中选择"
+    },
+    "editPhotoSheet": {
+      "title": "照片选项",
+      "replace": "替换",
+      "takeNew": "重新拍一张",
+      "remove": "移除"
+    },
+    "goalSheet": {
+      "title": "每周约会目标",
+      "body": "我们会据此调整你的队列和提醒节奏。小目标也算数。",
+      "decreaseAria": "减少每周目标",
+      "increaseAria": "增加每周目标",
+      "save": "保存目标"
+    },
+    "previewSheet": {
+      "title": "别人眼中的你",
+      "alt": "{{name}} 的资料卡预览",
+      "bioFallback": "寻找认真的关系——先喝咖啡，再去徒步。",
+      "cardNote": "这就是队列中的人滑动时看到的卡片。",
+      "done": "完成"
+    }
+  },
+  "profileSetup": {
+    "toasts": {
+      "draftSaveError": "无法在此设备上保存草稿——请保持此标签页打开。",
+      "photosSaveError": "无法保存你的照片——请重试。",
+      "saveError": "保存失败——你的草稿已安全保存在此设备上。"
+    },
+    "missingPhotos_one": "再添加 {{count}} 张照片（至少 4 张）",
+    "missingPhotos_other": "再添加 {{count}} 张照片（至少 4 张）",
+    "missingSentences_one": "再完成 {{count}} 个句子（至少 3 个）",
+    "missingSentences_other": "再完成 {{count}} 个句子（至少 3 个）",
+    "continue": "继续",
+    "publish": "发布我的资料",
+    "preview": "预览"
+  }
+}

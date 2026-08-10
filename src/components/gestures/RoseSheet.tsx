@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
@@ -32,6 +33,7 @@ export default function RoseSheet({
   onSend: (variant: RoseVariant) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation('discover');
   const reduced = useReducedMotion();
   const [sent, setSent] = useState<RoseVariant | null>(null);
 
@@ -87,10 +89,10 @@ export default function RoseSheet({
                 <Check size={18} className="text-white" aria-hidden="true" />
               </span>
               <h3 className="t-title-sm mt-2" style={{ color: 'var(--text)' }}>
-                {sent === 'dozen' ? 'A dozen roses, on their way' : 'Your rose is on its way'}
+                {sent === 'dozen' ? t('roseSheet.sentDozenTitle') : t('roseSheet.sentSingleTitle')}
               </h3>
               <p className="t-body mt-1" style={{ color: 'var(--text-secondary)' }}>
-                {name} gets it with the card attached.
+                {t('roseSheet.sentBody', { name })}
               </p>
             </motion.div>
           ) : (
@@ -102,62 +104,62 @@ export default function RoseSheet({
               exit={{ opacity: 0, scale: reduced ? 1 : 0.97 }}
               transition={{ duration: 0.22 }}
             >
-              <p className="t-eyebrow">Make it land</p>
+              <p className="t-eyebrow">{t('roseSheet.eyebrow')}</p>
               <h3 id="rose-sheet-title" className="t-title-sm mt-1" style={{ color: 'var(--text)' }}>
-                Send {name} roses
+                {t('roseSheet.title', { name })}
               </h3>
               <p className="t-body mt-1" style={{ color: 'var(--text-secondary)' }}>
-                Real ones — with a card attached.
+                {t('roseSheet.subtitle')}
               </p>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   disabled={pending || singleGone}
                   onClick={() => choose('single')}
-                  aria-label={`Send one rose${singleLeft !== null ? ` — ${singleLeft} left today` : ''}`}
+                  aria-label={`${t('roseSheet.sendOneAria')}${singleLeft !== null ? ` — ${t('common.leftToday', { count: singleLeft })}` : ''}`}
                   className="flex flex-col items-center rounded-[20px] px-3 pb-4 pt-3 transition-transform duration-fast active:scale-[0.97] disabled:opacity-45"
                   style={{ background: 'var(--field)' }}
                 >
                   <img
                     src="/gestures/rose-single.png"
-                    alt="One long-stem red rose with a gift card"
+                    alt={t('roseSheet.altOneRose')}
                     className="h-36 w-24 object-contain"
                     draggable={false}
                   />
                   <span className="t-caption mt-2 font-bold" style={{ color: 'var(--text)' }}>
-                    One rose
+                    {t('roseSheet.oneRose')}
                   </span>
                   <span className="t-micro mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                     {singleGone
-                      ? 'none left today'
+                      ? t('roseSheet.noneLeft')
                       : singleLeft !== null
-                        ? `${singleLeft} left today`
-                        : 'the classic'}
+                        ? t('common.leftToday', { count: singleLeft })
+                        : t('roseSheet.theClassic')}
                   </span>
                 </button>
                 <button
                   type="button"
                   disabled={pending || dozenGone}
                   onClick={() => choose('dozen')}
-                  aria-label={`Send a dozen roses${dozenLeft !== null ? ` — ${dozenLeft} left today` : ''}`}
+                  aria-label={`${t('roseSheet.sendDozenAria')}${dozenLeft !== null ? ` — ${t('common.leftToday', { count: dozenLeft })}` : ''}`}
                   className="flex flex-col items-center rounded-[20px] px-3 pb-4 pt-3 transition-transform duration-fast active:scale-[0.97] disabled:opacity-45"
                   style={{ background: 'var(--field)' }}
                 >
                   <img
                     src="/gestures/roses-dozen.png"
-                    alt="A bouquet of a dozen red roses with a gift card"
+                    alt={t('roseSheet.altDozen')}
                     className="h-36 w-28 object-contain"
                     draggable={false}
                   />
                   <span className="t-caption mt-2 font-bold" style={{ color: 'var(--text)' }}>
-                    A dozen roses
+                    {t('roseSheet.dozen')}
                   </span>
                   <span className="t-micro mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                     {dozenGone
-                      ? 'back tomorrow'
+                      ? t('roseSheet.backTomorrow')
                       : dozenLeft !== null
-                        ? `${dozenLeft} a day — the grand gesture`
-                        : 'the grand gesture'}
+                        ? t('roseSheet.dozenPerDay', { count: dozenLeft })
+                        : t('roseSheet.grandGesture')}
                   </span>
                 </button>
               </div>

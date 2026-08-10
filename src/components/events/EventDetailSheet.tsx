@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BadgeCheck, MapPin, Navigation, ShieldCheck } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
 import LightTrail from '@/components/LightTrail';
@@ -39,6 +40,7 @@ export default function EventDetailSheet({
   onToggleRsvp: (event: EventItem) => void;
   onToast: (message: string) => void;
 }) {
+  const { t } = useTranslation('connect');
   const [pickerOpen, setPickerOpen] = useState(false);
   const matchesQuery = trpc.matches.list.useQuery(undefined, {
     enabled: pickerOpen,
@@ -59,9 +61,9 @@ export default function EventDetailSheet({
     : null;
   const agenda = start
     ? [
-        { at: start, label: 'Doors & welcome drinks' },
-        { at: new Date(start.getTime() + 30 * 60000), label: 'Hosted small-group rounds' },
-        { at: new Date(start.getTime() + 90 * 60000), label: 'Open mingle — swap numbers' },
+        { at: start, label: t('events.agendaDoors') },
+        { at: new Date(start.getTime() + 30 * 60000), label: t('events.agendaRounds') },
+        { at: new Date(start.getTime() + 90 * 60000), label: t('events.agendaMingle') },
       ]
     : [];
 
@@ -105,7 +107,7 @@ export default function EventDetailSheet({
             <div className="mt-3 flex items-center gap-2">
               <BadgeCheck size={16} style={{ color: 'var(--violet)' }} aria-hidden="true" />
               <span className="t-caption" style={{ color: 'var(--text)' }}>
-                Verified host{event.hostName ? ` · ${event.hostName}` : ''}
+                {t('events.verifiedHost')}{event.hostName ? ` · ${event.hostName}` : ''}
               </span>
             </div>
 
@@ -119,7 +121,7 @@ export default function EventDetailSheet({
             {(event.address || hasGeo) && (
               <>
                 <p className="t-micro mt-5" style={{ color: 'var(--text)' }}>
-                  GETTING THERE
+                  {t('events.gettingThere')}
                 </p>
                 <div className="mt-2 flex items-start gap-2">
                   <MapPin
@@ -150,14 +152,14 @@ export default function EventDetailSheet({
                       <iframe
                         src={mapEmbedUrl}
                         loading="lazy"
-                        title={`Map to ${event.venue ?? 'the venue'}`}
+                        title={t('events.mapTitle', { venue: event.venue ?? t('events.theVenue') })}
                         className="h-full w-full border-0"
                       />
                     </div>
                     <div className="mt-3 flex items-center gap-3">
                       <BtnGlass href={directionsUrl} className="h-[44px] flex-1 px-4">
                         <Navigation size={16} aria-hidden="true" />
-                        Get directions
+                        {t('events.getDirections')}
                       </BtnGlass>
                       <a
                         href={`https://www.openstreetmap.org/directions?to=${lat}%2C${lng}`}
@@ -176,14 +178,14 @@ export default function EventDetailSheet({
 
             {/* Attendee grid */}
             <p className="t-micro mt-5" style={{ color: 'var(--text)' }}>
-              EVERYONE HERE IS PHOTO-VERIFIED
+              {t('events.photoVerified')}
             </p>
             <div className="mt-2 grid grid-cols-6 gap-2">
               {ATTENDEE_AVATARS.map((src) => (
                 <img
                   key={src}
                   src={src}
-                  alt="Verified attendee"
+                  alt={t('events.verifiedAttendee')}
                   loading="lazy"
                   className="aspect-square w-full rounded-full object-cover"
                 />
@@ -205,13 +207,13 @@ export default function EventDetailSheet({
             >
               <ShieldCheck size={16} style={{ color: 'var(--ok)' }} aria-hidden="true" />
               <span className="t-caption" style={{ color: 'var(--text)' }}>
-                Public venues only · share-your-plans tool linked
+                {t('events.safetyStrip')}
               </span>
             </div>
 
             {/* Agenda timeline — light-trail moment */}
             <p className="t-micro mt-5" style={{ color: 'var(--text)' }}>
-              AGENDA
+              {t('events.agenda')}
             </p>
             <div className="relative mt-2">
               <LightTrail
@@ -252,7 +254,7 @@ export default function EventDetailSheet({
             }}
           >
             <BtnGlass className="h-[52px] flex-1 px-4" onClick={() => setPickerOpen(true)}>
-              Invite a match
+              {t('events.inviteMatch')}
             </BtnGlass>
             <RsvpButton
               variant="primary"
@@ -273,10 +275,10 @@ export default function EventDetailSheet({
       >
         <div className="max-h-[60dvh] overflow-y-auto px-5 pb-8">
           <h3 id="invite-match-title" className="t-title-sm mt-2">
-            Invite a match
+            {t('events.inviteMatch')}
           </h3>
           <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-            The event card lands in your chat thread.
+            {t('events.inviteCaption')}
           </p>
           <div className="mt-4 flex flex-col gap-2">
             {matchesQuery.isLoading &&
@@ -288,7 +290,7 @@ export default function EventDetailSheet({
                 />
               ))}
             {matchesQuery.data?.matches.map((entry) => {
-              const name = entry.otherProfile?.displayName ?? 'Match';
+              const name = entry.otherProfile?.displayName ?? t('matches.defaultName');
               const photo = entry.otherProfile?.photos?.[0];
               return (
                 <button
@@ -304,10 +306,10 @@ export default function EventDetailSheet({
                       {
                         onSuccess: () => {
                           setPickerOpen(false);
-                          onToast(`Sent to ${name} — the event card is in your thread.`);
+                          onToast(t('events.inviteSent', { name }));
                         },
                         onError: () => {
-                          onToast("Couldn't send the invite — try again.");
+                          onToast(t('events.inviteError'));
                         },
                       },
                     );
@@ -333,7 +335,7 @@ export default function EventDetailSheet({
             })}
             {matchesQuery.data && matchesQuery.data.matches.length === 0 && (
               <p className="t-caption py-3" style={{ color: 'var(--text-secondary)' }}>
-                No matches yet — RSVP and meet someone there.
+                {t('events.noMatches')}
               </p>
             )}
           </div>

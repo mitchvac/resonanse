@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import type { ChatMessage } from '@/components/chat/types';
@@ -30,6 +31,7 @@ export default function DateIdeaThreadCard({
   onAccept: () => void;
   onDecline: () => void;
 }) {
+  const { t } = useTranslation('connect');
   const meta = (message.meta ?? {}) as DateMeta;
   const status = meta.status ?? 'proposed';
 
@@ -82,16 +84,16 @@ export default function DateIdeaThreadCard({
               <MapPin size={13} style={{ color: 'var(--ok)' }} aria-hidden="true" />
             </motion.span>
             <span className="t-caption font-bold" style={{ color: 'var(--ok)' }}>
-              Date planned{meta.time ? ` · ${meta.time}` : ''}
+              {t('dateIdea.planned')}{meta.time ? ` · ${meta.time}` : ''}
             </span>
           </div>
         ) : status === 'declined' ? (
           <p className="t-caption mt-3" style={{ color: 'var(--text-secondary)' }}>
-            Declined — no worries, another idea will land.
+            {t('dateIdea.declined')}
           </p>
         ) : own ? (
           <p className="t-caption mt-3" style={{ color: 'var(--text-secondary)' }}>
-            Proposed — waiting for a response…
+            {t('dateIdea.proposed')}
           </p>
         ) : (
           <div className="mt-3 flex gap-2">
@@ -101,7 +103,7 @@ export default function DateIdeaThreadCard({
               className="t-button h-10 min-h-[44px] flex-1 rounded-full text-white"
               style={{ background: 'var(--violet)' }}
             >
-              Accept
+              {t('dateIdea.accept')}
             </button>
             <button
               type="button"
@@ -109,7 +111,7 @@ export default function DateIdeaThreadCard({
               className="t-button h-10 min-h-[44px] flex-1 rounded-full"
               style={{ background: 'var(--field)', color: 'var(--text)' }}
             >
-              Decline
+              {t('dateIdea.decline')}
             </button>
           </div>
         )}

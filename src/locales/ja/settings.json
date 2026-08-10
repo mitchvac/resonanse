@@ -1,0 +1,417 @@
+{
+  "common": {
+    "back": "戻る",
+    "cancel": "キャンセル",
+    "loadingSettings": "設定を読み込んでいます"
+  },
+  "language": {
+    "title": "言語",
+    "caption": "メニューもボタンも、サイト全体が切り替わります。"
+  },
+  "topBar": {
+    "settings": "設定"
+  },
+  "sections": {
+    "appearance": "外観",
+    "language": "言語",
+    "discovery": "ディスカバリー",
+    "notifications": "通知",
+    "privacySafety": "プライバシーと安全",
+    "aiMatching": "AIとマッチング",
+    "accountSupport": "アカウントとサポート"
+  },
+  "theme": {
+    "systemName": "システム（{{name}}）",
+    "nightHud": "Night HUD",
+    "warmGlass": "Warm Glass",
+    "caption": "切り替えた瞬間に、画面全体が新しく生まれ変わります。",
+    "ariaLabel": "テーマ",
+    "light": "ライト",
+    "dark": "ダーク",
+    "systemOption": "システム"
+  },
+  "rows": {
+    "reduceMotion": {
+      "title": "動きを抑える",
+      "caption": "OSの設定に従います。オンにするとこちらが優先されます。"
+    },
+    "reduceTransparency": {
+      "title": "透明度を下げる",
+      "caption": "ガラス面が不透明になります。オフのときはOSの設定に従います。"
+    },
+    "location": {
+      "title": "位置情報サービス",
+      "captionOn": "正確な位置は表示されません。",
+      "captionOff": "システム設定でオフになっています。オンにすると近くの人が表示されます。"
+    },
+    "maxDistance": {
+      "title": "最大距離",
+      "caption": "キューが届く範囲です。",
+      "aria": "最大距離（キロメートル）",
+      "format": "{{value}} km"
+    },
+    "ageRange": {
+      "title": "年齢範囲",
+      "caption": "キューに表示される相手の年齢です。"
+    },
+    "showMe": {
+      "title": "表示する相手",
+      "caption": "出会いたい相手をすべて選んでください。",
+      "women": "女性",
+      "men": "男性",
+      "nonbinary": "ノンバイナリー"
+    },
+    "globalTravel": {
+      "title": "グローバル / トラベル",
+      "caption": "ほかの街の人とも出会えます。"
+    },
+    "womenFirst": {
+      "title": "女性・男性以外が先にメッセージ",
+      "caption": "オンにすると、マッチはあなたの最初の一歩を待ちます。",
+      "aria": "女性と男性以外が先にメッセージ"
+    },
+    "dealbreakers": {
+      "title": "絶対条件",
+      "caption": "キューの厳格なフィルターです。"
+    },
+    "notificationsMaster": {
+      "title": "通知",
+      "caption": "以下すべての主スイッチです。",
+      "aria": "すべての通知"
+    },
+    "quietHours": {
+      "title": "クワイエット時間",
+      "captionOn": "{{from}} – {{to}} · デートのリマインダーのみ届きます。",
+      "captionOff": "オフ — デートのリマインダーだけが届く時間帯を設定できます。"
+    },
+    "photoVerification": {
+      "title": "写真認証",
+      "captionVerified": "認証済み — バッジが表示されています。",
+      "captionNotVerified": "まだ認証されていません。",
+      "verified": "認証済み",
+      "reverify": "再認証する"
+    },
+    "anonymity": {
+      "title": "匿名モード",
+      "ariaActive": "匿名が有効です",
+      "caption": "いいねした相手以外からは見えなくなります。いいねが減る可能性があります。"
+    },
+    "hiddenWords": {
+      "title": "非表示ワード",
+      "captionMuted": "{{count}}件をミュート中: {{words}}",
+      "captionMutedMore": "{{count}}件をミュート中: {{words}}…",
+      "captionEmpty": "これらの語を含むメッセージは非表示フォルダに振り分けられます。"
+    },
+    "screenshot": {
+      "title": "スクリーンショット通知",
+      "caption": "写真やチャットがスクリーンショットされると通知されます。"
+    },
+    "ephemeral": {
+      "title": "デフォルトで消える",
+      "caption": "新しいチャットを24時間で消えるモードで開始します。"
+    },
+    "blocked": {
+      "title": "ブロックしたアカウント",
+      "captionCount": "{{count}}件をブロック中",
+      "captionEmpty": "ブロックした人を管理します。"
+    },
+    "download": {
+      "title": "データをダウンロード",
+      "captionBusy": "エクスポートを準備しています…",
+      "caption": "GDPR/CCPAエクスポート — JSONですぐにダウンロードされます。"
+    },
+    "deleteAccount": {
+      "title": "アカウントを削除",
+      "caption": "プロフィール、マッチ、メッセージが削除されます。"
+    },
+    "privacyPolicy": "プライバシーポリシー",
+    "cookiePreferences": "Cookie設定",
+    "aiStarters": {
+      "title": "AIスターター",
+      "caption": "新しいマッチへの最初の一言を提案します。"
+    },
+    "aiCoaching": {
+      "title": "AIコーチング",
+      "caption": "目標に合わせたプロフィールとメッセージのフィードバックです。"
+    },
+    "weMet": {
+      "title": "We Metのフィードバックを使う",
+      "caption": "デート後のチェックインが、あなたに合うものをマッチングに学ばせます。",
+      "aria": "We Metのフィードバックを使う"
+    },
+    "resetMatching": {
+      "title": "マッチング履歴をリセット",
+      "caption": "学習した好みを消去します。プロフィールは残ります。"
+    },
+    "membership": {
+      "title": "メンバーシップ",
+      "upgrade": "アップグレード"
+    },
+    "wallet": {
+      "title": "ウォレット",
+      "caption": "Date-Coin残高、キー、エコシステムの切り替えです。"
+    },
+    "restorePurchases": {
+      "title": "購入を復元",
+      "captionBusy": "購入履歴を確認しています…"
+    },
+    "helpCenter": "ヘルプセンター",
+    "communityGuidelines": "コミュニティガイドライン",
+    "safetyResources": {
+      "title": "安全のためのリソース",
+      "caption": "ホットラインや専門家の助けを、いつでも。"
+    },
+    "logout": "ログアウト"
+  },
+  "notifications": {
+    "itemAria": "{{label}}の通知",
+    "items": {
+      "newLikes": {
+        "title": "新しいいいね",
+        "caption": "誰かがあなたにいいねしたとき。"
+      },
+      "matches": {
+        "title": "マッチ",
+        "caption": "いいねが相互になったとき。"
+      },
+      "messages": {
+        "title": "メッセージ",
+        "caption": "新しいチャットメッセージ。"
+      },
+      "queueDrop": {
+        "title": "新しいキュー",
+        "caption": "毎日正午、新しいキューが届いたとき。"
+      },
+      "events": {
+        "title": "イベント",
+        "caption": "出欠の更新や近くの新しいイベントです。"
+      },
+      "dateReminders": {
+        "title": "デートのリマインダー",
+        "caption": "予定しているデート前のお知らせです。"
+      }
+    }
+  },
+  "hiddenWords": {
+    "title": "非表示ワード",
+    "intro": "これらの語を含むメッセージは、あとで確認できる非表示フォルダに振り分けられます。",
+    "empty": "非表示ワードはまだありません。",
+    "placeholder": "単語やフレーズを追加",
+    "inputAria": "非表示にする単語やフレーズを追加",
+    "addAria": "非表示ワードを追加",
+    "add": "追加",
+    "hint": "チップの×をタップすると削除できます。フィルターはサイレントで、送信者には知らされません。"
+  },
+  "blocked": {
+    "title": "ブロックしたアカウント",
+    "intro": "ブロックした人はあなたを見たり、いいねしたり、メッセージを送ったりできません。",
+    "emptyTitle": "ブロックしたアカウントはありません",
+    "emptyBody": "誰かをブロックすると、ここに表示されます。",
+    "memberFallback": "メンバー",
+    "nearbyFallback": "近く",
+    "profileUnavailable": "プロフィールを表示できません",
+    "unblock": "ブロック解除",
+    "sheetTitle": "この人のブロックを解除しますか？",
+    "sheetBody": "相手はあなたのプロフィールを見て、メッセージを送れるようになります。いつでも再度ブロックできます。",
+    "keepBlocked": "ブロックしたままにする"
+  },
+  "sheets": {
+    "anonymity": {
+      "title": "匿名モードをオンにしますか？",
+      "p1": "いいねした相手以外からは見えなくなります。",
+      "p2": "正直なところ、見てもらえる人が減るので、いいねが減る可能性があります。",
+      "p3": "いつでも元に戻せます。ほかは何も変わりません。",
+      "confirm": "匿名をオンにする",
+      "cancel": "今はしない"
+    },
+    "quiet": {
+      "title": "クワイエット時間",
+      "body": "クワイエット時間中はデートのリマインダーだけが届きます。",
+      "on": "クワイエット時間 オン",
+      "toggleAria": "クワイエット時間が有効です",
+      "from": "開始",
+      "to": "終了",
+      "save": "クワイエット時間を保存"
+    },
+    "reset": {
+      "title": "マッチング履歴をリセットしますか？",
+      "body": "Resonanceがあなたのいいね、スキップ、We Metチェックインから学んだ内容が消去されます。プロフィール、マッチ、メッセージは残ります。",
+      "hold": "長押しでリセット",
+      "holding": "いっぱいになったら離して…",
+      "keep": "履歴を残す"
+    },
+    "delete": {
+      "pausedTitle": "アカウントを一時停止中",
+      "pausedP1": "誰のキューにも表示されなくなります。",
+      "pausedP2": "プロフィール、マッチ、メッセージはそのまま残っています。",
+      "resume": "アカウントを再開する",
+      "continueDelete": "削除へ進む",
+      "continueAria": "アカウントの削除へ進む",
+      "beforeTitle": "お別れの前に",
+      "beforeP1": "削除すると、プロフィール、マッチ、メッセージ、Pulsesがすべて消えます。元には戻せません。",
+      "beforeP2": "少し休みたいだけなら、一時停止すれば何も失わずに非表示にできます。",
+      "pauseInstead": "代わりに一時停止する",
+      "title": "アカウントを削除しますか？",
+      "deletedTitle": "アカウントを削除しました",
+      "deletedBody": "すべてが削除されました。ここで過ごしてくれた時間に感謝します。出会う価値のある人に出会えていますように。",
+      "backToSignIn": "ログインに戻る",
+      "lastStep": "最後のステップです。下を長押しすると、アカウントが完全に削除されます。",
+      "hold": "長押しでアカウントを削除",
+      "holding": "削除しています…"
+    },
+    "safety": {
+      "title": "安全のためのリソース",
+      "body": "無料・秘密厳守・24時間365日。ひとりで抱え込まなくて大丈夫です。",
+      "rainnCaption": "全米性暴力ホットライン — 1-800-656-4673",
+      "crisisCaption": "741741にHOMEと送信 — 訓練されたカウンセラーがどんな危機にも対応",
+      "emergency": "差し迫った危険がある場合は、まず地域の緊急電話番号にかけてください。"
+    },
+    "help": {
+      "title": "ヘルプセンター",
+      "body": "検索できるヘルプセンターは近日公開予定です。それまでは「データをダウンロード」と上の安全ツールでよくあるご要望に対応できます。安全のためのリソースもいつでもワンタップで開けます。",
+      "emailSupport": "サポートにメール",
+      "emailCaption": "support@resonanse.app — 1営業日以内に返信します",
+      "gotIt": "了解"
+    }
+  },
+  "tiers": {
+    "free": "無料"
+  },
+  "footer": "RESONANCE 1.0.0 · リアルで出会うために。",
+  "toasts": {
+    "quietSet": "クワイエット時間を設定しました — {{from}}から{{to}}まで。",
+    "deleteError": "アカウントを削除できませんでした。接続を確認してもう一度お試しください。",
+    "resetDone": "キューの履歴をリセットしました。",
+    "resetError": "キューの履歴をリセットできませんでした。もう一度お試しください。",
+    "ephemeralOn": "新しいチャットは24時間後に消えます。",
+    "ephemeralOff": "新しいチャットは再び永久に残ります。",
+    "pauseError": "アカウントを一時停止できませんでした。もう一度お試しください。",
+    "resumeError": "再開できませんでした。もう一度お試しください。",
+    "welcomeBack": "おかえりなさい。キューに再び表示されるようになりました。",
+    "exportDone": "データをresonance-data.jsonとしてダウンロードしました。",
+    "exportError": "データをエクスポートできませんでした。接続を確認してもう一度お試しください。",
+    "premiumRestored": "購入を復元しました — Resonance+をご利用いただけます",
+    "noPurchase": "以前の購入は見つかりませんでした",
+    "restoreError": "購入履歴を確認できませんでした。もう一度お試しください。",
+    "anonymityOn": "匿名オン — いいねした相手だけに表示されます。",
+    "anonymityOff": "匿名オフ — キューに再び表示されるようになりました。",
+    "unblocked": "ブロックを解除しました。キューに再び表示される可能性があります。",
+    "hiddenWordAdded": "これらの語を含むメッセージはチャット内でフラグが付きます。",
+    "womenFirstOn": "マッチはあなたの最初のメッセージを待ちます。",
+    "womenFirstOff": "どちらからでも先にメッセージを送れます。"
+  },
+  "profile": {
+    "title": "あなた",
+    "settingsAria": "設定",
+    "shareAria": "プロフィールを共有",
+    "loadingAria": "プロフィールを読み込んでいます",
+    "mainPhotoAlt": "{{name}}さんのメインプロフィール写真",
+    "strengthLabel": "プロフィール強度 {{pct}}%",
+    "strengthAria": "プロフィール強度 {{pct}}パーセント",
+    "hiddenFromNonMatches": "マッチしていない人からは非表示",
+    "verificationPending": "認証を審査中です。完了したらお知らせします。",
+    "idVerified": "本人確認済み ✓",
+    "verifyId": "本人確認をする",
+    "verifyIdHint": "ブラウザ内でスキャン — 保存されません",
+    "editProfile": "プロフィールを編集",
+    "previewAsOthers": "他人からの見え方をプレビュー",
+    "yourPhotos": "あなたの写真",
+    "editPhotoAria": "写真{{n}}を編集",
+    "photoAria": "写真{{n}}",
+    "photoAlt": "プロフィール写真{{n}}",
+    "mainTag": "メイン",
+    "addPhotoAria": "写真を追加",
+    "thisWeek": "今週",
+    "matchesMicro": "マッチ",
+    "likesMicro": "もらったいいね",
+    "inLikesTab": "「いいね」タブにあります",
+    "datesMicro": "デート",
+    "datesGoal": "/目標{{goal}}回",
+    "met": "会った",
+    "photoInsightsAria": "写真インサイト — Resonance+の機能",
+    "photoInsights": "写真インサイト",
+    "photoInsightsCaption": "どの写真がいいねを集めているか見られます。",
+    "photoPerformance": "写真のパフォーマンス",
+    "topTag": "トップ",
+    "photoTip": "写真3（ハイキング）は2.4倍の好成績です。メインにするのがおすすめです。",
+    "makeMain": "メインにする",
+    "performanceGate": "写真のパフォーマンスはResonance+の機能です。どの写真がいいねを集めているか正確にわかります。",
+    "upgrade": "アップグレード",
+    "upgradeAria": "Resonance+にアップグレード",
+    "datingGoal": "デートの目標",
+    "datesPerWeek_one": "週{{count}}回のデート",
+    "datesPerWeek_other": "週{{count}}回のデート",
+    "onTrack": "順調です — 4週連続。",
+    "streakAria": "表示中の{{total}}週のうち{{done}}週連続",
+    "retakeReflections": "Reflectionsをやり直す",
+    "lastTaken": "最終実施は3週間前 — やり直すとキューが改善されます",
+    "accountSection": "アカウント",
+    "membership": "メンバーシップ",
+    "pulses": "Pulses",
+    "pulsesLeft": "残り{{count}}個",
+    "wallet": "ウォレット",
+    "setUpDateCoin": "Date-Coinを設定",
+    "ecosystemOn": "エコシステム オン",
+    "ecosystemOff": "エコシステム オフ",
+    "verificationStatus": "認証ステータス",
+    "verified": "認証済み",
+    "pending": "審査中",
+    "notVerified": "未認証",
+    "constellation": "Constellation",
+    "linkedPartners_one": "連携中のパートナー{{count}}人",
+    "linkedPartners_other": "連携中のパートナー{{count}}人",
+    "linkPartner": "パートナーを連携",
+    "notificationPrefs": "通知設定",
+    "toasts": {
+      "linkCopied": "プロフィールのリンクをコピーしました。",
+      "linkCopyError": "リンクをコピーできませんでした。代わりにアドレスバーをコピーしてください。",
+      "photoAdded": "写真を追加しました。",
+      "photoUpdated": "写真を更新しました。",
+      "photoSaveError": "その写真を保存できませんでした。もう一度お試しください。",
+      "photoRemoved": "写真を削除しました。",
+      "photoRemoveError": "その写真を削除できませんでした。もう一度お試しください。",
+      "goalSaved": "週間目標を保存しました。"
+    },
+    "addPhotoSheet": {
+      "title": "写真を追加",
+      "camera": "カメラ",
+      "cameraHint": "今すぐ撮る",
+      "library": "ライブラリ",
+      "libraryHint": "写真から選ぶ"
+    },
+    "editPhotoSheet": {
+      "title": "写真のオプション",
+      "replace": "差し替える",
+      "takeNew": "新しく撮る",
+      "remove": "削除"
+    },
+    "goalSheet": {
+      "title": "週間デート目標",
+      "body": "この目標に合わせてキューとリマインダーのペースを調整します。小さな目標でも大丈夫です。",
+      "decreaseAria": "週間目標を減らす",
+      "increaseAria": "週間目標を増やす",
+      "save": "目標を保存"
+    },
+    "previewSheet": {
+      "title": "他人からの見え方",
+      "alt": "{{name}}さんのプロフィールカードのプレビュー",
+      "bioFallback": "真剣な出会いを求めています。まずはコーヒー、次はハイキングで。",
+      "cardNote": "これがキューの人がスワイプするカードです。",
+      "done": "完了"
+    }
+  },
+  "profileSetup": {
+    "toasts": {
+      "draftSaveError": "このデバイスに下書きを保存できませんでした。このタブは開いたままにしてください。",
+      "photosSaveError": "写真を保存できませんでした。もう一度お試しください。",
+      "saveError": "保存できませんでした。下書きはこのデバイスに安全に保存されています。"
+    },
+    "missingPhotos_one": "あと{{count}}枚追加してください（最低4枚）",
+    "missingPhotos_other": "あと{{count}}枚追加してください（最低4枚）",
+    "missingSentences_one": "あと{{count}}文完成させてください（最低3文）",
+    "missingSentences_other": "あと{{count}}文完成させてください（最低3文）",
+    "continue": "続ける",
+    "publish": "プロフィールを公開",
+    "preview": "プレビュー"
+  }
+}

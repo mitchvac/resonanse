@@ -1,0 +1,340 @@
+{
+  "common": {
+    "them": "them",
+    "themCap": "Them",
+    "someone": "Someone",
+    "member": "member",
+    "profile": "profile",
+    "their": "Their",
+    "photoOf": "Photo of {{name}}",
+    "openProfile": "Open {{name}}'s profile",
+    "noPhoto": "{{name}} (no photo)",
+    "photoHidden": "{{name}} (photo hidden)",
+    "leftToday": "{{count}} left today",
+    "compatible": "{{value}} compatible",
+    "compatibleCap": "{{value}} COMPATIBLE",
+    "compatibleWord": "COMPATIBLE",
+    "more": "More",
+    "less": "Less"
+  },
+  "modes": {
+    "queue": "Queue",
+    "swipe": "Swipe",
+    "nearby": "Nearby"
+  },
+  "preview": {
+    "auto": "Auto",
+    "free": "Free",
+    "label": "DEMO PREVIEW",
+    "a11y": "Tier preview"
+  },
+  "a11y": {
+    "filters": "Filters",
+    "travelMode": "Travel mode",
+    "discoveryMode": "Discovery mode",
+    "swipeMode": "Swipe mode",
+    "dailyQueue": "Daily Resonance Queue",
+    "queueCards": "Queue cards",
+    "dismiss": "Dismiss",
+    "loadingQueue": "Loading your queue",
+    "loadingLikes": "Loading likes",
+    "verifiedProfile": "Verified profile",
+    "activeNow": "Active now",
+    "nearby": "Nearby",
+    "pulsesReceived": "Pulses received",
+    "rosesReceived": "Roses received",
+    "wavesReceived": "Waves received",
+    "kissesReceived": "Kisses received",
+    "peopleWhoLikedYou": "People who liked you"
+  },
+  "queue": {
+    "eyebrow": "Your queue · refreshes at noon",
+    "heading": "{{count}} people. Chosen well.",
+    "newQueueIn": "NEW QUEUE IN {{countdown}}",
+    "mostCompatible": "Most compatible today",
+    "bothAnswered": "You both answered '{{question}}' the same way.",
+    "answersResonate": "Your answers resonate.",
+    "view": "View",
+    "likeCommentAria": "Like with a comment on \"{{question}}\""
+  },
+  "nearby": {
+    "micro": "HAPPENING NEAR YOU · UPDATED LIVE"
+  },
+  "travel": {
+    "browsing": "Browsing {{city}} · Travel mode",
+    "change": "Change",
+    "eyebrow": "Travel mode",
+    "title": "Browse another city",
+    "backToMyCity": "← Back to my city",
+    "gateTitle": "Travel with Resonance+",
+    "gateCaption": "Set your location anywhere before you land. Your queue follows you.",
+    "gateCta": "Unlock Travel"
+  },
+  "gates": {
+    "outOfLikesTitle": "You're out of likes for today",
+    "outOfLikesCaption": "Resonance+ removes the daily cap — and your queue refreshes at noon.",
+    "getPlus": "Get Resonance+",
+    "backToQueue": "Back to Queue",
+    "outOfFlowersTitle": "You're out of flowers for today",
+    "outOfFlowersCaption": "Free members send 3 flowers a day. Resonance+ grows an unlimited garden — and flowers always land unblurred.",
+    "outOfPulsesTitle": "You're out of Pulses",
+    "outOfPulsesCaption": "A Pulse pins you at the top of their Likes with a note — grab a pack and keep the signal strong.",
+    "getPulses": "Get Pulses",
+    "notNow": "Not now",
+    "advancedFiltersSr": "Advanced filters",
+    "advancedFiltersTitle": "Advanced filters are Resonance+",
+    "advancedFiltersCaption": "Politics, languages, zodiac and more — zero in on what matters.",
+    "unlockAdvancedFilters": "Unlock advanced filters",
+    "unlockWithPlus": "Unlock with Resonance+",
+    "seeWhoTitle": "See who's already into you",
+    "seeWhoCaption": "Unblur every like, sort by compatibility, and never miss a Pulse.",
+    "sortGateSr": "Sort by compatibility",
+    "sortGateTitle": "Sort by what matters",
+    "sortGateCaption": "Compatibility, recency, distance — sorting is a Resonance+ feature."
+  },
+  "empty": {
+    "travelTitle": "No one in {{city}} yet.",
+    "travelBody": "This city is still growing. Turn off Travel mode to see people near you.",
+    "turnOffTravel": "Turn off Travel mode",
+    "queueTitle": "That's today's queue.",
+    "queueBody": "Seven people, chosen well — never a slot machine.",
+    "trySwipe": "Try Swipe mode"
+  },
+  "error": {
+    "loadQueueTitle": "Couldn't load your queue.",
+    "loadLikesTitle": "Couldn't load your likes.",
+    "body": "Check your connection and try again.",
+    "retry": "Retry"
+  },
+  "toasts": {
+    "waveSent": "You waved — they’ll see it in their Likes.",
+    "dozenSent": "A dozen roses are on their way, card and all.",
+    "roseSent": "Your rose is on its way — with the card attached.",
+    "kissSent": "Kiss sent — bold move. They’ll see it in their Likes.",
+    "sendFailed": "Couldn't send — check your connection and try again.",
+    "dozenLimit": "One dozen a day — save it for someone who stops your heart.",
+    "outOfKisses": "You're out of kisses for today — they reset at midnight.",
+    "waveLimit": "That's a lot of hellos — waves reset at midnight.",
+    "profileGone": "That profile isn't in your queue anymore",
+    "passedQuietly": "Passed — they won't know.",
+    "usedUp": "That one’s used up for today.",
+    "linkCopied": "Profile link copied.",
+    "reportSent": "Report sent — our team will review.",
+    "blocked": "{{name}} blocked. They won't be notified."
+  },
+  "likes": {
+    "header": "Likes You",
+    "countPeople": "{{count}} PEOPLE",
+    "countPulses": "{{count}} PULSES",
+    "countRoses": "{{count}} ROSES",
+    "countWaves": "{{count}} WAVES",
+    "countKisses": "{{count}} KISSES",
+    "sort": "Sort",
+    "sortGateA11y": "Sort — Resonance+ feature",
+    "sortA11y": "Sort likes",
+    "firstLikeTitle": "Your first like is on its way.",
+    "firstLikeBody": "Likes never expire — when someone resonates, they'll land here.",
+    "boostProfile": "Boost your profile",
+    "someoneLikedPrompt": "Someone liked your prompt '{{ref}}'",
+    "someoneLikedPhoto": "Someone liked your photo #2",
+    "someoneLikedProfile": "Someone liked your profile",
+    "peopleWhoLikedYou": "People who liked you",
+    "moreLikesA11y": "{{count}} more likes — unlock to see them",
+    "footerNote": "Likes never expire. Pulse senders always appear at the top.",
+    "howPulsesWork": "How Pulses work"
+  },
+  "rails": {
+    "pulsesReceived": "Pulses received",
+    "rosesReceived": "Roses received",
+    "wavesReceived": "Waved to say hi",
+    "kissesReceived": "Kisses received",
+    "labels": {
+      "pulse": "PULSE",
+      "dozenRoses": "A DOZEN ROSES",
+      "rose": "A ROSE",
+      "wave": "WAVE",
+      "kiss": "KISS"
+    }
+  },
+  "context": {
+    "waved": "Waved to say hi",
+    "kiss": "Sent you a kiss",
+    "dozenRoses": "Sent you a dozen roses",
+    "rose": "Sent you a rose",
+    "likedAnswer": "Liked your answer '{{ref}}'",
+    "likedPhoto": "Liked your photo",
+    "likedProfile": "Liked your profile"
+  },
+  "teaser": {
+    "someoneLikesYou": "Someone likes you",
+    "summary": "{{context}} · {{km}} km away · {{compatibility}}",
+    "body": "Resonance+ unblurs every like — including this one."
+  },
+  "explainer": {
+    "title": "How Pulses work",
+    "body1": "A Pulse is a like with a note attached — the highest-signal way to say \"this specific thing about you.\" Pulses are never blurred and always pin to the top of this page.",
+    "body2": "Send them from a profile's Pulse button. Liking a Pulse back is an instant match."
+  },
+  "quickActions": {
+    "fallbackTitle": "Quick actions",
+    "likeBack": "Like back",
+    "passQuietly": "Pass quietly"
+  },
+  "sort": {
+    "title": "Sort likes",
+    "orderA11y": "Sort order",
+    "options": {
+      "compatibility": "Compatibility",
+      "mostRecent": "Most recent",
+      "nearby": "Nearby",
+      "newestMembers": "Newest members"
+    }
+  },
+  "gestures": {
+    "respondTo": "Respond to {{name}}",
+    "waveBackAria": "Wave back at {{name}} — say hi",
+    "waveSayHi": "Wave — say hi",
+    "sendRosesTo": "Send {{name}} roses",
+    "sendRosesToLeft": "Send {{name}} roses — {{count}} left today",
+    "sendRoses": "Send roses",
+    "sendRosesLeft": "Send roses — {{count}} left today",
+    "sendKissTo": "Send {{name}} a kiss",
+    "sendKissToLeft": "Send {{name}} a kiss — {{count}} left today",
+    "sendKiss": "Send a kiss",
+    "sendKissLeft": "Send a kiss — {{count}} left today",
+    "likeBack": "Like back",
+    "likeBackTo": "Like {{name}} back",
+    "pass": "Pass",
+    "like": "Like",
+    "sendPulse": "Send Pulse"
+  },
+  "dock": {
+    "unlimitedLikes": "∞ LIKES WITH RESONANCE+",
+    "likesLeft": "{{count}} LIKES LEFT TODAY",
+    "sendRosesCount": "Send roses ({{count}} left)",
+    "sendKissCount": "Send a kiss ({{count}} left)",
+    "sendPulseCount": "Send Pulse ({{count}} left)"
+  },
+  "roseSheet": {
+    "sentDozenTitle": "A dozen roses, on their way",
+    "sentSingleTitle": "Your rose is on its way",
+    "sentBody": "{{name}} gets it with the card attached.",
+    "eyebrow": "Make it land",
+    "title": "Send {{name}} roses",
+    "subtitle": "Real ones — with a card attached.",
+    "sendOneAria": "Send one rose",
+    "sendDozenAria": "Send a dozen roses",
+    "oneRose": "One rose",
+    "dozen": "A dozen roses",
+    "noneLeft": "none left today",
+    "theClassic": "the classic",
+    "backTomorrow": "back tomorrow",
+    "dozenPerDay": "{{count}} a day — the grand gesture",
+    "grandGesture": "the grand gesture",
+    "altOneRose": "One long-stem red rose with a gift card",
+    "altDozen": "A bouquet of a dozen red roses with a gift card"
+  },
+  "composer": {
+    "eyebrow": "Like with a comment",
+    "theirProfile": "{{name}}'s profile",
+    "yourComment": "Your comment",
+    "placeholder": "Say something specific…",
+    "sendLike": "Send like",
+    "sendPulse": "Send Pulse",
+    "pulsesLeft": "{{count}} left"
+  },
+  "filters": {
+    "title": "Filters",
+    "dealbreaker": "DEALBREAKER",
+    "dealbreakerNote": "Dealbreakers hide all non-matches from every mode.",
+    "makeDealbreaker": "Make dealbreaker",
+    "removeDealbreaker": "Remove dealbreaker",
+    "lockedAria": "{{title}} — Resonance+ filter",
+    "groups": {
+      "intent": "Intent",
+      "age": "Age",
+      "distance": "Distance",
+      "relationship": "Relationship type",
+      "family": "Family plans",
+      "verified": "Verified only",
+      "politics": "Politics"
+    },
+    "intentOptions": {
+      "serious": "Serious",
+      "casual": "Casual",
+      "explore": "Explore",
+      "friendship": "Friendship",
+      "enm": "ENM"
+    },
+    "relTypeOptions": {
+      "monogamous": "Monogamous",
+      "nonMonogamous": "Non-monogamous",
+      "openToBoth": "Open to both"
+    },
+    "familyOptions": {
+      "wantKids": "Want kids",
+      "open": "Open",
+      "noKids": "No kids",
+      "haveKids": "Have kids"
+    },
+    "politicsOptions": {
+      "liberal": "Liberal",
+      "moderate": "Moderate",
+      "conservative": "Conservative",
+      "apolitical": "Apolitical"
+    },
+    "minAge": "Minimum age",
+    "maxAge": "Maximum age",
+    "maxDistance": "Maximum distance",
+    "withinKm": "Within {{km}} km",
+    "thisCityOnly": "This city only",
+    "showVerifiedOnly": "Show verified profiles only",
+    "reset": "Reset",
+    "showPeople": "Show people"
+  },
+  "match": {
+    "title": "It's a match",
+    "body": "You and {{name}} liked each other.",
+    "cta": "Send the first message",
+    "keepBrowsing": "Keep browsing",
+    "yourPhoto": "Your photo",
+    "you": "You"
+  },
+  "profileSheet": {
+    "photoAlt": "Photo {{index}} of {{name}}",
+    "photoDot": "Photo {{index}}",
+    "activeToday": "Active today",
+    "lifestyle": "Lifestyle",
+    "share": "Share",
+    "shareAria": "Share profile",
+    "reportBlock": "Report / block",
+    "reportBlockAria": "Report or block"
+  },
+  "safety": {
+    "title": "Report or block",
+    "reportName": "Report {{name}}",
+    "reasonA11y": "Report reason",
+    "cancel": "Cancel",
+    "sending": "Sending…",
+    "sendReport": "Send report",
+    "blockName": "Block {{name}}",
+    "blockNote": "Quiet and immediate. They won't be notified.",
+    "blocking": "Blocking…",
+    "block": "Block",
+    "reasons": {
+      "spam": "Spam",
+      "abuse": "Abuse",
+      "fake": "Fake",
+      "under18": "Under 18",
+      "other": "Other"
+    }
+  },
+  "swipe": {
+    "like": "LIKE",
+    "nope": "NOPE",
+    "pulse": "PULSE"
+  },
+  "likeTile": {
+    "blurredAria": "Someone liked you — {{value}} compatible. Unlock to see who."
+  }
+}

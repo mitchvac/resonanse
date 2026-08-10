@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Lock } from 'lucide-react';
 import CompatibilityArc from '@/components/discover/CompatibilityArc';
@@ -35,6 +36,7 @@ export default function LikeTile({
       context label — unblurred tiles only */
   gestures?: React.ReactNode;
 }) {
+  const { t } = useTranslation('discover');
   const liker = like.liker;
   // Never a stock face: a photo-less liker gets a violet initial disc —
   // a stranger's photo here reads as "this is who liked you" (V83 bug class).
@@ -56,8 +58,8 @@ export default function LikeTile({
         className="block w-full text-left"
         aria-label={
           blurred
-            ? `Someone liked you — ${like.compatibility} compatible. Unlock to see who.`
-            : `Open ${liker?.displayName ?? 'profile'}'s profile`
+            ? t('likeTile.blurredAria', { value: like.compatibility })
+            : t('common.openProfile', { name: liker?.displayName ?? t('common.profile') })
         }
       >
         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[16px]">
@@ -77,7 +79,7 @@ export default function LikeTile({
             {photo ? (
               <img
                 src={photo}
-                alt={blurred ? '' : `Photo of ${liker?.displayName ?? 'member'}`}
+                alt={blurred ? '' : t('common.photoOf', { name: liker?.displayName ?? t('common.member') })}
                 className="h-full w-full object-cover"
                 loading="lazy"
               />
@@ -85,7 +87,7 @@ export default function LikeTile({
               <div
                 className="t-heading flex h-full w-full items-center justify-center text-white"
                 style={{ background: 'linear-gradient(150deg, var(--violet), var(--violet-deep, var(--violet)))' }}
-                aria-label={blurred ? '' : `${liker?.displayName ?? 'member'} (no photo)`}
+                aria-label={blurred ? '' : t('common.noPhoto', { name: liker?.displayName ?? t('common.member') })}
               >
                 <span aria-hidden="true">
                   {(liker?.displayName?.trim()[0] ?? '♥').toUpperCase()}
@@ -110,7 +112,7 @@ export default function LikeTile({
                 <Lock size={14} style={{ color: 'var(--violet)' }} aria-hidden="true" />
               </span>
               <span className="t-caption font-bold text-white">
-                {like.compatibility} compatible
+                {t('common.compatible', { value: like.compatibility })}
               </span>
             </div>
           ) : (

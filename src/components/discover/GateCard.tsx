@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import GlassCard from '@/components/GlassCard';
 import { BtnPrimary } from '@/components/ui/buttons';
 import { cn } from '@/lib/utils';
@@ -13,7 +14,7 @@ import { cn } from '@/lib/utils';
 export default function GateCard({
   title,
   caption,
-  ctaLabel = 'Unlock with Resonance+',
+  ctaLabel,
   ctaTo = '/premium',
   className,
   children,
@@ -25,6 +26,7 @@ export default function GateCard({
   className?: string;
   children?: ReactNode;
 }) {
+  const { t } = useTranslation('discover');
   return (
     <GlassCard edge="amber" className={cn('edge-energize rounded-[24px] p-5', className)}>
       <p className="t-title-sm" style={{ color: 'var(--text)' }}>
@@ -37,7 +39,7 @@ export default function GateCard({
       )}
       {children}
       <BtnPrimary to={ctaTo} className="mt-4 h-11 w-full text-[14px]">
-        {ctaLabel}
+        {ctaLabel ?? t('gates.unlockWithPlus')}
       </BtnPrimary>
     </GlassCard>
   );

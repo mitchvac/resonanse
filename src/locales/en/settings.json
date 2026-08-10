@@ -1,0 +1,417 @@
+{
+  "common": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "loadingSettings": "Loading settings"
+  },
+  "language": {
+    "title": "Language",
+    "caption": "The whole site switches — menus, buttons, everything."
+  },
+  "topBar": {
+    "settings": "Settings"
+  },
+  "sections": {
+    "appearance": "Appearance",
+    "language": "Language",
+    "discovery": "Discovery",
+    "notifications": "Notifications",
+    "privacySafety": "Privacy & safety",
+    "aiMatching": "AI & matching",
+    "accountSupport": "Account & support"
+  },
+  "theme": {
+    "systemName": "System ({{name}})",
+    "nightHud": "Night HUD",
+    "warmGlass": "Warm Glass",
+    "caption": "The stage reblooms the moment you switch.",
+    "ariaLabel": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "systemOption": "System"
+  },
+  "rows": {
+    "reduceMotion": {
+      "title": "Reduce motion",
+      "caption": "Mirrors your OS setting; overrides it here when on."
+    },
+    "reduceTransparency": {
+      "title": "Reduce transparency",
+      "caption": "Glass surfaces become solid. Mirrors your OS setting when off."
+    },
+    "location": {
+      "title": "Location services",
+      "captionOn": "Never shown exactly.",
+      "captionOff": "Off in system settings — enable to see people nearby."
+    },
+    "maxDistance": {
+      "title": "Max distance",
+      "caption": "How far your queue reaches.",
+      "aria": "Maximum distance in kilometers",
+      "format": "{{value}} km"
+    },
+    "ageRange": {
+      "title": "Age range",
+      "caption": "Who appears in your queue."
+    },
+    "showMe": {
+      "title": "Show me",
+      "caption": "Pick everyone you want to meet.",
+      "women": "Women",
+      "men": "Men",
+      "nonbinary": "Nonbinary"
+    },
+    "globalTravel": {
+      "title": "Global / Travel",
+      "caption": "Meet people in other cities."
+    },
+    "womenFirst": {
+      "title": "Women/non-men message first",
+      "caption": "When on, matches wait for your first move.",
+      "aria": "Women and non-men message first"
+    },
+    "dealbreakers": {
+      "title": "Dealbreakers",
+      "caption": "Hard filters for your queue."
+    },
+    "notificationsMaster": {
+      "title": "Notifications",
+      "caption": "Master switch for everything below.",
+      "aria": "All notifications"
+    },
+    "quietHours": {
+      "title": "Quiet hours",
+      "captionOn": "{{from}} – {{to}} · only date reminders come through.",
+      "captionOff": "Off — schedule a window where only date reminders come through."
+    },
+    "photoVerification": {
+      "title": "Photo verification",
+      "captionVerified": "Verified — your badge is visible.",
+      "captionNotVerified": "Not verified yet.",
+      "verified": "Verified",
+      "reverify": "Re-verify"
+    },
+    "anonymity": {
+      "title": "Anonymity mode",
+      "ariaActive": "Anonymity active",
+      "caption": "Hidden from everyone except people you like. Likes may slow down."
+    },
+    "hiddenWords": {
+      "title": "Hidden words",
+      "captionMuted": "{{count}} muted: {{words}}",
+      "captionMutedMore": "{{count}} muted: {{words}}…",
+      "captionEmpty": "Messages containing these are filtered to a hidden folder."
+    },
+    "screenshot": {
+      "title": "Screenshot alerts",
+      "caption": "You're notified when someone screenshots your photos or chat."
+    },
+    "ephemeral": {
+      "title": "Ephemeral default",
+      "caption": "Start new chats in 24h vanish mode."
+    },
+    "blocked": {
+      "title": "Blocked accounts",
+      "captionCount": "{{count}} blocked",
+      "captionEmpty": "Manage people you’ve blocked."
+    },
+    "download": {
+      "title": "Download my data",
+      "captionBusy": "Preparing your export…",
+      "caption": "GDPR/CCPA export — downloads instantly as JSON."
+    },
+    "deleteAccount": {
+      "title": "Delete account",
+      "caption": "Your profile, matches, and messages are removed."
+    },
+    "privacyPolicy": "Privacy policy",
+    "cookiePreferences": "Cookie preferences",
+    "aiStarters": {
+      "title": "AI starters",
+      "caption": "Suggested first lines on new matches."
+    },
+    "aiCoaching": {
+      "title": "AI coaching",
+      "caption": "Profile and message feedback, tuned to your goals."
+    },
+    "weMet": {
+      "title": "Use my We Met feedback",
+      "caption": "Your post-date check-ins teach the matching loop what works for you.",
+      "aria": "Use We Met feedback"
+    },
+    "resetMatching": {
+      "title": "Reset matching history",
+      "caption": "Clears learned preferences. Your profile stays."
+    },
+    "membership": {
+      "title": "Membership",
+      "upgrade": "Upgrade"
+    },
+    "wallet": {
+      "title": "Wallet",
+      "caption": "Date-Coin balance, keys and ecosystem switch."
+    },
+    "restorePurchases": {
+      "title": "Restore purchases",
+      "captionBusy": "Checking for purchases…"
+    },
+    "helpCenter": "Help center",
+    "communityGuidelines": "Community guidelines",
+    "safetyResources": {
+      "title": "Safety resources",
+      "caption": "Hotlines and expert help, whenever you need them."
+    },
+    "logout": "Log out"
+  },
+  "notifications": {
+    "itemAria": "{{label}} notifications",
+    "items": {
+      "newLikes": {
+        "title": "New likes",
+        "caption": "When someone likes you."
+      },
+      "matches": {
+        "title": "Matches",
+        "caption": "When a like becomes mutual."
+      },
+      "messages": {
+        "title": "Messages",
+        "caption": "New chat messages."
+      },
+      "queueDrop": {
+        "title": "Queue drop",
+        "caption": "Daily at noon, when your new queue lands."
+      },
+      "events": {
+        "title": "Events",
+        "caption": "RSVP updates and new events near you."
+      },
+      "dateReminders": {
+        "title": "Date reminders",
+        "caption": "Nudges before a planned date."
+      }
+    }
+  },
+  "hiddenWords": {
+    "title": "Hidden words",
+    "intro": "Messages containing these are filtered to a hidden folder you can review.",
+    "empty": "No hidden words yet.",
+    "placeholder": "Add a word or phrase",
+    "inputAria": "Add a hidden word or phrase",
+    "addAria": "Add hidden word",
+    "add": "Add",
+    "hint": "Tap the × on a chip to remove it. Filtering is silent — senders aren’t told."
+  },
+  "blocked": {
+    "title": "Blocked accounts",
+    "intro": "Blocked people can’t see you, like you, or message you.",
+    "emptyTitle": "No blocked accounts",
+    "emptyBody": "If you block someone, they’ll show up here.",
+    "memberFallback": "Member",
+    "nearbyFallback": "Nearby",
+    "profileUnavailable": "Profile unavailable",
+    "unblock": "Unblock",
+    "sheetTitle": "Unblock this person?",
+    "sheetBody": "They’ll be able to see your profile and message you again. You can re-block any time.",
+    "keepBlocked": "Keep blocked"
+  },
+  "sheets": {
+    "anonymity": {
+      "title": "Turn on anonymity mode?",
+      "p1": "You’ll be hidden from everyone except people you like.",
+      "p2": "The honest tradeoff: fewer people see you, so likes may slow down.",
+      "p3": "You can switch back any time — nothing else changes.",
+      "confirm": "Turn on anonymity",
+      "cancel": "Not now"
+    },
+    "quiet": {
+      "title": "Quiet hours",
+      "body": "Only date reminders come through during quiet hours.",
+      "on": "Quiet hours on",
+      "toggleAria": "Quiet hours enabled",
+      "from": "From",
+      "to": "To",
+      "save": "Save quiet hours"
+    },
+    "reset": {
+      "title": "Reset matching history?",
+      "body": "This clears what Resonance learned from your likes, passes, and We Met check-ins. Your profile, matches, and messages stay.",
+      "hold": "Hold to reset",
+      "holding": "Release when filled…",
+      "keep": "Keep my history"
+    },
+    "delete": {
+      "pausedTitle": "Account paused",
+      "pausedP1": "You won’t appear in anyone’s queue.",
+      "pausedP2": "Your profile, matches, and messages are exactly where you left them.",
+      "resume": "Resume my account",
+      "continueDelete": "Continue to delete",
+      "continueAria": "Continue to delete account",
+      "beforeTitle": "Before you go",
+      "beforeP1": "Deleting removes your profile, matches, messages, and Pulses. This can’t be undone.",
+      "beforeP2": "If you just need a break, pausing hides you without losing anything.",
+      "pauseInstead": "Pause instead",
+      "title": "Delete your account?",
+      "deletedTitle": "Account deleted",
+      "deletedBody": "Everything is gone. Thanks for the time you spent here — we hope you met someone worth meeting.",
+      "backToSignIn": "Back to sign in",
+      "lastStep": "Last step. Press and hold below to permanently delete your account.",
+      "hold": "Hold to delete account",
+      "holding": "Deleting…"
+    },
+    "safety": {
+      "title": "Safety resources",
+      "body": "Free, confidential, 24/7. You don’t have to handle anything alone.",
+      "rainnCaption": "National Sexual Assault Hotline — 1-800-656-4673",
+      "crisisCaption": "Text HOME to 741741 — trained counselors, any crisis",
+      "emergency": "In immediate danger? Call your local emergency number first."
+    },
+    "help": {
+      "title": "Help center",
+      "body": "A searchable help center is coming soon. Until then, “Download my data” and the safety tools above cover the most common requests — and safety resources are always one tap away.",
+      "emailSupport": "Email support",
+      "emailCaption": "support@resonanse.app — we reply within one business day",
+      "gotIt": "Got it"
+    }
+  },
+  "tiers": {
+    "free": "Free"
+  },
+  "footer": "RESONANCE 1.0.0 · MADE FOR MEETING IN REAL LIFE.",
+  "toasts": {
+    "quietSet": "Quiet hours set — {{from}} to {{to}}.",
+    "deleteError": "Couldn't delete your account — check your connection and try again.",
+    "resetDone": "Your queue history was reset.",
+    "resetError": "Couldn't reset your queue history — try again.",
+    "ephemeralOn": "New chats will vanish after 24 hours.",
+    "ephemeralOff": "New chats are permanent again.",
+    "pauseError": "Couldn't pause your account — try again.",
+    "resumeError": "Couldn't resume — try again.",
+    "welcomeBack": "Welcome back — you’re visible in queues again.",
+    "exportDone": "Your data export downloaded as resonance-data.json.",
+    "exportError": "Couldn't export your data — check your connection and try again.",
+    "premiumRestored": "Purchases restored — you’re on Resonance+",
+    "noPurchase": "No previous purchase found",
+    "restoreError": "Couldn't check for purchases — try again.",
+    "anonymityOn": "Anonymity on — only people you like can see you.",
+    "anonymityOff": "Anonymity off — you’re visible in queues again.",
+    "unblocked": "Unblocked. They can appear in your queue again.",
+    "hiddenWordAdded": "Messages with these words will be flagged in your chats.",
+    "womenFirstOn": "Matches will wait for your first message.",
+    "womenFirstOff": "Either person can message first."
+  },
+  "profile": {
+    "title": "You",
+    "settingsAria": "Settings",
+    "shareAria": "Share your profile",
+    "loadingAria": "Loading profile",
+    "mainPhotoAlt": "{{name}}'s main profile photo",
+    "strengthLabel": "PROFILE STRENGTH {{pct}}%",
+    "strengthAria": "Profile strength {{pct}} percent",
+    "hiddenFromNonMatches": "Hidden from non-matches",
+    "verificationPending": "Verification pending — we'll notify you when it's reviewed.",
+    "idVerified": "ID verified ✓",
+    "verifyId": "Verify your ID",
+    "verifyIdHint": "Scanned in-browser — never stored",
+    "editProfile": "Edit profile",
+    "previewAsOthers": "Preview as others see you",
+    "yourPhotos": "Your photos",
+    "editPhotoAria": "Edit photo {{n}}",
+    "photoAria": "Photo {{n}}",
+    "photoAlt": "Profile photo {{n}}",
+    "mainTag": "MAIN",
+    "addPhotoAria": "Add a photo",
+    "thisWeek": "This week",
+    "matchesMicro": "MATCHES",
+    "likesMicro": "LIKES RECEIVED",
+    "inLikesTab": "In your Likes tab",
+    "datesMicro": "DATES",
+    "datesGoal": "/{{goal}} goal",
+    "met": "Met",
+    "photoInsightsAria": "Photo insights — Resonance+ feature",
+    "photoInsights": "Photo insights",
+    "photoInsightsCaption": "See which photos earn likes.",
+    "photoPerformance": "Photo performance",
+    "topTag": "TOP",
+    "photoTip": "Photo 3 (hiking) outperforms at 2.4× — consider making it main.",
+    "makeMain": "Make main",
+    "performanceGate": "Photo performance is a Resonance+ feature — see exactly which photos earn your likes.",
+    "upgrade": "Upgrade",
+    "upgradeAria": "Upgrade to Resonance+",
+    "datingGoal": "Dating goal",
+    "datesPerWeek_one": "{{count}} date per week",
+    "datesPerWeek_other": "{{count}} dates per week",
+    "onTrack": "On track — 4-week streak.",
+    "streakAria": "{{done}} week streak of {{total}} weeks shown",
+    "retakeReflections": "Retake Reflections",
+    "lastTaken": "LAST TAKEN 3 WEEKS AGO — RETAKING IMPROVES YOUR QUEUE",
+    "accountSection": "Account",
+    "membership": "Membership",
+    "pulses": "Pulses",
+    "pulsesLeft": "{{count}} left",
+    "wallet": "Wallet",
+    "setUpDateCoin": "Set up Date-Coin",
+    "ecosystemOn": "Ecosystem on",
+    "ecosystemOff": "Ecosystem off",
+    "verificationStatus": "Verification status",
+    "verified": "Verified",
+    "pending": "Pending",
+    "notVerified": "Not verified",
+    "constellation": "Constellation",
+    "linkedPartners_one": "{{count}} linked partner",
+    "linkedPartners_other": "{{count}} linked partners",
+    "linkPartner": "Link a partner",
+    "notificationPrefs": "Notification preferences",
+    "toasts": {
+      "linkCopied": "Profile link copied.",
+      "linkCopyError": "Couldn't copy the link — copy the address bar instead.",
+      "photoAdded": "Photo added.",
+      "photoUpdated": "Photo updated.",
+      "photoSaveError": "Couldn't save that photo — try again.",
+      "photoRemoved": "Photo removed.",
+      "photoRemoveError": "Couldn't remove that photo — try again.",
+      "goalSaved": "Weekly goal saved."
+    },
+    "addPhotoSheet": {
+      "title": "Add a photo",
+      "camera": "Camera",
+      "cameraHint": "Take one now",
+      "library": "Library",
+      "libraryHint": "Pick from your photos"
+    },
+    "editPhotoSheet": {
+      "title": "Photo options",
+      "replace": "Replace",
+      "takeNew": "Take a new one",
+      "remove": "Remove"
+    },
+    "goalSheet": {
+      "title": "Weekly dating goal",
+      "body": "We pace your queue and reminders around this. Small goals count.",
+      "decreaseAria": "Decrease weekly goal",
+      "increaseAria": "Increase weekly goal",
+      "save": "Save goal"
+    },
+    "previewSheet": {
+      "title": "How others see you",
+      "alt": "Preview of {{name}}'s profile card",
+      "bioFallback": "Here for something real — coffee first, hikes second.",
+      "cardNote": "This is the card people in your queue swipe on.",
+      "done": "Done"
+    }
+  },
+  "profileSetup": {
+    "toasts": {
+      "draftSaveError": "Couldn't save your draft on this device — keep this tab open.",
+      "photosSaveError": "Couldn't save your photos — try again.",
+      "saveError": "Couldn't save — your draft is safe on this device."
+    },
+    "missingPhotos_one": "Add {{count}} more photo (4 minimum)",
+    "missingPhotos_other": "Add {{count}} more photos (4 minimum)",
+    "missingSentences_one": "Finish {{count}} more sentence (3 minimum)",
+    "missingSentences_other": "Finish {{count}} more sentences (3 minimum)",
+    "continue": "Continue",
+    "publish": "Publish my profile",
+    "preview": "Preview"
+  }
+}

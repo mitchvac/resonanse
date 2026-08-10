@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { trpc } from '@/providers/trpc';
 import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 type Mode = 'signin' | 'register';
 
@@ -60,6 +61,7 @@ function Field({
  * secondary glass button that hands off to the graft-owned OAuth page.
  */
 export default function SignIn() {
+  const { t } = useTranslation('landing');
   const [mode, setMode] = useState<Mode>('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -80,9 +82,9 @@ export default function SignIn() {
   const oauthErrorCode = searchParams.get('error');
   const oauthNotice =
     oauthErrorCode === 'google-not-configured'
-      ? 'Google sign-in isn’t available yet — use email or Kimi instead.'
+      ? t('signIn.oauthGoogleNotConfigured')
       : oauthErrorCode === 'google-auth-failed'
-        ? 'Google sign-in didn’t complete. Try again, or use email or Kimi.'
+        ? t('signIn.oauthGoogleFailed')
         : null;
 
   const onSuccess = async () => {
@@ -107,15 +109,15 @@ export default function SignIn() {
   const validate = (): boolean => {
     const errors: typeof fieldErrors = {};
     if (mode === 'register' && name.trim().length === 0) {
-      errors.name = 'Tell us your name';
+      errors.name = t('signIn.errors.nameRequired');
     }
     if (!EMAIL_RE.test(email.trim())) {
-      errors.email = 'Enter a valid email address';
+      errors.email = t('signIn.errors.emailInvalid');
     }
     if (mode === 'register' && password.length < 8) {
-      errors.password = 'At least 8 characters';
+      errors.password = t('signIn.errors.passwordShort');
     } else if (mode === 'signin' && password.length === 0) {
-      errors.password = 'Enter your password';
+      errors.password = t('signIn.errors.passwordRequired');
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -155,27 +157,27 @@ export default function SignIn() {
 
         <GlassCard edge="amber" className="p-7 sm:p-8">
           <h1 className="t-title text-center" style={{ color: 'var(--text)' }}>
-            {mode === 'signin' ? 'Welcome back.' : 'Create your account.'}
+            {mode === 'signin' ? t('signIn.titleIn') : t('signIn.titleUp')}
           </h1>
           <p
             className="t-body mt-2 text-center"
             style={{ color: 'var(--text-secondary)' }}
           >
             {mode === 'signin'
-              ? 'Pick up where you left off.'
-              : 'A quieter way to meet people worth meeting.'}
+              ? t('signIn.subtitleIn')
+              : t('signIn.subtitleUp')}
           </p>
 
           {/* Mode toggle — segmented control */}
           <div
             className="mt-6 flex rounded-full bg-field p-1"
             role="tablist"
-            aria-label="Sign in or create account"
+            aria-label={t('signIn.tabAria')}
           >
             {(
               [
-                { id: 'signin', label: 'Sign in' },
-                { id: 'register', label: 'Create account' },
+                { id: 'signin', label: t('signIn.tabIn') },
+                { id: 'register', label: t('signIn.tabUp') },
               ] as const
             ).map((option) => (
               <button
@@ -198,20 +200,20 @@ export default function SignIn() {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
             {mode === 'register' && (
-              <Field label="Name" error={fieldErrors.name}>
+              <Field label={t('signIn.nameLabel')} error={fieldErrors.name}>
                 <input
                   type="text"
                   autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Your first name"
+                  placeholder={t('signIn.namePlaceholder')}
                   maxLength={80}
                   className={inputClass}
                 />
               </Field>
             )}
 
-            <Field label="Email" error={fieldErrors.email}>
+            <Field label={t('signIn.emailLabel')} error={fieldErrors.email}>
               <input
                 type="email"
                 autoComplete="email"
@@ -224,8 +226,8 @@ export default function SignIn() {
             </Field>
 
             <Field
-              label="Password"
-              hint={mode === 'register' ? 'At least 8 characters' : undefined}
+              label={t('signIn.passwordLabel')}
+              hint={mode === 'register' ? t('signIn.passwordHint') : undefined}
               error={fieldErrors.password}
             >
               <span className="relative block">
@@ -241,7 +243,7 @@ export default function SignIn() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? t('signIn.hidePassword') : t('signIn.showPassword')}
                   className="absolute inset-y-0 right-0 flex w-12 items-center justify-center transition-opacity duration-fast hover:opacity-70"
                   style={{ color: 'var(--text-secondary)' }}
                 >
@@ -257,7 +259,7 @@ export default function SignIn() {
                   className="t-caption inline-flex min-h-[44px] items-center transition-opacity duration-fast hover:opacity-70"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  Forgot password?
+                  {t('signIn.forgot')}
                 </Link>
               </div>
             )}
@@ -285,21 +287,21 @@ export default function SignIn() {
               type="submit"
               disabled={pending}
               className="w-full"
-              ariaLabel={mode === 'signin' ? 'Sign in' : 'Create account'}
+              ariaLabel={mode === 'signin' ? t('signIn.tabIn') : t('signIn.tabUp')}
             >
               {pending && <Loader2 size={18} className="animate-spin" aria-hidden="true" />}
               {pending
-                ? 'One moment…'
+                ? t('signIn.pending')
                 : mode === 'signin'
-                  ? 'Sign in'
-                  : 'Create account'}
+                  ? t('signIn.tabIn')
+                  : t('signIn.tabUp')}
             </BtnPrimary>
           </form>
 
           <div className="my-6 flex items-center gap-3" aria-hidden="true">
             <span className="h-px flex-1" style={{ background: 'var(--ring-stroke)' }} />
             <span className="t-caption" style={{ color: 'var(--text-secondary)' }}>
-              or
+              {t('signIn.or')}
             </span>
             <span className="h-px flex-1" style={{ background: 'var(--ring-stroke)' }} />
           </div>
@@ -313,10 +315,10 @@ export default function SignIn() {
                 window.location.href = '/api/auth/google';
               }}
               className="w-full"
-              ariaLabel="Continue with Google"
+              ariaLabel={t('signIn.continueGoogle')}
             >
               <GoogleMark size={18} />
-              Continue with Google
+              {t('signIn.continueGoogle')}
             </BtnGlass>
           </div>
         </GlassCard>

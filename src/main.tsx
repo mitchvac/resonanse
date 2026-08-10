@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
+import './i18n'
 import './index.css'
 import { TRPCProvider } from "@/providers/trpc"
 import App from './App.tsx'

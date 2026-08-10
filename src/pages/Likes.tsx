@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpDown, Lock, Sparkle } from 'lucide-react';
 import { trpc } from '@/providers/trpc';
@@ -28,16 +30,16 @@ import type { ReceivedLike } from '@/components/discover/types';
 
 const GRID_CAP = 6;
 
-function contextLabel(like: ReceivedLike): string {
-  if (like.kind === 'wave') return 'Waved to say hi';
-  if (like.kind === 'kiss') return 'Sent you a kiss';
-  if (like.kind === 'flower') return like.targetRef === 'dozen' ? 'Sent you a dozen roses' : 'Sent you a rose';
+function contextLabel(like: ReceivedLike, t: TFunction): string {
+  if (like.kind === 'wave') return t('context.waved');
+  if (like.kind === 'kiss') return t('context.kiss');
+  if (like.kind === 'flower') return like.targetRef === 'dozen' ? t('context.dozenRoses') : t('context.rose');
   if (like.targetType === 'prompt' && like.targetRef) {
     const ref = like.targetRef.length > 22 ? `${like.targetRef.slice(0, 22)}…` : like.targetRef;
-    return `Liked your answer '${ref}'`;
+    return t('context.likedAnswer', { ref });
   }
-  if (like.targetType === 'photo') return 'Liked your photo';
-  return 'Liked your profile';
+  if (like.targetType === 'photo') return t('context.likedPhoto');
+  return t('context.likedProfile');
 }
 
 function pseudoKm(like: ReceivedLike): number {
@@ -45,6 +47,7 @@ function pseudoKm(like: ReceivedLike): number {
 }
 
 export default function Likes() {
+  const { t } = useTranslation('discover');
   const reduced = useReducedMotion();
   const utils = trpc.useUtils();
   const receivedQuery = trpc.likes.received.useQuery();
@@ -128,7 +131,7 @@ export default function Likes() {
           (l) => l.liker?.id === input.toProfileId,
         );
         setMatch({
-          name: like?.liker?.displayName ?? 'Them',
+          name: like?.liker?.displayName ?? t('common.themCap'),
           // null → MatchMoment renders their initial disc; NEVER a stock face
           photo: like?.liker?.photos?.[0] ?? null,
           matchId: result.matchId,
@@ -136,21 +139,17 @@ export default function Likes() {
         return;
       }
       // quick-gesture feedback (§8.13 toast) — matches take the MatchMoment instead
-      if (input.action === 'wave') setToast('You waved — they’ll see it in their Likes.');
+      if (input.action === 'wave') setToast(t('toasts.waveSent'));
       else if (input.action === 'flower')
-        setToast(
-          input.targetRef === 'dozen'
-            ? 'A dozen roses are on their way, card and all.'
-            : 'Your rose is on its way — with the card attached.',
-        );
-      else if (input.action === 'kiss') setToast('Kiss sent — bold move. They’ll see it in their Likes.');
+        setToast(input.targetRef === 'dozen' ? t('toasts.dozenSent') : t('toasts.roseSent'));
+      else if (input.action === 'kiss') setToast(t('toasts.kissSent'));
     },
     onError: (err) => {
       // silent failures were the "does nothing" complaint — always say something
       if (err.data?.code === 'FORBIDDEN') {
-        setToast(err.message || 'That one’s used up for today.');
+        setToast(err.message || t('toasts.usedUp'));
       } else {
-        setToast("Couldn't send — check your connection and try again.");
+        setToast(t('toasts.sendFailed'));
       }
     },
   });
@@ -173,7 +172,7 @@ export default function Likes() {
         next.delete(like.id);
         return next;
       });
-      setToast("Passed — they won't know.");
+      setToast(t('toasts.passedQuietly'));
     }, 240);
   };
 
@@ -234,13 +233,13 @@ export default function Likes() {
       <header className="flex shrink-0 items-start justify-between px-5 pt-4">
         <div>
           <h1 className="t-heading" style={{ color: 'var(--text-ink)' }}>
-            Likes You
+            {t('likes.header')}
           </h1>
           <p className="t-micro mt-1" style={{ color: 'var(--text-secondary)' }}>
-            {totalCount} PEOPLE · {pulses.length} PULSES
-            {flowers.length > 0 ? ` · ${flowers.length} ROSES` : ''}
-            {waves.length > 0 ? ` · ${waves.length} WAVES` : ''}
-            {kisses.length > 0 ? ` · ${kisses.length} KISSES` : ''}
+            {t('likes.countPeople', { count: totalCount })} · {t('likes.countPulses', { count: pulses.length })}
+            {flowers.length > 0 ? ` · ${t('likes.countRoses', { count: flowers.length })}` : ''}
+            {waves.length > 0 ? ` · ${t('likes.countWaves', { count: waves.length })}` : ''}
+            {kisses.length > 0 ? ` · ${t('likes.countKisses', { count: kisses.length })}` : ''}
           </p>
         </div>
         {blurred ? (
@@ -249,16 +248,16 @@ export default function Likes() {
             onClick={() => setSortGateOpen(true)}
             className="t-micro flex min-h-[44px] items-center gap-1 rounded-full px-3"
             style={{ background: 'var(--field)', color: 'var(--text)' }}
-            aria-label="Sort — Resonance+ feature"
+            aria-label={t('likes.sortGateA11y')}
           >
-            <Lock size={12} aria-hidden="true" /> Sort
+            <Lock size={12} aria-hidden="true" /> {t('likes.sort')}
           </button>
         ) : (
           <button
             type="button"
             onClick={() => setSortOpen(true)}
             className="glass flex h-10 min-h-[44px] w-10 min-w-[44px] items-center justify-center rounded-full"
-            aria-label="Sort likes"
+            aria-label={t('likes.sortA11y')}
           >
             <span className="glass-content flex items-center justify-center">
               <ArrowUpDown size={18} style={{ color: 'var(--text)' }} aria-hidden="true" />
@@ -275,13 +274,13 @@ export default function Likes() {
           <div className="flex flex-col items-center px-6 py-16 text-center">
             <BrandMark size={56} />
             <h2 className="t-title-sm mt-5" style={{ color: 'var(--text-ink)' }}>
-              Couldn't load your likes.
+              {t('error.loadLikesTitle')}
             </h2>
             <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-              Check your connection and try again.
+              {t('error.body')}
             </p>
             <BtnGlass className="mt-6" onClick={() => void receivedQuery.refetch()}>
-              Retry
+              {t('error.retry')}
             </BtnGlass>
           </div>
         ) : totalCount === 0 ? (
@@ -289,21 +288,21 @@ export default function Likes() {
           <div className="flex flex-col items-center px-6 py-16 text-center">
             <BrandMark size={56} />
             <h2 className="t-title-sm mt-5" style={{ color: 'var(--text-ink)' }}>
-              Your first like is on its way.
+              {t('likes.firstLikeTitle')}
             </h2>
             <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-              Likes never expire — when someone resonates, they'll land here.
+              {t('likes.firstLikeBody')}
             </p>
             <BtnGlass to="/premium" className="mt-6">
-              Boost your profile
+              {t('likes.boostProfile')}
             </BtnGlass>
           </div>
         ) : (
           <>
             {/* §1 Pulses received — always visible, never hidden */}
             {pulses.length > 0 && (
-              <section aria-label="Pulses received">
-                <p className="t-eyebrow mb-3">Pulses received</p>
+              <section aria-label={t('a11y.pulsesReceived')}>
+                <p className="t-eyebrow mb-3">{t('rails.pulsesReceived')}</p>
                 <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
                   {pulses.map((pulse, i) => (
                     <PulseCard
@@ -325,15 +324,15 @@ export default function Likes() {
             {/* §1b Roses received — scarce gesture, never blurred; the realistic
                 rose art sits on the card so a dozen looks like a dozen */}
             {flowers.length > 0 && (
-              <section aria-label="Roses received" className="mt-6">
-                <p className="t-eyebrow mb-3">Roses received</p>
+              <section aria-label={t('a11y.rosesReceived')} className="mt-6">
+                <p className="t-eyebrow mb-3">{t('rails.rosesReceived')}</p>
                 <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
                   {flowers.map((flower, i) => (
                     <PulseCard
                       key={flower.id}
                       pulse={flower}
                       index={i}
-                      label={flower.targetRef === 'dozen' ? 'A DOZEN ROSES' : 'A ROSE'}
+                      label={flower.targetRef === 'dozen' ? t('rails.labels.dozenRoses') : t('rails.labels.rose')}
                       accent="#e35d7c"
                       art={flower.targetRef === 'dozen' ? '/gestures/roses-dozen.png' : '/gestures/rose-single.png'}
                       onOpen={() => {
@@ -348,15 +347,15 @@ export default function Likes() {
 
             {/* §1c Waves received — the "say hi" gesture, never blurred */}
             {waves.length > 0 && (
-              <section aria-label="Waves received" className="mt-6">
-                <p className="t-eyebrow mb-3">Waved to say hi</p>
+              <section aria-label={t('a11y.wavesReceived')} className="mt-6">
+                <p className="t-eyebrow mb-3">{t('rails.wavesReceived')}</p>
                 <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
                   {waves.map((wave, i) => (
                     <PulseCard
                       key={wave.id}
                       pulse={wave}
                       index={i}
-                      label="WAVE"
+                      label={t('rails.labels.wave')}
                       accent="#c98a2d"
                       onOpen={() => {
                         if (wave.liker) setSheetLike(wave);
@@ -370,15 +369,15 @@ export default function Likes() {
 
             {/* §1d Kisses received — the bold gesture, never blurred */}
             {kisses.length > 0 && (
-              <section aria-label="Kisses received" className="mt-6">
-                <p className="t-eyebrow mb-3">Kisses received</p>
+              <section aria-label={t('a11y.kissesReceived')} className="mt-6">
+                <p className="t-eyebrow mb-3">{t('rails.kissesReceived')}</p>
                 <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
                   {kisses.map((kiss, i) => (
                     <PulseCard
                       key={kiss.id}
                       pulse={kiss}
                       index={i}
-                      label="KISS"
+                      label={t('rails.labels.kiss')}
                       accent="#d64070"
                       onOpen={() => {
                         if (kiss.liker) setSheetLike(kiss);
@@ -392,11 +391,15 @@ export default function Likes() {
 
             {/* §2/§3 Likes grid */}
             {likes.length > 0 && (
-              <section aria-label="People who liked you" className="mt-6">
+              <section aria-label={t('a11y.peopleWhoLikedYou')} className="mt-6">
                 <p className="t-eyebrow mb-3">
                   {blurred && likes[0]
-                    ? `Someone liked your ${likes[0].targetType === 'prompt' ? `prompt '${(likes[0].targetRef ?? '').slice(0, 18)}…'` : likes[0].targetType === 'photo' ? 'photo #2' : 'profile'}`
-                    : 'People who liked you'}
+                    ? likes[0].targetType === 'prompt'
+                      ? t('likes.someoneLikedPrompt', { ref: `${(likes[0].targetRef ?? '').slice(0, 18)}…` })
+                      : likes[0].targetType === 'photo'
+                        ? t('likes.someoneLikedPhoto')
+                        : t('likes.someoneLikedProfile')
+                    : t('likes.peopleWhoLikedYou')}
                 </p>
                 <div className="relative">
                   <div className="grid grid-cols-2 gap-3">
@@ -411,7 +414,7 @@ export default function Likes() {
                           unlocking={unlocking}
                           unlockDelay={(col + row) * 0.05}
                           collapsing={collapsingIds.has(like.id)}
-                          contextLabel={contextLabel(like)}
+                          contextLabel={contextLabel(like, t)}
                           onTap={() => (blurred ? setTeaser(like) : like.liker && setSheetLike(like))}
                           onLongPress={() => !blurred && setQuickAction(like)}
                           gestures={blurred ? undefined : gesturesFor(like)}
@@ -423,7 +426,7 @@ export default function Likes() {
                         href="/premium"
                         className="relative block aspect-[4/5] w-full overflow-hidden rounded-[16px]"
                         style={{ background: 'var(--field)' }}
-                        aria-label={`${collapsed} more likes — unlock to see them`}
+                        aria-label={t('likes.moreLikesA11y', { count: collapsed })}
                       >
                         <span className="t-title flex h-full w-full items-center justify-center" style={{ color: 'var(--text)' }}>
                           +{collapsed}
@@ -458,9 +461,9 @@ export default function Likes() {
                 transition={{ duration: 0.32, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               >
                 <GateCard
-                  title="See who's already into you"
-                  caption="Unblur every like, sort by compatibility, and never miss a Pulse."
-                  ctaLabel="Unlock with Resonance+"
+                  title={t('gates.seeWhoTitle')}
+                  caption={t('gates.seeWhoCaption')}
+                  ctaLabel={t('gates.unlockWithPlus')}
                 />
               </motion.div>
             )}
@@ -471,7 +474,7 @@ export default function Likes() {
         {totalCount > 0 && (
           <div className="mt-8 flex flex-col items-center gap-1 text-center">
             <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-              Likes never expire. Pulse senders always appear at the top.
+              {t('likes.footerNote')}
             </p>
             <button
               type="button"
@@ -479,7 +482,7 @@ export default function Likes() {
               style={{ color: 'var(--text)' }}
               onClick={() => setExplainerOpen(true)}
             >
-              How Pulses work
+              {t('likes.howPulsesWork')}
             </button>
           </div>
         )}
@@ -487,13 +490,14 @@ export default function Likes() {
         {/* demo preview toggle (labeled, unobtrusive) */}
         <div className="mt-6 flex flex-col items-center gap-1.5">
           <span className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-            DEMO PREVIEW
+            {t('preview.label')}
           </span>
           <SegmentedControl
             options={['Auto', 'Free', '+'] as const}
             value={preview}
             onChange={switchPreview}
-            ariaLabel="Tier preview"
+            ariaLabel={t('preview.a11y')}
+            labelFor={(v) => (v === 'Auto' ? t('preview.auto') : v === 'Free' ? t('preview.free') : '+')}
             className="w-56"
           />
         </div>
@@ -524,17 +528,21 @@ export default function Likes() {
       {/* blurred tile teaser (§2): teaser line + unlock CTA, no identity */}
       <GlassSheet open={!!teaser} onClose={() => setTeaser(null)} labelledBy="teaser-title">
         <div className="px-6 pb-8 pt-2">
-          <p className="t-eyebrow">Someone likes you</p>
+          <p className="t-eyebrow">{t('teaser.someoneLikesYou')}</p>
           <h3 id="teaser-title" className="t-title-sm mt-1" style={{ color: 'var(--text)' }}>
             {teaser
-              ? `${contextLabel(teaser)} · ${pseudoKm(teaser)} km away · ${teaser.compatibility} compatible`
+              ? t('teaser.summary', {
+                  context: contextLabel(teaser, t),
+                  km: pseudoKm(teaser),
+                  compatibility: t('common.compatible', { value: teaser.compatibility }),
+                })
               : ''}
           </h3>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Resonance+ unblurs every like — including this one.
+            {t('teaser.body')}
           </p>
           <BtnPrimary to="/premium" className="mt-5 w-full">
-            Unlock with Resonance+
+            {t('gates.unlockWithPlus')}
           </BtnPrimary>
         </div>
       </GlassSheet>
@@ -581,7 +589,7 @@ export default function Likes() {
       {/* rose popup — one rose with a card, or a dozen with a card */}
       <RoseSheet
         open={!!roseLike}
-        name={roseLike?.liker?.displayName.split(' ')[0] ?? 'them'}
+        name={roseLike?.liker?.displayName.split(' ')[0] ?? t('common.them')}
         flowersLeft={flowersLeft}
         dozenLeft={dozenLeft}
         pending={swipeMutation.isPending}
@@ -602,7 +610,7 @@ export default function Likes() {
       <GlassSheet open={!!quickAction} onClose={() => setQuickAction(null)} labelledBy="quick-actions">
         <div className="px-6 pb-8 pt-2">
           <h3 id="quick-actions" className="t-title-sm" style={{ color: 'var(--text)' }}>
-            {quickAction?.liker?.displayName ?? 'Quick actions'}
+            {quickAction?.liker?.displayName ?? t('quickActions.fallbackTitle')}
           </h3>
           <div className="mt-4 flex flex-col gap-2.5">
             <BtnPrimary
@@ -611,7 +619,7 @@ export default function Likes() {
                 setQuickAction(null);
               }}
             >
-              Like back
+              {t('quickActions.likeBack')}
             </BtnPrimary>
             <BtnGlass
               onClick={() => {
@@ -619,7 +627,7 @@ export default function Likes() {
                 setQuickAction(null);
               }}
             >
-              Pass quietly
+              {t('quickActions.passQuietly')}
             </BtnGlass>
           </div>
         </div>
@@ -629,12 +637,12 @@ export default function Likes() {
       <GlassSheet open={sortGateOpen} onClose={() => setSortGateOpen(false)} labelledBy="sort-gate">
         <div className="px-6 pb-8 pt-2">
           <h3 id="sort-gate" className="sr-only">
-            Sort by compatibility
+            {t('gates.sortGateSr')}
           </h3>
           <GateCard
-            title="Sort by what matters"
-            caption="Compatibility, recency, distance — sorting is a Resonance+ feature."
-            ctaLabel="Unlock with Resonance+"
+            title={t('gates.sortGateTitle')}
+            caption={t('gates.sortGateCaption')}
+            ctaLabel={t('gates.unlockWithPlus')}
           />
         </div>
       </GlassSheet>
@@ -645,17 +653,14 @@ export default function Likes() {
           <div className="flex items-center gap-2">
             <Sparkle size={18} style={{ color: 'var(--violet)', fill: 'var(--violet)' }} aria-hidden="true" />
             <h3 id="pulse-explainer" className="t-title-sm" style={{ color: 'var(--text)' }}>
-              How Pulses work
+              {t('explainer.title')}
             </h3>
           </div>
           <p className="t-body mt-3" style={{ color: 'var(--text)' }}>
-            A Pulse is a like with a note attached — the highest-signal way to
-            say "this specific thing about you." Pulses are never blurred and
-            always pin to the top of this page.
+            {t('explainer.body1')}
           </p>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Send them from a profile's Pulse button. Liking a Pulse back is an
-            instant match.
+            {t('explainer.body2')}
           </p>
         </div>
       </GlassSheet>
@@ -728,8 +733,9 @@ function LongPressTile({
 }
 
 function LikesSkeleton() {
+  const { t } = useTranslation('discover');
   return (
-    <div aria-label="Loading likes" role="status">
+    <div aria-label={t('a11y.loadingLikes')} role="status">
       <div className="flex gap-3">
         <div className="skeleton-shimmer h-44 w-[248px] shrink-0 rounded-[24px] bg-field" />
         <div className="skeleton-shimmer h-44 w-[248px] shrink-0 rounded-[24px] bg-field" />

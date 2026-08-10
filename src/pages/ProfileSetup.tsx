@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, animate } from 'framer-motion';
 import { Check } from 'lucide-react';
 import FlowChrome from '@/components/flow/FlowChrome';
@@ -41,6 +42,7 @@ const EASE_SPRING = [0.34, 1.56, 0.64, 1] as [number, number, number, number];
 
 /** pinned strength meter: 2px violet fill + micro label, count-up + width tween */
 function StrengthMeter({ pct }: { pct: number }) {
+  const { t } = useTranslation('settings');
   const [display, setDisplay] = useState(pct);
   const prev = useRef(pct);
 
@@ -59,7 +61,7 @@ function StrengthMeter({ pct }: { pct: number }) {
     <div className="mt-2 pb-1" aria-live="polite">
       <div className="flex items-baseline justify-between">
         <span className="t-micro" style={{ color: 'var(--text)' }}>
-          PROFILE STRENGTH {display}%
+          {t('profile.strengthLabel', { pct: display })}
         </span>
       </div>
       <div
@@ -69,7 +71,7 @@ function StrengthMeter({ pct }: { pct: number }) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={pct}
-        aria-label={`Profile strength ${pct} percent`}
+        aria-label={t('profile.strengthAria', { pct })}
       >
         <motion.span
           className="absolute inset-0 rounded-full"
@@ -85,6 +87,7 @@ function StrengthMeter({ pct }: { pct: number }) {
 
 export default function ProfileSetup() {
   const navigate = useNavigate();
+  const { t } = useTranslation('settings');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [draft, setDraft] = useState<ProfileSetupDraft>(() =>
@@ -115,7 +118,7 @@ export default function ProfileSetup() {
     if (!saveProfileSetupDraft(draft)) {
       setToast({
         id: Date.now(),
-        message: "Couldn't save your draft on this device — keep this tab open.",
+        message: t('profileSetup.toasts.draftSaveError'),
       });
     }
   }, [draft]);
@@ -236,12 +239,12 @@ export default function ProfileSetup() {
       saveStep(1)
         .then(() => goTo(2))
         .catch(() =>
-          setToast({ id: Date.now(), message: "Couldn't save your photos — try again." }),
+          setToast({ id: Date.now(), message: t('profileSetup.toasts.photosSaveError') }),
         );
       return;
     }
     saveStep(which).catch(() =>
-      setToast({ id: Date.now(), message: "Couldn't save — your draft is safe on this device." }),
+      setToast({ id: Date.now(), message: t('profileSetup.toasts.saveError') }),
     );
     goTo(which + 1);
   };
@@ -251,14 +254,14 @@ export default function ProfileSetup() {
     const items: string[] = [];
     if (filledPhotos.length < 4) {
       const n = 4 - filledPhotos.length;
-      items.push(`Add ${n} more photo${n === 1 ? '' : 's'} (4 minimum)`);
+      items.push(t('profileSetup.missingPhotos', { count: n }));
     }
     if (answeredPrompts.length < 3) {
       const n = 3 - answeredPrompts.length;
-      items.push(`Finish ${n} more sentence${n === 1 ? '' : 's'} (3 minimum)`);
+      items.push(t('profileSetup.missingSentences', { count: n }));
     }
     return items;
-  }, [filledPhotos, answeredPrompts]);
+  }, [filledPhotos, answeredPrompts, t]);
 
   const runSaves = useCallback(async (): Promise<boolean> => {
     const results = await Promise.allSettled([
@@ -309,17 +312,17 @@ export default function ProfileSetup() {
   const cta = (() => {
     switch (step) {
       case 1:
-        return { label: 'Continue', enabled: filledPhotos.length >= 4, action: () => continueFrom(1) };
+        return { label: t('profileSetup.continue'), enabled: filledPhotos.length >= 4, action: () => continueFrom(1) };
       case 2:
-        return { label: 'Continue', enabled: answeredPrompts.length >= 3, action: () => continueFrom(2) };
+        return { label: t('profileSetup.continue'), enabled: answeredPrompts.length >= 3, action: () => continueFrom(2) };
       case 3:
-        return { label: 'Continue', enabled: true, action: () => continueFrom(3) };
+        return { label: t('profileSetup.continue'), enabled: true, action: () => continueFrom(3) };
       case 4:
-        return { label: 'Continue', enabled: true, action: () => continueFrom(4) };
+        return { label: t('profileSetup.continue'), enabled: true, action: () => continueFrom(4) };
       case 5:
-        return { label: 'Continue', enabled: true, action: () => continueFrom(5) };
+        return { label: t('profileSetup.continue'), enabled: true, action: () => continueFrom(5) };
       default:
-        return { label: 'Publish my profile', enabled: true, action: () => void publish() };
+        return { label: t('profileSetup.publish'), enabled: true, action: () => void publish() };
     }
   })();
 
@@ -339,7 +342,7 @@ export default function ProfileSetup() {
         onBack={() => (step > 1 ? goTo(step - 1) : navigate('/onboarding'))}
         right={
           <BtnGhost onClick={() => setPreviewOpen(true)} className="t-caption px-2">
-            Preview
+            {t('profileSetup.preview')}
           </BtnGhost>
         }
         below={<StrengthMeter pct={pct} />}

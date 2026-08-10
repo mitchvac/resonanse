@@ -7,6 +7,7 @@ import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 import OwnAvatar from '@/components/games/OwnAvatar';
 import {
   apply,
@@ -184,6 +185,7 @@ interface Spark {
 }
 
 export default function Chess() {
+  const { t } = useTranslation('games');
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -208,7 +210,7 @@ export default function Chess() {
   const [over, setOver] = useState(false);
   const [pending, setPending] = useState<{ from: number; to: number } | null>(null);
   const [robots, setRobots] = useState(true);
-  const [msg, setMsg] = useState('Your move.');
+  const [msg, setMsg] = useState(() => t('chess.msg.yourMove'));
   const [fwOn, setFwOn] = useState(false);
   const [banner, setBanner] = useState<{ title: string; sub: string } | null>(null);
 
@@ -345,35 +347,37 @@ export default function Chess() {
   /* ---------------- game flow ---------------- */
   const evaluateStatus = (st: GameState): boolean => {
     const s = status(st);
-    const endGame = (title: string, sub: string) => {
+    const endGame = (titleKey: string, subKey: string) => {
+      const title = t(titleKey);
+      const sub = t(subKey);
       setOver(true);
-      setMsg(`${title} — ${sub}.`);
-      if (title === 'You win') startFireworks(title, sub);
+      setMsg(t('chess.gameOverLine', { title, sub }));
+      if (titleKey === 'chess.youWin') startFireworks(title, sub);
     };
     if (s === 'white-mate') {
-      endGame('You win', 'checkmate');
+      endGame('chess.youWin', 'chess.checkmate');
       return true;
     }
     if (s === 'black-mate') {
-      endGame('BOT · Riley wins', 'checkmate');
+      endGame('chess.botWins', 'chess.checkmate');
       return true;
     }
     if (s === 'stalemate') {
-      endGame('Draw', 'stalemate');
+      endGame('chess.draw', 'chess.stalemate');
       return true;
     }
     if (s === 'draw50') {
-      endGame('Draw', 'fifty-move rule');
+      endGame('chess.draw', 'chess.fiftyMove');
       return true;
     }
     setMsg(
       s === 'check'
         ? st.t === 'w'
-          ? 'You are in check.'
-          : 'Riley is in check.'
+          ? t('chess.msg.youInCheck')
+          : t('chess.msg.rileyInCheck')
         : st.t === 'w'
-          ? 'Your move.'
-          : 'Riley is thinking…',
+          ? t('chess.msg.yourMove')
+          : t('chess.msg.rileyThinking'),
     );
     return false;
   };
@@ -435,7 +439,7 @@ export default function Chess() {
     setLast(null);
     setOver(false);
     setPending(null);
-    setMsg('Your move.');
+    setMsg(t('chess.msg.yourMove'));
   };
 
   /* ---------------- derived render data ---------------- */
@@ -443,8 +447,8 @@ export default function Chess() {
   const chk = ['check', 'black-mate', 'white-mate'].includes(st) ? kingSq(S, S.t) : -1;
   const wActive = S.t === 'w' && !over;
   const bActive = S.t === 'b' && !over;
-  const swText = S.t === 'w' ? (st === 'check' ? 'in check' : 'to move') : '';
-  const sbText = S.t === 'b' ? (st === 'check' ? 'in check' : 'thinking…') : '';
+  const swText = S.t === 'w' ? (st === 'check' ? t('chess.inCheck') : t('chess.toMove')) : '';
+  const sbText = S.t === 'b' ? (st === 'check' ? t('chess.inCheck') : t('chess.thinking')) : '';
   const glyphFor = (p: string): string => {
     const U = p.toUpperCase() as PieceType;
     return robots ? PIECE[U] : `<span class="uni">${CLASSIC[U]}</span>`;
@@ -461,7 +465,7 @@ export default function Chess() {
           <div className="glass flex h-[52px] items-center rounded-full pl-1 pr-4">
             <button
               type="button"
-              aria-label="Back to Community"
+              aria-label={t('shared.backToCommunity')}
               onClick={() => navigate('/community')}
               className="glass-content flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
@@ -472,19 +476,18 @@ export default function Chess() {
               className="t-value flex-1 pr-11 text-center font-bold"
               style={{ color: 'var(--text)', position: 'relative', zIndex: 1 }}
             >
-              Chess
+              {t('chess.title')}
             </span>
           </div>
         </div>
 
         <header className="mt-6 px-5">
-          <p className="t-eyebrow">LOCAL TABLE</p>
+          <p className="t-eyebrow">{t('shared.localTable')}</p>
           <h1 className="t-heading mt-2" style={{ color: 'var(--text-ink)' }}>
-            You vs BOT · Riley.
+            {t('chess.header')}
           </h1>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            The classic, on a warm tabletop. Riley is always labelled as a bot. Live
-            multiplayer seats arrive with the Stage 2 community backend.
+            {t('chess.intro')}
           </p>
         </header>
 
@@ -497,12 +500,12 @@ export default function Chess() {
         {!accessLoading && !isAuthenticated && (
           <section className="mt-6 px-5">
             <GlassCard className="p-5">
-              <h2 className="t-title-sm">Sign in to take a seat.</h2>
+              <h2 className="t-title-sm">{t('shared.signInToSeat')}</h2>
               <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                Community games are part of your Resonance access.
+                {t('shared.signInBody')}
               </p>
               <BtnPrimary to={LOGIN_PATH} className="mt-4 w-full">
-                Sign in
+                {t('shared.signIn')}
               </BtnPrimary>
             </GlassCard>
           </section>
@@ -511,21 +514,20 @@ export default function Chess() {
         {!accessLoading && isAuthenticated && !allowed && (
           <section className="mt-6 px-5">
             <GlassCard edge="amber" className="p-5">
-              <p className="t-eyebrow">SEATING LOCKED</p>
-              <h2 className="t-title-sm mt-1">Your free trial has ended.</h2>
+              <p className="t-eyebrow">{t('shared.seatingLocked')}</p>
+              <h2 className="t-title-sm mt-1">{t('shared.trialEnded')}</h2>
               <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                The lobby stays visible, but taking a seat needs Resonance+ or X.
-                Dating core stays free: queue, matches, conversations and share board.
+                {t('shared.trialEndedBody')}
               </p>
               <BtnPrimary to="/premium" className="mt-4 w-full">
-                See plans
+                {t('shared.seePlans')}
               </BtnPrimary>
             </GlassCard>
           </section>
         )}
 
         {!accessLoading && isAuthenticated && allowed && (
-          <section className="mt-6 px-5" aria-label="Chess game">
+          <section className="mt-6 px-5" aria-label={t('chess.gameAria')}>
             <GlassCard className="p-4" ringX={24}>
               {/* Player HUD */}
               <div className="flex items-stretch gap-3">
@@ -545,12 +547,12 @@ export default function Chess() {
                       size={14}
                       className="absolute -bottom-0.5 -right-0.5 rounded-full"
                       style={{ color: 'var(--ok)', background: 'var(--stage-base)' }}
-                      aria-label="Verified"
+                      aria-label={t('shared.verified')}
                     />
                   </span>
                   <span className="min-w-0">
                     <span className="t-micro block" style={{ color: 'var(--text-secondary)' }}>
-                      YOU — WHITE
+                      {t('chess.youWhite')}
                     </span>
                     <span className="t-caption block" style={{ color: 'var(--text)' }}>
                       {swText || ' '}
@@ -575,13 +577,13 @@ export default function Chess() {
                       color: 'var(--text-secondary)',
                       boxShadow: '0 0 0 1.5px var(--ring-stroke)',
                     }}
-                    aria-label="Labelled bot"
+                    aria-label={t('shared.labelledBot')}
                   >
                     <Bot size={18} aria-hidden="true" />
                   </span>
                   <span className="min-w-0">
                     <span className="t-micro block" style={{ color: 'var(--text-secondary)' }}>
-                      BOT · RILEY — BLACK
+                      {t('chess.botBlack')}
                     </span>
                     <span className="t-caption block" style={{ color: 'var(--text)' }}>
                       {sbText || ' '}
@@ -595,7 +597,7 @@ export default function Chess() {
                 <div className="chess-wall" />
                 <div className="chess-floor" />
                 <div className="chess-tabletop">
-                  <div className="chess-board" role="grid" aria-label="Chess board">
+                  <div className="chess-board" role="grid" aria-label={t('chess.boardAria')}>
                     {S.b.map((p, i) => {
                       const r = i >> 3;
                       const f = i & 7;
@@ -656,7 +658,7 @@ export default function Chess() {
                       type="button"
                       className="chess-promo chess-w"
                       onClick={() => finish({ from: pending.from, to: pending.to, promo: x })}
-                      aria-label={`Promote to ${x}`}
+                      aria-label={t('chess.promoteAria', { piece: x })}
                     >
                       <span
                         className="chess-pieceh"
@@ -666,16 +668,16 @@ export default function Chess() {
                   ))
                 ) : (
                   <>
-                    <BtnGlass className="h-11 px-5" onClick={newGame} ariaLabel="New game">
+                    <BtnGlass className="h-11 px-5" onClick={newGame} ariaLabel={t('shared.newGame')}>
                       <RotateCcw size={16} aria-hidden="true" />
-                      New game
+                      {t('shared.newGame')}
                     </BtnGlass>
                     <BtnGlass
                       className="h-11 px-5"
                       onClick={() => setRobots((v) => !v)}
-                      ariaLabel={robots ? 'Switch to classic pieces' : 'Switch to robot pieces'}
+                      ariaLabel={robots ? t('chess.switchClassic') : t('chess.switchRobot')}
                     >
-                      {robots ? 'Classic pieces' : 'Robot pieces'}
+                      {robots ? t('chess.classicPieces') : t('chess.robotPieces')}
                     </BtnGlass>
                   </>
                 )}

@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -16,12 +17,12 @@ import {
 import { cn } from '@/lib/utils';
 
 const ACTIONS = [
-  { key: 'photo', label: 'Photo', icon: Image },
-  { key: 'voice', label: 'Voice', icon: AudioLines },
-  { key: 'date', label: 'Date idea', icon: CalendarHeart },
-  { key: 'video', label: 'Video check', icon: Video },
-  { key: 'note', label: 'Video note', icon: Clapperboard },
-  { key: 'location', label: 'Location', icon: MapPin },
+  { key: 'photo', labelKey: 'composer.actionPhoto', icon: Image },
+  { key: 'voice', labelKey: 'composer.actionVoice', icon: AudioLines },
+  { key: 'date', labelKey: 'composer.actionDate', icon: CalendarHeart },
+  { key: 'video', labelKey: 'composer.actionVideo', icon: Video },
+  { key: 'note', labelKey: 'composer.actionNote', icon: Clapperboard },
+  { key: 'location', labelKey: 'composer.actionLocation', icon: MapPin },
 ] as const;
 
 /**
@@ -56,6 +57,7 @@ export default function Composer({
   onVideoNote: () => void;
   onActionToast: (text: string) => void;
 }) {
+  const { t } = useTranslation('connect');
   const [actionsOpen, setActionsOpen] = useState(false);
   const [coachOpen, setCoachOpen] = useState(false);
   const areaRef = useRef<HTMLTextAreaElement>(null);
@@ -97,7 +99,7 @@ export default function Composer({
     if (key === 'date') onDateIdea();
     else if (key === 'video') onVideoCheck();
     else if (key === 'note') onVideoNote();
-    else onActionToast('Available after your first date — keep it in-app for now.');
+    else onActionToast(t('composer.lockedToast'));
   };
 
   return (
@@ -129,7 +131,7 @@ export default function Composer({
                 style={{ background: 'var(--field)', color: 'var(--text)' }}
               >
                 <a.icon size={18} style={{ color: a.key === 'date' || a.key === 'note' ? 'var(--violet)' : 'var(--text)' }} aria-hidden="true" />
-                <span className="t-micro">{a.label}</span>
+                <span className="t-micro">{t(a.labelKey)}</span>
               </button>
             ))}
           </motion.div>
@@ -154,8 +156,8 @@ export default function Composer({
             role="status"
           >
             <p className="t-caption">
-              <span className="font-bold">Check tone: </span>
-              Warm + specific. Maybe add a time?
+              <span className="font-bold">{t('composer.toneLabel')} </span>
+              {t('composer.toneHint')}
             </p>
           </motion.div>
         )}
@@ -164,7 +166,7 @@ export default function Composer({
       <form
         onSubmit={submit}
         className="glass rounded-[28px] px-2.5 py-2"
-        aria-label="Message composer"
+        aria-label={t('composer.formAria')}
       >
         <div className="glass-content">
           {/* Composer header — ephemeral toggle (§5) */}
@@ -181,7 +183,7 @@ export default function Composer({
               aria-pressed={ephemeral}
             >
               <Timer size={13} aria-hidden="true" />
-              Vanish after 24h
+              {t('composer.vanish')}
             </button>
           </div>
 
@@ -191,7 +193,7 @@ export default function Composer({
               onClick={() => setActionsOpen((o) => !o)}
               className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full"
               style={{ background: 'var(--field)', color: 'var(--text)' }}
-              aria-label="Open actions"
+              aria-label={t('composer.openActions')}
               aria-expanded={actionsOpen}
             >
               <Plus size={18} aria-hidden="true" />
@@ -207,18 +209,18 @@ export default function Composer({
                 }
               }}
               rows={1}
-              placeholder={`Message ${peerName}…`}
+              placeholder={t('composer.placeholder', { name: peerName })}
               className="t-value max-h-[108px] flex-1 resize-none rounded-2xl px-3.5 py-2.5 outline-none focus:ring-1 focus:ring-[var(--violet)]"
               style={{ background: 'var(--field)', color: 'var(--text)' }}
-              aria-label={`Message ${peerName}`}
+              aria-label={t('composer.messageAria', { name: peerName })}
             />
             {!value.trim() && (
               <button
                 type="button"
-                onClick={() => onActionToast('Hold to record a voice note.')}
+                onClick={() => onActionToast(t('composer.voiceNoteToast'))}
                 className="flex h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full"
                 style={{ color: 'var(--text-secondary)' }}
-                aria-label="Record a voice note"
+                aria-label={t('composer.recordVoice')}
               >
                 <Mic size={18} aria-hidden="true" />
               </button>
@@ -235,7 +237,7 @@ export default function Composer({
               )}
               style={{ background: 'var(--violet)', boxShadow: 'var(--violet-glow)' }}
               whileTap={{ scale: 0.96 }}
-              aria-label="Send message (long-press to check tone)"
+              aria-label={t('composer.sendAria')}
             >
               <SendHorizontal size={17} aria-hidden="true" />
             </motion.button>

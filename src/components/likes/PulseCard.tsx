@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/GlassCard';
 import CompatibilityArc from '@/components/discover/CompatibilityArc';
@@ -17,7 +18,7 @@ export default function PulseCard({
   hero = false,
   index = 0,
   onOpen,
-  label = 'PULSE',
+  label,
   accent = 'var(--violet)',
   art,
   gestures,
@@ -34,7 +35,9 @@ export default function PulseCard({
   /** quick-response gesture row (wave/flower/like-back) under the card body */
   gestures?: React.ReactNode;
 }) {
+  const { t } = useTranslation('discover');
   const [expanded, setExpanded] = useState(false);
+  const displayLabel = label ?? t('rails.labels.pulse');
   const liker = pulse.liker;
   // Never fall back to a stock face: a blurred (free-tier) or photo-less
   // liker gets a violet initial disc — a random stranger's photo here reads
@@ -67,13 +70,13 @@ export default function PulseCard({
           {photo ? (
             <img
               src={photo}
-              alt={liker ? `Photo of ${liker.displayName}` : ''}
+              alt={liker ? t('common.photoOf', { name: liker.displayName }) : ''}
               className="h-16 w-16 shrink-0 rounded-full object-cover"
             />
           ) : (
             <span
               role="img"
-              aria-label={liker ? `${liker.displayName} (photo hidden)` : 'Someone'}
+              aria-label={liker ? t('common.photoHidden', { name: liker.displayName }) : t('common.someone')}
               className="t-title flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-white"
               style={{ background: 'var(--violet)' }}
             >
@@ -85,10 +88,10 @@ export default function PulseCard({
           <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="t-micro" style={{ color: accent }}>
-                {label}
+                {displayLabel}
               </p>
               <p className="t-title-sm truncate" style={{ color: 'var(--text)' }}>
-                {liker?.displayName ?? 'Someone'}
+                {liker?.displayName ?? t('common.someone')}
                 {liker ? `, ${liker.age}` : ''}
               </p>
             </div>
@@ -113,7 +116,7 @@ export default function PulseCard({
               setExpanded((v) => !v);
             }}
           >
-            {expanded ? 'Less' : 'More'}
+            {expanded ? t('common.less') : t('common.more')}
           </button>
         )}
         {gestures}

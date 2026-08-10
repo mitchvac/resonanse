@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "primary": "Primary",
+    "discover": "Discover",
+    "likes": "Likes",
+    "matches": "Matches",
+    "events": "Events",
+    "community": "Community",
+    "profile": "Profile",
+    "likesBadge": "{{count}} likes",
+    "unreadMessages": "Unread messages"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "backHome": "Back to Home"
+  },
+  "onboarding": {
+    "continue": "Continue",
+    "saving": "Saving…",
+    "saveExit": "Save & exit",
+    "saveError": "Couldn't save — check your connection and try again.",
+    "demoHint": "Demo mode — sign in to save your progress"
+  },
+  "footer": {
+    "tagline": "Date with intent",
+    "description": "A daily queue of people who match your intent — and the tools to turn a match into a first date.",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "safety": "Safety",
+    "copyright": "© Resonance. Made for meeting in real life.",
+    "themeNote": "Warm Glass by day, Night HUD by night — switch in Settings.",
+    "signIn": "Sign in",
+    "links": {
+      "dailyQueue": "Daily Queue",
+      "modes": "Modes",
+      "events": "Events",
+      "about": "About",
+      "careers": "Careers",
+      "press": "Press",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "cookies": "Cookies",
+      "dataRequests": "Data requests",
+      "verification": "Verification",
+      "communityRules": "Community rules",
+      "report": "Report",
+      "consentTools": "Consent tools"
+    }
+  }
+}

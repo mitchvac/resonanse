@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "primary": "メインナビゲーション",
+    "discover": "さがす",
+    "likes": "いいね",
+    "matches": "マッチ",
+    "events": "イベント",
+    "community": "コミュニティ",
+    "profile": "プロフィール",
+    "likesBadge": "{{count}}件のいいね",
+    "unreadMessages": "未読メッセージ"
+  },
+  "notFound": {
+    "title": "ページが見つかりません",
+    "backHome": "ホームに戻る"
+  },
+  "onboarding": {
+    "continue": "次へ",
+    "saving": "保存中…",
+    "saveExit": "保存して終了",
+    "saveError": "保存できませんでした。通信状態を確認して、もう一度お試しください。",
+    "demoHint": "デモモードです。進捗を保存するにはログインしてください"
+  },
+  "footer": {
+    "tagline": "思いを込めて、デートしよう",
+    "description": "あなたの意向に合う人を毎日お届け。マッチから初デートへつなげるツールもそろっています。",
+    "product": "プロダクト",
+    "company": "会社情報",
+    "legal": "法務",
+    "safety": "安全",
+    "copyright": "© Resonance. リアルな出会いのために。",
+    "themeNote": "昼はWarm Glass、夜はNight HUD。設定で切り替えられます。",
+    "signIn": "ログイン",
+    "links": {
+      "dailyQueue": "今日のおすすめ",
+      "modes": "モード",
+      "events": "イベント",
+      "about": "Resonanceについて",
+      "careers": "採用情報",
+      "press": "プレス",
+      "contact": "お問い合わせ",
+      "privacy": "プライバシー",
+      "terms": "利用規約",
+      "cookies": "Cookie",
+      "dataRequests": "データ請求",
+      "verification": "本人確認",
+      "communityRules": "コミュニティルール",
+      "report": "報告する",
+      "consentTools": "同意サポートツール"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 /**
  * OwnAvatar — the signed-in player's avatar at a game table.
@@ -15,6 +16,7 @@ export default function OwnAvatar({
   name: string;
   className?: string;
 }) {
+  const { t } = useTranslation('games');
   if (photo) {
     return (
       <img
@@ -28,7 +30,7 @@ export default function OwnAvatar({
   return (
     <span
       role="img"
-      aria-label="You"
+      aria-label={t('seats.you')}
       className={cn(
         className,
         'flex items-center justify-center rounded-full font-bold text-white',

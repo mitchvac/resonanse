@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Archive, ArchiveRestore, BellOff, Bell, Check, Flag, MapPin, Timer, UserX } from 'lucide-react';
 import type { MatchEntry } from '@/components/chat/types';
@@ -13,11 +14,12 @@ export type OutcomeChipKind = 'replied' | 'date' | 'wemet';
  * "We Met ✓" (--ok filled dot).
  */
 export function OutcomeChip({ kind }: { kind: OutcomeChipKind }) {
+  const { t } = useTranslation('connect');
   if (kind === 'wemet') {
     return (
       <span className="t-micro flex items-center gap-1 font-bold" style={{ color: 'var(--ok)' }}>
         <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--ok)' }} aria-hidden="true" />
-        We Met ✓
+        {t('matches.chipWeMet')}
       </span>
     );
   }
@@ -25,21 +27,22 @@ export function OutcomeChip({ kind }: { kind: OutcomeChipKind }) {
     return (
       <span className="t-micro flex items-center gap-1 font-bold" style={{ color: 'var(--ok)' }}>
         <MapPin size={9} aria-hidden="true" />
-        Date planned
+        {t('matches.chipDatePlanned')}
       </span>
     );
   }
   return (
     <span className="t-micro font-bold" style={{ color: 'var(--violet)' }}>
-      Replied
+      {t('matches.chipReplied')}
     </span>
   );
 }
 
 /** Typing state — three dots bouncing (translateY 2px, 600ms loop, 120ms stagger). */
 function TypingDots() {
+  const { t } = useTranslation('connect');
   return (
-    <span className="flex items-center gap-1 py-1" aria-label="Typing">
+    <span className="flex items-center gap-1 py-1" aria-label={t('matches.typing')}>
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
@@ -92,22 +95,26 @@ export default function ConversationRow({
   onReport: () => void;
   onRemove: () => void;
 }) {
+  const { t } = useTranslation('connect');
   const [open, setOpen] = useState(false);
   const profile = entry.otherProfile;
   const photo = profile?.photos?.[0] ?? '/avatar-01.jpg';
-  const name = profile?.displayName?.split(' ')[0] ?? 'Match';
+  const name = profile?.displayName?.split(' ')[0] ?? t('matches.defaultName');
   const last = entry.lastMessage;
+  const previewText = last
+    ? last.kind === 'date_idea'
+      ? t('matches.previewDateIdea')
+      : last.kind === 'video_note'
+        ? t('matches.previewVideoNote')
+        : last.content
+    : '';
   const preview = typing
     ? null
     : last
-      ? `${last.senderId === myUserId ? 'You: ' : ''}${
-          last.kind === 'date_idea'
-            ? '📍 Date idea'
-            : last.kind === 'video_note'
-              ? '🎥 Video note'
-              : last.content
-        }`
-      : 'Say hello';
+      ? last.senderId === myUserId
+        ? t('matches.previewYou', { content: previewText })
+        : previewText
+      : t('matches.previewSayHello');
 
   return (
     <motion.div
@@ -120,11 +127,11 @@ export default function ConversationRow({
       <div className="absolute inset-y-0 right-0 flex items-center gap-2 pr-3" aria-hidden={!open}>
         {[
           archived
-            ? { icon: ArchiveRestore, label: 'Unarchive chat', fn: onArchive, danger: false }
-            : { icon: Archive, label: 'Archive chat', fn: onArchive, danger: false },
-          { icon: muted ? Bell : BellOff, label: muted ? 'Unmute chat' : 'Mute chat', fn: onMute, danger: false },
-          { icon: Flag, label: 'Report', fn: onReport, danger: true },
-          { icon: UserX, label: 'Remove match', fn: onRemove, danger: true },
+            ? { icon: ArchiveRestore, label: t('matches.actionUnarchive'), fn: onArchive, danger: false }
+            : { icon: Archive, label: t('matches.actionArchive'), fn: onArchive, danger: false },
+          { icon: muted ? Bell : BellOff, label: muted ? t('matches.actionUnmute') : t('matches.actionMute'), fn: onMute, danger: false },
+          { icon: Flag, label: t('matches.actionReport'), fn: onReport, danger: true },
+          { icon: UserX, label: t('matches.actionRemove'), fn: onRemove, danger: true },
         ].map((a) => (
           <button
             key={a.label}
@@ -163,7 +170,7 @@ export default function ConversationRow({
         // exact same tint (the stage is behind every row anyway) while making
         // the row opaque — actions appear only when the row slides left.
         style={{ background: 'linear-gradient(var(--field), var(--field)), var(--stage-base)' }}
-        aria-label={`Chat with ${name}`}
+        aria-label={t('matches.chatWith', { name })}
       >
         <span className="relative shrink-0">
           <img
@@ -176,14 +183,14 @@ export default function ConversationRow({
             <span
               className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full"
               style={{ background: 'var(--ok)', boxShadow: '0 0 0 2px var(--stage-base)' }}
-              aria-label="Active now"
+              aria-label={t('matches.activeNow')}
             />
           )}
           {entry.ephemeral && (
             <span
               className="absolute -left-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full"
               style={{ background: 'var(--stage-base)', color: 'var(--warn)' }}
-              aria-label="Vanish mode on"
+              aria-label={t('matches.vanishOn')}
             >
               <Timer size={11} aria-hidden="true" />
             </span>
@@ -198,14 +205,14 @@ export default function ConversationRow({
                 size={12}
                 className="shrink-0"
                 style={{ color: 'var(--text-secondary)' }}
-                aria-label="Notifications muted"
+                aria-label={t('matches.notificationsMuted')}
               />
             )}
             {entry.match.videoVerifiedAt && (
               <span
                 className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full"
                 style={{ background: 'var(--ok)' }}
-                aria-label="Video verified"
+                aria-label={t('matches.videoVerified')}
                 role="img"
               >
                 <Check size={9} strokeWidth={3.5} color="#fff" aria-hidden="true" />
@@ -226,7 +233,7 @@ export default function ConversationRow({
 
         <span className="flex shrink-0 flex-col items-end justify-center gap-1">
           <span className="t-caption" style={{ color: 'var(--text-secondary)' }}>
-            {last ? relTime(last.createdAt) : ''}
+            {last ? relTime(last.createdAt, t) : ''}
           </span>
           {chip && <OutcomeChip kind={chip} />}
           {unread ? (
@@ -236,7 +243,7 @@ export default function ConversationRow({
               initial={{ scale: 0.6 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.24, ease: [0.34, 1.56, 0.64, 1] }}
-              aria-label={`${unread} unread messages`}
+              aria-label={t('matches.unreadCount', { count: unread })}
             >
               {unread}
             </motion.span>

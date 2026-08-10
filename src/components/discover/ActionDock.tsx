@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Heart, Sparkle, X } from 'lucide-react';
 import { LipsIcon, RoseIcon, WaveHandIcon } from '@/components/gestures/icons';
@@ -34,6 +35,7 @@ export default function ActionDock({
   onPulse: (e?: React.MouseEvent) => void;
   disabled?: boolean;
 }) {
+  const { t } = useTranslation('discover');
   const press = {
     whileTap: { scale: 0.92 },
     transition: { duration: 0.12, ease: [0.34, 1.56, 0.64, 1] as [number, number, number, number] },
@@ -61,14 +63,14 @@ export default function ActionDock({
           transition={{ duration: 0.16 }}
         >
           {likesLeft >= 900
-            ? '∞ LIKES WITH RESONANCE+'
-            : `${likesLeft} LIKES LEFT TODAY`}
+            ? t('dock.unlimitedLikes')
+            : t('dock.likesLeft', { count: likesLeft })}
         </motion.span>
       )}
       <div className="flex items-center gap-3">
         <motion.button
           type="button"
-          aria-label="Pass"
+          aria-label={t('gestures.pass')}
           disabled={disabled}
           onClick={onPass}
           className={circle}
@@ -81,7 +83,7 @@ export default function ActionDock({
 
         <motion.button
           type="button"
-          aria-label="Wave — say hi"
+          aria-label={t('gestures.waveSayHi')}
           disabled={disabled}
           onClick={onWave}
           className={circle}
@@ -95,7 +97,7 @@ export default function ActionDock({
         <motion.button
           type="button"
           aria-label={
-            flowersLeft != null ? `Send roses (${flowersLeft} left)` : 'Send roses'
+            flowersLeft != null ? t('dock.sendRosesCount', { count: flowersLeft }) : t('gestures.sendRoses')
           }
           disabled={disabled || flowersLeft === 0}
           onClick={onRose}
@@ -110,7 +112,7 @@ export default function ActionDock({
 
         <motion.button
           type="button"
-          aria-label="Like"
+          aria-label={t('gestures.like')}
           disabled={disabled}
           onClick={onLike}
           className="shadow-violet-glow -mt-2 flex h-16 w-16 items-center justify-center rounded-full bg-violet text-white disabled:opacity-50"
@@ -122,7 +124,7 @@ export default function ActionDock({
         <motion.button
           type="button"
           aria-label={
-            kissesLeft != null ? `Send a kiss (${kissesLeft} left)` : 'Send a kiss'
+            kissesLeft != null ? t('dock.sendKissCount', { count: kissesLeft }) : t('gestures.sendKiss')
           }
           disabled={disabled || kissesLeft === 0}
           onClick={onKiss}
@@ -138,7 +140,7 @@ export default function ActionDock({
         <motion.button
           type="button"
           aria-label={
-            pulsesLeft != null ? `Send Pulse (${pulsesLeft} left)` : 'Send Pulse'
+            pulsesLeft != null ? t('dock.sendPulseCount', { count: pulsesLeft }) : t('gestures.sendPulse')
           }
           disabled={disabled || pulsesLeft === 0}
           onClick={onPulse}

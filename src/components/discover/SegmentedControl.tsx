@@ -12,12 +12,16 @@ export default function SegmentedControl<T extends string>({
   value,
   onChange,
   ariaLabel,
+  labelFor,
   className,
 }: {
   options: readonly T[];
   value: T;
   onChange: (v: T) => void;
   ariaLabel: string;
+  /** Optional display-label mapper — option values stay data, labels get
+      translated by the caller. Defaults to rendering the raw option. */
+  labelFor?: (option: T) => string;
   className?: string;
 }) {
   return (
@@ -54,7 +58,7 @@ export default function SegmentedControl<T extends string>({
                 className="relative"
                 style={{ color: active ? 'var(--text)' : 'var(--text-secondary)' }}
               >
-                {option}
+                {labelFor ? labelFor(option) : option}
               </span>
             </button>
           );

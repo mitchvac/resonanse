@@ -1,0 +1,259 @@
+{
+  "hero": {
+    "eyebrow": "Dating, entrauscht",
+    "title": "Weniger swipen. Mehr begegnen.",
+    "subtitle": "Eine tägliche Auswahl von 5–10 Menschen, gewählt für gegenseitige Absicht – kein endloser Kartenstapel, der dich single und swipend hält.",
+    "getStarted": "Loslegen",
+    "seeHow": "So funktioniert’s ↓",
+    "caption": "Kostenlos starten · Fotoverifizierte Community · Alle Geschlechter, alle Beziehungsformen",
+    "offerAria": "Angebot für Gründungsmitglieder: 10.000 Date Coins",
+    "offerMeta": "Resonance · Gründerangebot",
+    "offerGrows": "Wächst jedes Jahr",
+    "offerTitle": "10.000 Date Coins",
+    "offerFor": "Für unsere ersten 100.000 Gründungsmitglieder",
+    "offerDesc": "Ein Rabatt, der mit jedem Jahr bei uns wächst.",
+    "offerPill": "Exklusiv für Gründungsmitglieder"
+  },
+  "problem": {
+    "eyebrow": "Das Problem",
+    "heading": "Endlose Stapel. Gemischte Absichten. Tote Chats.",
+    "body": "Alte Apps monetarisieren deine Einsamkeit. Masse statt Klasse, Paywalls statt Ergebnisse und eine Swipe-Ökonomie, die belohnt, sich nie zu treffen.",
+    "stat1": { "suffix": " Min.", "label": "SWIPEN / TAG" },
+    "stat2": { "suffix": "%", "label": "MATCH → DATE" },
+    "stat3": { "static": "1 von 2", "label": "FÜHLEN SICH SCHLECHTER" }
+  },
+  "loop": {
+    "eyebrow": "Der Resonance-Kreislauf",
+    "heading": "Vier Schritte. Eine Richtung: offline.",
+    "step1": {
+      "title": "Sag, was du suchst",
+      "body": "Ernst, locker, erkunden, ENM, Freundschaft – von Anfang an klar, gematcht auf Gegenseitigkeit."
+    },
+    "step2": {
+      "title": "Erhalte deine tägliche Auswahl",
+      "body": "5–10 kuratierte Profile. Kompatibilität, passende Absichten und echte Verhaltenssignale."
+    },
+    "step3": {
+      "title": "Sende Signale, keinen Spam",
+      "body": "Begrenzte Likes. Kommentiere Prompts. Gib einen Pulse aus, wenn jemand wirklich zählt."
+    },
+    "step4": {
+      "title": "Triff dich im echten Leben",
+      "body": "KI-Eisbrecher, Date-Ideen und ein We-Met-Kreislauf, der deine Matches immer weiter verfeinert."
+    }
+  },
+  "modes": {
+    "eyebrow": "Modi",
+    "heading": "Eine App, jede Art zu begegnen",
+    "tierFree": "KOSTENLOS",
+    "tapForDetails": "{{title}} – tippen für Details",
+    "queue": {
+      "title": "Tägliche Auswahl",
+      "caption": "Deine 5–10 besten Chancen auf etwas Echtes. Wird mittags aktualisiert.",
+      "bullet1": "Kuratiert nach Absicht + Kompatibilität",
+      "bullet2": "Wird mittags aktualisiert",
+      "bullet3": "Filter & Dealbreaker inklusive"
+    },
+    "swipe": {
+      "title": "Klassisches Swipen",
+      "caption": "Volumenmodus, wenn du willst. Absichtsfilter bleiben an.",
+      "bullet1": "Voller Zugriff auf den Stapel",
+      "bullet2": "Absichtsfilter bleiben aktiv",
+      "bullet3": "Gleiche begrenzte Likes"
+    },
+    "nearby": {
+      "title": "Feed in deiner Nähe",
+      "caption": "Echtzeit, lokal, jetzt.",
+      "bullet1": "Live-Raster aus der Umgebung",
+      "bullet2": "Sichtbarkeit nach Aktivität",
+      "bullet3": "Gleiche Sicherheitsregeln"
+    },
+    "events": {
+      "title": "Events",
+      "caption": "Zusagen und offline treffen, ganz entspannt.",
+      "bullet1": "Kuratierte lokale Events",
+      "bullet2": "Sieh, wer noch kommt",
+      "bullet3": "Gruppenformate zuerst"
+    },
+    "travel": {
+      "title": "Reisen",
+      "caption": "Wechsle deine Stadt, bevor du landest.",
+      "bullet1": "Lege dein Ziel früh fest",
+      "bullet2": "Deine Auswahl entsteht schon bei Ankunft",
+      "bullet3": "Lokale Date-Ideen parat"
+    }
+  },
+  "outcomes": {
+    "alt": "Ein Paar lacht abends an einem kleinen Cafétisch",
+    "eyebrow": "Ergebnisse statt Engagement",
+    "heading": "Die Kennzahl, die wir optimieren, ist dein erstes Date.",
+    "body": "Unser We-Met-Kreislauf fragt, wie es lief – und jede Antwort schärft die nächste Auswahl.",
+    "stats": "68 % Match→Gespräch · 31 % Gespräch→Date · 4,6★ Match-Qualität (Beta-Kohorte)"
+  },
+  "safety": {
+    "eyebrow": "Sicherheit & Absicht",
+    "heading": "Sicherheit ist keine Einstellungsseite.",
+    "body": "Verifizierung, Einverständnis und Meldungen sind erstklassige UI – sichtbar dort, wo du stöberst, matchest und chattest. Nie drei Menüs tief vergraben.",
+    "rows": {
+      "verification": {
+        "title": "Fotoverifizierung",
+        "body": "Pflicht-Selfie + Live-Check. Kein Abzeichen, kein Stöbern."
+      },
+      "screenshots": {
+        "title": "Screenshot-Hinweise",
+        "body": "Wenn jemand deinen Chat oder deine Fotos abfotografiert, erfährst du es."
+      },
+      "hiddenWords": {
+        "title": "Verborgene Wörter",
+        "body": "Filtere die Sätze, die du nie erhalten willst."
+      },
+      "anonymity": {
+        "title": "Anonym-Modus",
+        "body": "Stöbere unsichtbar, bis du dich zeigen willst."
+      },
+      "scam": {
+        "title": "KI-Schutz vor Betrug",
+        "body": "Romance-Scam-Muster werden erkannt, bevor sie dich erreichen."
+      },
+      "consent": {
+        "title": "Consent-Tools",
+        "body": "Klare Wege in der App, Grenzen zu setzen und zu respektieren."
+      }
+    }
+  },
+  "testimonials": {
+    "eyebrow": "Erste Signale",
+    "heading": "Menschen, die aufgehört haben zu scrollen",
+    "headshotAlt": "Porträt von {{name}}",
+    "q1": { "quote": "Das Tageslimit fühlte sich einen Tag lang eng an. Dann wie Erleichterung." },
+    "q2": { "quote": "Die Prompts schafften, was meine Anmachsprüche nie konnten. Wir trafen uns nach fünf Tagen." },
+    "q3": { "quote": "Die erste App, bei der meine ehrliche Absicht niemanden verschreckte – sie zog die Richtigen an." }
+  },
+  "pricing": {
+    "eyebrow": "Preise",
+    "heading": "Kostenlos ist echt. Plus ist Power. X sind Flügel.",
+    "body": "Resonance funktioniert ohne zu zahlen. Resonance+ und Resonance X bringen Tiefe für alle, die mehr Signal, mehr Reichweite und mehr Orte wollen.",
+    "tierFree": "KOSTENLOS",
+    "free": {
+      "title": "Starte mit Absicht",
+      "features": "Tägliche Auswahl · Begrenzte Likes · Voller Sicherheits-Stack · Event-Zusagen"
+    },
+    "plus": {
+      "title": "Tieferes Signal",
+      "features": "Sieh, wer dich liket · Mehr Pulses · Erweiterte Filter · Feed in der Nähe"
+    },
+    "x": {
+      "title": "Geh überall hin",
+      "features": "Alles aus + · Reisemodus · Priorisierte Platzierung · Events nur für X"
+    },
+    "compare": "Pläne vergleichen →"
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "heading": "Faire Fragen",
+    "q1": {
+      "q": "Ist Resonance kostenlos?",
+      "a": "Ja. Die tägliche Auswahl, begrenzte Likes, Nachrichten, Events und der komplette Sicherheits-Stack sind für immer kostenlos. Resonance+ und X bringen Komfort und Reichweite – niemals weniger Sicherheit."
+    },
+    "q2": {
+      "q": "Warum ein Tageslimit?",
+      "a": "Weil Aufmerksamkeit die Zutat ist. Eine kleine Auswahl heißt: Jedes Profil wird gelesen, jedes Like bedeutet etwas, und die App kann auf Dates statt Bildschirmzeit optimieren."
+    },
+    "q3": {
+      "q": "Wie funktioniert die Fotoverifizierung?",
+      "a": "Beim Onboarding machst du ein Selfie und bestehst einen kurzen Live-Check. Verifizierte Mitglieder erhalten ein Abzeichen; unverifizierte Konten können nicht stöbern und nicht gesehen werden. Dauert unter einer Minute."
+    },
+    "q4": {
+      "q": "Was ist ein Pulse?",
+      "a": "Ein Pulse ist ein Super-Like mit Gewicht. Er heftet dich mit violetter Unterstreichung ganz oben ins Likes-You-Raster. Sie sind absichtlich rar – kostenlose Mitglieder bekommen ein paar pro Woche."
+    },
+    "q5": {
+      "q": "Welche Modi sind kostenlos?",
+      "a": "Tägliche Auswahl, Klassisches Swipen und Events sind kostenlos. Der Feed in der Nähe ist Resonance+. Der Reisemodus ist Resonance X. Filter und Dealbreaker sind in jedem Modus kostenlos."
+    }
+  },
+  "finalCta": {
+    "heading": "Deine Auswahl öffnet morgen mittags.",
+    "body": "Erstelle heute Abend dein Profil. Wach auf mit Menschen, die sich zu treffen lohnt.",
+    "button": "Erstelle dein Profil",
+    "caption": "Kostenlos starten · Dauert zwei Minuten · Fotoverifizierung erforderlich",
+    "share": "Teile es mit jemandem, der das braucht"
+  },
+  "login": {
+    "welcome": "Willkommen",
+    "kimi": "Mit Kimi anmelden",
+    "google": "Weiter mit Google"
+  },
+  "signIn": {
+    "oauthGoogleNotConfigured": "Google-Anmeldung ist noch nicht verfügbar – nutze E-Mail oder Kimi.",
+    "oauthGoogleFailed": "Die Google-Anmeldung wurde nicht abgeschlossen. Versuch es erneut oder nutze E-Mail oder Kimi.",
+    "titleIn": "Willkommen zurück.",
+    "titleUp": "Erstelle dein Konto.",
+    "subtitleIn": "Mach da weiter, wo du aufgehört hast.",
+    "subtitleUp": "Ein ruhigerer Weg, Menschen zu begegnen, die es wert sind.",
+    "tabAria": "Anmelden oder Konto erstellen",
+    "tabIn": "Anmelden",
+    "tabUp": "Konto erstellen",
+    "nameLabel": "Name",
+    "namePlaceholder": "Dein Vorname",
+    "emailLabel": "E-Mail",
+    "passwordLabel": "Passwort",
+    "passwordHint": "Mindestens 8 Zeichen",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
+    "forgot": "Passwort vergessen?",
+    "pending": "Einen Moment…",
+    "or": "oder",
+    "continueKimi": "Weiter mit Kimi",
+    "continueGoogle": "Weiter mit Google",
+    "errors": {
+      "nameRequired": "Sag uns deinen Namen",
+      "emailInvalid": "Gib eine gültige E-Mail-Adresse ein",
+      "passwordShort": "Mindestens 8 Zeichen",
+      "passwordRequired": "Gib dein Passwort ein"
+    }
+  },
+  "forgotPassword": {
+    "title": "Passwort vergessen?",
+    "subtitle": "Gib deine E-Mail ein und wir schicken dir einen Link zum Zurücksetzen.",
+    "emailLabel": "E-Mail",
+    "send": "Link senden",
+    "sending": "Wird gesendet…",
+    "emailInvalid": "Gib eine gültige E-Mail-Adresse ein",
+    "sentTitle": "Schau in dein Postfach.",
+    "sentBody": "Falls ein Konto mit dieser E-Mail existiert, ist ein Link zum Zurücksetzen unterwegs. Er läuft in 30 Minuten ab.",
+    "backToSignIn": "Zurück zur Anmeldung"
+  },
+  "resetPassword": {
+    "title": "Wähle ein neues Passwort.",
+    "subtitle": "Mindestens 8 Zeichen.",
+    "newLabel": "Neues Passwort",
+    "confirmLabel": "Neues Passwort bestätigen",
+    "submit": "Passwort zurücksetzen",
+    "updating": "Wird aktualisiert…",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
+    "errors": {
+      "passwordShort": "Mindestens 8 Zeichen",
+      "confirmMismatch": "Die Passwörter stimmen nicht überein"
+    },
+    "invalidTitle": "Dieser Link ist ungültig.",
+    "invalidBody": "Dieser Link ist ungültig oder abgelaufen. Fordere einen neuen an und wir schicken ihn in dein Postfach.",
+    "requestNew": "Neuen Link anfordern",
+    "doneTitle": "Passwort aktualisiert.",
+    "doneBody": "Dein Passwort wurde zurückgesetzt. Melde dich mit deinem neuen Passwort an.",
+    "goToSignIn": "Zur Anmeldung",
+    "backToSignIn": "Zurück zur Anmeldung"
+  },
+  "authLayout": {
+    "signInTitle": "Melde dich an, um fortzufahren",
+    "signInBody": "Der Zugriff auf dieses Dashboard erfordert eine Anmeldung. Fahre fort, um den Login zu starten.",
+    "signIn": "Anmelden",
+    "toggleNav": "Navigation ein-/ausblenden",
+    "navigation": "Navigation",
+    "page1": "Seite 1",
+    "page2": "Seite 2",
+    "signOut": "Abmelden",
+    "menu": "Menü"
+  }
+}

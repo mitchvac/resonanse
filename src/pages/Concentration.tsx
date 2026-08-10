@@ -7,6 +7,7 @@ import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 import WinFireworks from '@/components/games/WinFireworks';
 import OwnAvatar from '@/components/games/OwnAvatar';
 
@@ -23,6 +24,7 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 export default function Concentration() {
+  const { t } = useTranslation('games');
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -46,7 +48,7 @@ export default function Concentration() {
   const [scores, setScores] = useState<[number, number]>([0, 0]);
   const [busy, setBusy] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [msg, setMsg] = useState('Your turn.');
+  const [msg, setMsg] = useState(() => t('concentration.msg.yourTurn'));
 
   const botMemory = useRef(new Map<number, string>());
   const timers = useRef<number[]>([]);
@@ -71,7 +73,8 @@ export default function Concentration() {
     setScores([0, 0]);
     setBusy(false);
     setGameOver(false);
-    setMsg('Your turn.');
+    setMsg(t('concentration.msg.yourTurn'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearTimers]);
 
   useEffect(() => {
@@ -153,10 +156,10 @@ export default function Concentration() {
           setGameOver(true);
           setMsg(
             nextScores[0] > nextScores[1]
-              ? 'You win.'
+              ? t('concentration.msg.youWin')
               : nextScores[0] < nextScores[1]
-                ? 'Riley wins.'
-                : 'Tied.',
+                ? t('concentration.msg.rileyWins')
+                : t('concentration.msg.tied'),
           );
           return;
         }
@@ -164,11 +167,11 @@ export default function Concentration() {
         setMsg(
           hit
             ? turn === 0
-              ? 'Match — go again.'
-              : 'Riley matched. Riley goes again.'
+              ? t('concentration.msg.matchGoAgain')
+              : t('concentration.msg.rileyMatched')
             : nextTurn === 0
-              ? 'Your turn.'
-              : "Riley's turn.",
+              ? t('concentration.msg.yourTurn')
+              : t('concentration.msg.rileysTurn'),
         );
         if (nextTurn === 1) later(botMove, 700);
       }, hit ? 450 : 900);
@@ -202,7 +205,7 @@ export default function Concentration() {
           <div className="glass flex h-[52px] items-center rounded-full pl-1 pr-4">
             <button
               type="button"
-              aria-label="Back to Community"
+              aria-label={t('shared.backToCommunity')}
               onClick={() => navigate('/community')}
               className="glass-content flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
               style={{ color: 'var(--text)' }}
@@ -213,19 +216,18 @@ export default function Concentration() {
               className="t-value flex-1 pr-11 text-center font-bold"
               style={{ color: 'var(--text)', position: 'relative', zIndex: 1 }}
             >
-              Concentration
+              {t('concentration.title')}
             </span>
           </div>
         </div>
 
         <header className="mt-6 px-5">
-          <p className="t-eyebrow">LOCAL TABLE</p>
+          <p className="t-eyebrow">{t('shared.localTable')}</p>
           <h1 className="t-heading mt-2" style={{ color: 'var(--text-ink)' }}>
-            You vs BOT · Riley.
+            {t('concentration.header')}
           </h1>
           <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Playable now on this device. Riley is always labelled as a bot. Live
-            multiplayer seats arrive with the Stage 2 community backend.
+            {t('concentration.intro')}
           </p>
         </header>
 
@@ -238,12 +240,12 @@ export default function Concentration() {
         {!accessLoading && !isAuthenticated && (
           <section className="mt-6 px-5">
             <GlassCard className="p-5">
-              <h2 className="t-title-sm">Sign in to take a seat.</h2>
+              <h2 className="t-title-sm">{t('shared.signInToSeat')}</h2>
               <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                Community games are part of your Resonance access.
+                {t('shared.signInBody')}
               </p>
               <BtnPrimary to={LOGIN_PATH} className="mt-4 w-full">
-                Sign in
+                {t('shared.signIn')}
               </BtnPrimary>
             </GlassCard>
           </section>
@@ -252,21 +254,20 @@ export default function Concentration() {
         {!accessLoading && isAuthenticated && !allowed && (
           <section className="mt-6 px-5">
             <GlassCard edge="amber" className="p-5">
-              <p className="t-eyebrow">SEATING LOCKED</p>
-              <h2 className="t-title-sm mt-1">Your free trial has ended.</h2>
+              <p className="t-eyebrow">{t('shared.seatingLocked')}</p>
+              <h2 className="t-title-sm mt-1">{t('shared.trialEnded')}</h2>
               <p className="t-caption mt-1.5" style={{ color: 'var(--text-secondary)' }}>
-                The lobby stays visible, but taking a seat needs Resonance+ or X.
-                Dating core stays free: queue, matches, conversations and share board.
+                {t('shared.trialEndedBody')}
               </p>
               <BtnPrimary to="/premium" className="mt-4 w-full">
-                See plans
+                {t('shared.seePlans')}
               </BtnPrimary>
             </GlassCard>
           </section>
         )}
 
         {!accessLoading && isAuthenticated && allowed && (
-          <section className="mt-6 px-5" aria-label="Concentration game">
+          <section className="mt-6 px-5" aria-label={t('concentration.gameAria')}>
             <GlassCard className="p-4" ringX={24}>
               <div className="flex items-center gap-6">
                 <div className={cn('flex items-center gap-2.5', turn !== 0 && 'opacity-55')}>
@@ -276,12 +277,12 @@ export default function Concentration() {
                       size={14}
                       className="absolute -bottom-0.5 -right-0.5 rounded-full"
                       style={{ color: 'var(--ok)', background: 'var(--stage-base)' }}
-                      aria-label="Verified"
+                      aria-label={t('shared.verified')}
                     />
                   </span>
                   <span>
                     <span className="t-micro block" style={{ color: 'var(--text-secondary)' }}>
-                      YOU
+                      {t('shared.youBadge')}
                     </span>
                     <span className="t-title block" style={{ color: 'var(--text)' }}>
                       {scores[0]}
@@ -298,7 +299,7 @@ export default function Concentration() {
                   </span>
                   <span>
                     <span className="t-micro block" style={{ color: 'var(--text-secondary)' }}>
-                      BOT · RILEY
+                      {t('concentration.botRileyLabel')}
                     </span>
                     <span className="t-title block" style={{ color: 'var(--text)' }}>
                       {scores[1]}
@@ -317,7 +318,7 @@ export default function Concentration() {
                       type="button"
                       disabled={isDone || isUp || busy || turn !== 0 || gameOver}
                       onClick={() => flip(i)}
-                      aria-label={isUp || isDone ? `Card ${glyph}` : `Face-down card ${i + 1}`}
+                      aria-label={isUp || isDone ? t('concentration.cardAria', { glyph }) : t('concentration.faceDownAria', { number: i + 1 })}
                       className="relative flex aspect-[3/4] items-center justify-center rounded-[14px] text-[26px] transition-transform duration-fast disabled:cursor-default"
                       style={{
                         background: isUp || isDone ? 'var(--field-focus)' : 'var(--field)',
@@ -339,10 +340,10 @@ export default function Concentration() {
                 {gameOver ? (
                   <BtnPrimary className="h-11 px-5" onClick={newGame}>
                     <RotateCcw size={16} aria-hidden="true" />
-                    New game
+                    {t('shared.newGame')}
                   </BtnPrimary>
                 ) : (
-                  <BtnGlass className="h-11 px-4" onClick={newGame} ariaLabel="Restart game">
+                  <BtnGlass className="h-11 px-4" onClick={newGame} ariaLabel={t('shared.restartGame')}>
                     <RotateCcw size={16} aria-hidden="true" />
                   </BtnGlass>
                 )}

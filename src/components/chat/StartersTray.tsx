@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Sparkles } from 'lucide-react';
 import { trpc } from '@/providers/trpc';
@@ -21,6 +22,7 @@ export default function StartersTray({
   open: boolean;
   onPick: (text: string) => void;
 }) {
+  const { t } = useTranslation('connect');
   /* Refresh rotates the suggestion pool server-side via `variant`. */
   const [variant, setVariant] = useState(0);
   const starters = trpc.chat.starters.useQuery(
@@ -40,13 +42,13 @@ export default function StartersTray({
         >
           <div className="glass-content">
             <div className="flex items-center justify-between gap-2">
-              <p className="t-eyebrow">Resonance AI · grounded in {peerName}'s profile</p>
+              <p className="t-eyebrow">{t('starters.eyebrow', { name: peerName })}</p>
               <button
                 type="button"
                 onClick={() => setVariant((v) => (v + 1) % 21)}
                 className="flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center rounded-full"
                 style={{ color: 'var(--text-secondary)' }}
-                aria-label="Cycle more starters"
+                aria-label={t('starters.cycleAria')}
               >
                 <RefreshCw size={15} aria-hidden="true" />
               </button>
@@ -67,7 +69,7 @@ export default function StartersTray({
                     size={14}
                     className="mt-0.5 shrink-0"
                     style={{ color: 'var(--violet)' }}
-                    aria-label="AI suggestion"
+                    aria-label={t('starters.aiSuggestion')}
                   />
                   {s}
                 </motion.button>

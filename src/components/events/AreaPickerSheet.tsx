@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Check, Search } from 'lucide-react';
 import GlassSheet from '@/components/GlassSheet';
@@ -6,15 +8,15 @@ import { trpc } from '@/providers/trpc';
 import { cn } from '@/lib/utils';
 
 /** "just now" / "5 min ago" / "2 hr ago" / "3 days ago"; null when unknown. */
-export function fmtAgo(date: Date | string | null): string | null {
+export function fmtAgo(date: Date | string | null, t: TFunction): string | null {
   if (!date) return null;
   const d = date instanceof Date ? date : new Date(date);
   const mins = Math.max(0, Math.round((Date.now() - d.getTime()) / 60000));
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 1) return t('events.agoJustNow');
+  if (mins < 60) return t('events.agoMinutes', { count: mins });
   const hours = Math.round(mins / 60);
-  if (hours < 24) return `${hours} hr ago`;
-  return `${Math.round(hours / 24)} days ago`;
+  if (hours < 24) return t('events.agoHours', { count: hours });
+  return t('events.agoDays', { count: Math.round(hours / 24) });
 }
 
 type EngineArea = {
@@ -43,6 +45,7 @@ export default function AreaPickerSheet({
   currentArea: string | null;
   onSelect: (area: string | null) => void;
 }) {
+  const { t } = useTranslation('connect');
   const utils = trpc.useUtils();
   const reduced = useReducedMotion();
   const [query, setQuery] = useState('');
@@ -85,11 +88,11 @@ export default function AreaPickerSheet({
   };
 
   const freshness = (a: EngineArea) => {
-    const ago = fmtAgo(a.lastUpdatedAt);
+    const ago = fmtAgo(a.lastUpdatedAt, t);
     if (ago) {
       return (
         <span className="t-micro block" style={{ color: 'var(--text-secondary)' }}>
-          updated {ago}
+          {t('events.updatedAgo', { ago })}
         </span>
       );
     }
@@ -100,7 +103,7 @@ export default function AreaPickerSheet({
         animate={reduced ? undefined : { opacity: [0.35, 1, 0.35] }}
         transition={reduced ? undefined : { duration: 1.6, repeat: Infinity }}
       >
-        updating…
+        {t('events.updating')}
       </motion.span>
     );
   };
@@ -114,11 +117,10 @@ export default function AreaPickerSheet({
     <GlassSheet open={open} onClose={onClose} labelledBy="area-picker-title">
       <div className="px-5 pb-8">
         <h2 id="area-picker-title" className="t-title-sm mt-2">
-          Where do you want to go out?
+          {t('events.areaTitle')}
         </h2>
         <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-          The event agent keeps every area updated — pick one and the engine
-          serves what's on there.
+          {t('events.areaCaption')}
         </p>
 
         <div
@@ -133,8 +135,8 @@ export default function AreaPickerSheet({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search cities or countries"
-            aria-label="Search areas"
+            placeholder={t('events.areaSearchPlaceholder')}
+            aria-label={t('events.areaSearchAria')}
             className="t-body h-11 min-w-0 flex-1 bg-transparent outline-none"
             style={{ color: 'var(--text)' }}
           />
@@ -142,11 +144,11 @@ export default function AreaPickerSheet({
 
         {setAreaMutation.isError && (
           <p className="t-caption mt-2" style={{ color: 'var(--danger)' }}>
-            Couldn't switch area — try again.
+            {t('events.areaError')}
           </p>
         )}
 
-        <div className="mt-4 flex flex-col gap-2" role="listbox" aria-label="Areas">
+        <div className="mt-4 flex flex-col gap-2" role="listbox" aria-label={t('events.areasAria')}>
           {/* — All cities — */}
           <button
             type="button"
@@ -159,15 +161,15 @@ export default function AreaPickerSheet({
           >
             <span className="min-w-0">
               <span className="t-value block truncate font-bold" style={{ color: 'var(--text)' }}>
-                All cities
+                {t('events.areaAll')}
               </span>
               <span className="t-caption block" style={{ color: 'var(--text-secondary)' }}>
-                Every area the engine covers
+                {t('events.areaAllCaption')}
               </span>
             </span>
             <span className="flex shrink-0 items-center gap-2 text-right">
               <span className="t-caption" style={{ color: 'var(--text-secondary)' }}>
-                {totalUpcoming} upcoming
+                {t('events.upcoming', { count: totalUpcoming })}
               </span>
               {currentArea === null && (
                 <Check size={16} style={{ color: 'var(--violet)' }} aria-hidden="true" />
@@ -203,7 +205,7 @@ export default function AreaPickerSheet({
                 <span className="shrink-0 text-right">
                   <span className="flex items-center justify-end gap-2">
                     <span className="t-caption" style={{ color: 'var(--text)' }}>
-                      {a.upcomingCount} upcoming
+                      {t('events.upcoming', { count: a.upcomingCount })}
                     </span>
                     {selected && (
                       <Check size={16} style={{ color: 'var(--violet)' }} aria-hidden="true" />
@@ -216,7 +218,7 @@ export default function AreaPickerSheet({
           })}
 
           {areasQuery.isLoading && (
-            <div className="flex flex-col gap-2" aria-label="Loading areas">
+            <div className="flex flex-col gap-2" aria-label={t('events.loadingAreas')}>
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
@@ -229,7 +231,7 @@ export default function AreaPickerSheet({
 
           {!areasQuery.isLoading && filtered.length === 0 && (
             <p className="t-caption px-1 py-3 text-center" style={{ color: 'var(--text-secondary)' }}>
-              No areas match "{query}".
+              {t('events.noAreas', { query })}
             </p>
           )}
         </div>
@@ -238,7 +240,7 @@ export default function AreaPickerSheet({
           className="t-micro mt-5 text-center"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Powered by the Resonance event engine
+          {t('events.poweredBy')}
         </p>
       </div>
     </GlassSheet>

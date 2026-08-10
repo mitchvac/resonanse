@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { QueueEntry } from '@/components/discover/types';
 
@@ -14,10 +15,11 @@ export default function NearbyFeed({
   entries: QueueEntry[];
   onOpen: (entry: QueueEntry) => void;
 }) {
+  const { t } = useTranslation('discover');
   return (
-    <section aria-label="Nearby">
+    <section aria-label={t('a11y.nearby')}>
       <p className="t-micro mb-3" style={{ color: 'var(--text-secondary)' }}>
-        HAPPENING NEAR YOU · UPDATED LIVE
+        {t('nearby.micro')}
       </p>
       <div className="grid grid-cols-2 gap-3">
         {entries.map((entry, i) => {
@@ -32,11 +34,11 @@ export default function NearbyFeed({
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.04 * i, duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              aria-label={`Open ${entry.profile.displayName}'s profile`}
+              aria-label={t('common.openProfile', { name: entry.profile.displayName })}
             >
               <img
                 src={photo}
-                alt={`Photo of ${entry.profile.displayName}`}
+                alt={t('common.photoOf', { name: entry.profile.displayName })}
                 className="absolute inset-0 h-full w-full object-cover"
                 loading="lazy"
               />
@@ -45,7 +47,7 @@ export default function NearbyFeed({
                 <span
                   className="h-1.5 w-1.5 shrink-0 rounded-full"
                   style={{ background: 'var(--ok)' }}
-                  aria-label="Active now"
+                  aria-label={t('a11y.activeNow')}
                 />
                 <span className="t-caption font-bold text-white">
                   {entry.profile.displayName}

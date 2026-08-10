@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,7 +13,7 @@ export default function RsvpButton({
   going,
   pending = false,
   variant = 'ghost',
-  label = 'RSVP',
+  label,
   onToggle,
   className,
 }: {
@@ -23,6 +24,8 @@ export default function RsvpButton({
   onToggle: () => void;
   className?: string;
 }) {
+  const { t } = useTranslation('connect');
+  const resolvedLabel = label ?? t('events.rsvp');
   const inner = (
     <AnimatePresence mode="wait" initial={false}>
       <motion.span
@@ -34,7 +37,7 @@ export default function RsvpButton({
         transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
       >
         {going && <Check size={16} strokeWidth={2.5} aria-hidden="true" />}
-        {going ? 'Going' : label}
+        {going ? t('events.going') : resolvedLabel}
       </motion.span>
     </AnimatePresence>
   );

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flag, Heart, Share2, Sparkle, X } from 'lucide-react';
 import { LipsIcon, RoseIcon, WaveHandIcon } from '@/components/gestures/icons';
@@ -15,7 +16,16 @@ import { trpc } from '@/providers/trpc';
 import { cn } from '@/lib/utils';
 import type { QueueProfile } from '@/components/discover/types';
 
+/* Report reasons are DATA sent to safety.report — never translated.
+   Display labels come from the discover namespace via REPORT_KEYS. */
 const REPORT_REASONS = ['Spam', 'Abuse', 'Fake', 'Under 18', 'Other'];
+const REPORT_KEYS: Record<string, string> = {
+  Spam: 'spam',
+  Abuse: 'abuse',
+  Fake: 'fake',
+  'Under 18': 'under18',
+  Other: 'other',
+};
 
 /**
  * ProfileSheet — discover.md §3
@@ -58,6 +68,7 @@ export default function ProfileSheet({
   onWave: (e?: MouseEvent) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation('discover');
   const [photoIndex, setPhotoIndex] = useState(0);
   const [safetyOpen, setSafetyOpen] = useState(false);
   const [reason, setReason] = useState<string | null>(null);
@@ -76,7 +87,7 @@ export default function ProfileSheet({
     if (navigator.clipboard) {
       navigator.clipboard.writeText(link).catch(() => undefined);
     }
-    showToast('Profile link copied.');
+    showToast(t('toasts.linkCopied'));
   };
 
   const submitReport = () => {
@@ -87,7 +98,7 @@ export default function ProfileSheet({
         onSuccess: () => {
           setSafetyOpen(false);
           setReason(null);
-          showToast('Report sent — our team will review.');
+          showToast(t('toasts.reportSent'));
         },
       },
     );
@@ -101,7 +112,7 @@ export default function ProfileSheet({
           setSafetyOpen(false);
           setReason(null);
           void utils.discover.queue.invalidate();
-          showToast(`${profile.displayName.split(' ')[0]} blocked. They won't be notified.`);
+          showToast(t('toasts.blocked', { name: profile.displayName.split(' ')[0] }));
           onClose();
         },
       },
@@ -126,7 +137,7 @@ export default function ProfileSheet({
               <motion.img
                 key={photoIndex}
                 src={photos[photoIndex % photos.length]}
-                alt={`Photo ${photoIndex + 1} of ${profile.displayName}`}
+                alt={t('profileSheet.photoAlt', { index: photoIndex + 1, name: profile.displayName })}
                 className="absolute inset-0 h-full w-full object-cover"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -140,7 +151,7 @@ export default function ProfileSheet({
                   <button
                     key={i}
                     type="button"
-                    aria-label={`Photo ${i + 1}`}
+                    aria-label={t('profileSheet.photoDot', { index: i + 1 })}
                     onClick={() => setPhotoIndex(i)}
                     className="h-1.5 rounded-full transition-all duration-fast"
                     style={{
@@ -169,7 +180,7 @@ export default function ProfileSheet({
                   style={{ background: 'var(--ok)' }}
                   aria-hidden="true"
                 />
-                <span style={{ color: 'var(--ok)' }}>Active today</span>
+                <span style={{ color: 'var(--ok)' }}>{t('profileSheet.activeToday')}</span>
               </p>
             </div>
             <CompatibilityArc value={compatibility} size={48} animateKey={profile.id} />
@@ -211,7 +222,7 @@ export default function ProfileSheet({
 
           {lifestyle.length > 0 && (
             <>
-              <p className="t-eyebrow mt-5">Lifestyle</p>
+              <p className="t-eyebrow mt-5">{t('profileSheet.lifestyle')}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {lifestyle.map((l) => (
                   <Chip key={l}>{l}</Chip>
@@ -227,18 +238,18 @@ export default function ProfileSheet({
               onClick={shareProfile}
               className="t-caption flex items-center gap-1.5"
               style={{ color: 'var(--text-secondary)' }}
-              aria-label="Share profile"
+              aria-label={t('profileSheet.shareAria')}
             >
-              <Share2 size={14} aria-hidden="true" /> Share
+              <Share2 size={14} aria-hidden="true" /> {t('profileSheet.share')}
             </button>
             <button
               type="button"
               onClick={() => setSafetyOpen(true)}
               className="t-caption flex items-center gap-1.5"
               style={{ color: 'var(--danger)' }}
-              aria-label="Report or block"
+              aria-label={t('profileSheet.reportBlockAria')}
             >
-              <Flag size={14} aria-hidden="true" /> Report / block
+              <Flag size={14} aria-hidden="true" /> {t('profileSheet.reportBlock')}
             </button>
           </div>
         </div>
@@ -255,14 +266,14 @@ export default function ProfileSheet({
             className="t-button flex items-center gap-1.5 px-2 transition-opacity duration-fast active:opacity-70 disabled:opacity-50"
             style={{ color: 'var(--text)' }}
           >
-            <X size={16} aria-hidden="true" /> Pass
+            <X size={16} aria-hidden="true" /> {t('gestures.pass')}
           </button>
           <button
             type="button"
             disabled={pending}
             onClick={onWave}
-            aria-label="Wave — say hi"
-            title="Wave — say hi"
+            aria-label={t('gestures.waveSayHi')}
+            title={t('gestures.waveSayHi')}
             className="glass flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
           >
             <span className="glass-content flex items-center justify-center">
@@ -273,8 +284,12 @@ export default function ProfileSheet({
             type="button"
             disabled={pending || flowersLeft === 0}
             onClick={onRose}
-            aria-label={flowersLeft === null ? 'Send roses' : `Send roses — ${flowersLeft} left today`}
-            title="Send roses"
+            aria-label={
+              flowersLeft === null
+                ? t('gestures.sendRoses')
+                : t('gestures.sendRosesLeft', { count: flowersLeft })
+            }
+            title={t('gestures.sendRoses')}
             className="glass relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
           >
             <span className="glass-content flex items-center justify-center">
@@ -294,8 +309,12 @@ export default function ProfileSheet({
             type="button"
             disabled={pending || kissesLeft === 0}
             onClick={onKiss}
-            aria-label={kissesLeft === null ? 'Send a kiss' : `Send a kiss — ${kissesLeft} left today`}
-            title="Send a kiss"
+            aria-label={
+              kissesLeft === null
+                ? t('gestures.sendKiss')
+                : t('gestures.sendKissLeft', { count: kissesLeft })
+            }
+            title={t('gestures.sendKiss')}
             className="glass relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
           >
             <span className="glass-content flex items-center justify-center">
@@ -317,14 +336,14 @@ export default function ProfileSheet({
             onClick={onLike}
             className="shadow-violet-glow t-button flex h-[52px] min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-violet text-white transition-transform duration-fast active:scale-[0.97] disabled:opacity-50"
           >
-            <Heart size={18} fill="currentColor" strokeWidth={0} aria-hidden="true" /> Like
+            <Heart size={18} fill="currentColor" strokeWidth={0} aria-hidden="true" /> {t('gestures.like')}
           </button>
           <button
             type="button"
             disabled={pending}
             onClick={onPulse}
-            aria-label="Send Pulse"
-            title="Send Pulse"
+            aria-label={t('gestures.sendPulse')}
+            title={t('gestures.sendPulse')}
             className="glass flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-50"
           >
             <span className="glass-content flex items-center justify-center">
@@ -339,14 +358,14 @@ export default function ProfileSheet({
     <GlassSheet open={safetyOpen} onClose={() => setSafetyOpen(false)} labelledBy="profile-safety-title">
       <div className="max-h-[74dvh] overflow-y-auto px-5 pb-6 pt-1">
         <h2 id="profile-safety-title" className="t-title" style={{ color: 'var(--text)' }}>
-          Report or block
+          {t('safety.title')}
         </h2>
         <section className="mt-4">
           <p className="t-caption flex items-center gap-1.5 font-bold" style={{ color: 'var(--text)' }}>
             <Flag size={13} style={{ color: 'var(--danger)' }} aria-hidden="true" />
-            Report {profile.displayName.split(' ')[0]}
+            {t('safety.reportName', { name: profile.displayName.split(' ')[0] })}
           </p>
-          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Report reason">
+          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t('safety.reasonA11y')}>
             {REPORT_REASONS.map((r) => (
               <button
                 key={r}
@@ -360,7 +379,7 @@ export default function ProfileSheet({
                 }}
                 aria-pressed={reason === r}
               >
-                {r}
+                {t(`safety.reasons.${REPORT_KEYS[r]}`)}
               </button>
             ))}
           </div>
@@ -373,7 +392,7 @@ export default function ProfileSheet({
               disabled={report.isPending}
               className="h-11 flex-1"
             >
-              Cancel
+              {t('safety.cancel')}
             </BtnGlass>
             <button
               type="button"
@@ -382,16 +401,16 @@ export default function ProfileSheet({
               className="t-button h-11 min-h-[44px] flex-1 rounded-full disabled:opacity-50"
               style={{ color: 'var(--danger)', boxShadow: 'inset 0 0 0 1px var(--danger)' }}
             >
-              {report.isPending ? 'Sending…' : 'Send report'}
+              {report.isPending ? t('safety.sending') : t('safety.sendReport')}
             </button>
           </div>
         </section>
         <section className="mt-5 border-t pt-4" style={{ borderColor: 'var(--ring-stroke)' }}>
           <p className="t-caption font-bold" style={{ color: 'var(--text)' }}>
-            Block {profile.displayName.split(' ')[0]}
+            {t('safety.blockName', { name: profile.displayName.split(' ')[0] })}
           </p>
           <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Quiet and immediate. They won't be notified.
+            {t('safety.blockNote')}
           </p>
           <button
             type="button"
@@ -400,7 +419,7 @@ export default function ProfileSheet({
             className="t-button mt-2 h-11 min-h-[44px] w-full rounded-full disabled:opacity-50"
             style={{ color: 'var(--danger)', boxShadow: 'inset 0 0 0 1px var(--danger)' }}
           >
-            {block.isPending ? 'Blocking…' : 'Block'}
+            {block.isPending ? t('safety.blocking') : t('safety.block')}
           </button>
         </section>
       </div>

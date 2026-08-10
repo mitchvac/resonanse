@@ -28,6 +28,7 @@ import HeroPhone from '@/components/landing/HeroPhone';
 import ShareButton from '@/components/ShareButton';
 import LightTrail from '@/components/LightTrail';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
@@ -133,6 +134,7 @@ function CountUp({
 /* ------------------------------------------------------------------ */
 
 function Hero() {
+  const { t } = useTranslation('landing');
   return (
     <section
       data-fx="hero"
@@ -161,10 +163,10 @@ function Hero() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.32 }}
           >
-            Dating, de-noised
+            {t('hero.eyebrow')}
           </motion.p>
           <h1 className="t-display mt-4" style={{ color: 'var(--text-ink)' }}>
-            <Words text="Less swiping. More meeting." onLoad delay={0.1} />
+            <Words text={t('hero.title')} onLoad delay={0.1} />
           </h1>
           <motion.p
             className="t-value mt-5 max-w-md"
@@ -173,8 +175,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.32, delay: 0.5, ease: EASE_OUT }}
           >
-            A daily queue of 5–10 people chosen for mutual intent — not an
-            endless deck designed to keep you single and scrolling.
+            {t('hero.subtitle')}
           </motion.p>
           <motion.div
             className="mt-8 flex flex-wrap items-center gap-4"
@@ -183,7 +184,7 @@ function Hero() {
             transition={{ duration: 0.32, delay: 0.62, ease: EASE_OUT }}
           >
             {/* AUTH-SLOT: rewired to useAuth() in Phase 5 */}
-            <BtnPrimary to="/signin">Get started</BtnPrimary>
+            <BtnPrimary to="/signin">{t('hero.getStarted')}</BtnPrimary>
             <BtnGhost
               onClick={() =>
                 document
@@ -191,7 +192,7 @@ function Hero() {
                   ?.scrollIntoView({ behavior: 'smooth' })
               }
             >
-              See how it works ↓
+              {t('hero.seeHow')}
             </BtnGhost>
             <ShareButton />
           </motion.div>
@@ -202,8 +203,7 @@ function Hero() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.32, delay: 0.74 }}
           >
-            Free to start · Photo-verified community · All genders, all
-            structures
+            {t('hero.caption')}
           </motion.p>
           <motion.div
             className="mt-10"
@@ -214,7 +214,7 @@ function Hero() {
             <div
               className="dc-card"
               role="note"
-              aria-label="Founding member offer: 10,000 Date Coins"
+              aria-label={t('hero.offerAria')}
             >
               <svg
                 className="dc-card__rings"
@@ -233,28 +233,28 @@ function Hero() {
               <div className="relative flex h-full flex-col gap-4 px-[22px] pb-6 pt-[22px]">
                 <div className="flex items-center justify-between gap-3">
                   <span className="dc-card__meta text-[#F0D9A8]">
-                    Resonance · founding offer
+                    {t('hero.offerMeta')}
                   </span>
                   <span className="dc-card__meta text-white/70">
-                    Grows every year
+                    {t('hero.offerGrows')}
                   </span>
                 </div>
-                <p className="dc-card__title">10,000 Date Coins</p>
+                <p className="dc-card__title">{t('hero.offerTitle')}</p>
                 <div className="dc-card__coin">
                   <div className="dc-card__coin-img" />
                   <div className="dc-card__coin-vignette" />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <p className="text-[14px] font-bold leading-[19px] text-white">
-                    For our first 100,000 founding members
+                    {t('hero.offerFor')}
                   </p>
                   <p className="text-[13px] leading-[20px] text-white/[0.82]">
-                    A discount that grows every year you&rsquo;re with us.
+                    {t('hero.offerDesc')}
                   </p>
                 </div>
                 <div className="mt-1 flex items-center gap-3">
                   <span className="dc-card__pill">
-                    Founding Member Exclusive
+                    {t('hero.offerPill')}
                   </span>
                 </div>
               </div>
@@ -275,24 +275,24 @@ function Hero() {
 /* ------------------------------------------------------------------ */
 
 type Stat = { label: string; ringX: number; value?: number; suffix?: string; static?: string };
-const STATS: Stat[] = [
-  { value: 47, suffix: ' min', label: 'SWIPING / DAY', ringX: -60 },
-  { value: 3, suffix: '%', label: 'MATCH → DATE', ringX: 0 },
-  { static: '1 in 2', label: 'FEEL WORSE', ringX: 80 },
-];
 
 function Problem() {
+  const { t } = useTranslation('landing');
+  const stats: Stat[] = [
+    { value: 47, suffix: t('problem.stat1.suffix'), label: t('problem.stat1.label'), ringX: -60 },
+    { value: 3, suffix: t('problem.stat2.suffix'), label: t('problem.stat2.label'), ringX: 0 },
+    { static: t('problem.stat3.static'), label: t('problem.stat3.label'), ringX: 80 },
+  ];
   return (
     <section className="relative py-24 md:py-32">
       <div className="mx-auto max-w-2xl px-5 text-center">
         <Reveal>
-          <p className="t-eyebrow-on-stage">The problem</p>
+          <p className="t-eyebrow-on-stage">{t('problem.eyebrow')}</p>
           <h2 className="t-heading mt-3" style={{ color: 'var(--text-ink)' }}>
-            Endless decks. Mixed intents. Dead chats.
+            {t('problem.heading')}
           </h2>
           <p className="t-value mt-4 text-ink-secondary">
-            Legacy apps monetize your loneliness. Volume over quality, paywalls
-            over outcomes, and a swipe economy that rewards never meeting.
+            {t('problem.body')}
           </p>
         </Reveal>
       </div>
@@ -312,7 +312,7 @@ function Problem() {
           style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 0 }}
         />
         <div className="relative grid gap-4 sm:grid-cols-3">
-          {STATS.map((s, i) => (
+          {stats.map((s, i) => (
             <Reveal key={s.label} delay={0.08 * i}>
               <GlassCard
                 ringX={s.ringX}
@@ -339,41 +339,21 @@ function Problem() {
 /* §3 The Resonance loop                                               */
 /* ------------------------------------------------------------------ */
 
-const LOOP_STEPS = [
-  {
-    n: '1',
-    title: 'State your intent',
-    body: 'Serious, casual, explore, ENM, friendship — declared up front, matched on mutuality.',
-    ringX: -40,
-  },
-  {
-    n: '2',
-    title: 'Get your daily queue',
-    body: '5–10 curated profiles. Compatibility, intent alignment, and real behavioral signals.',
-    ringX: 30,
-  },
-  {
-    n: '3',
-    title: 'Send signal, not spam',
-    body: 'Limited likes. Comment on prompts. Spend a Pulse when someone really matters.',
-    ringX: -80,
-  },
-  {
-    n: '4',
-    title: 'Meet in real life',
-    body: 'AI starters, date ideas, and a We Met loop that keeps tuning your matches.',
-    ringX: 60,
-  },
-];
-
 function Loop() {
+  const { t } = useTranslation('landing');
+  const loopSteps = [
+    { n: '1', title: t('loop.step1.title'), body: t('loop.step1.body'), ringX: -40 },
+    { n: '2', title: t('loop.step2.title'), body: t('loop.step2.body'), ringX: 30 },
+    { n: '3', title: t('loop.step3.title'), body: t('loop.step3.body'), ringX: -80 },
+    { n: '4', title: t('loop.step4.title'), body: t('loop.step4.body'), ringX: 60 },
+  ];
   return (
     <section id="philosophy" data-fx="loop" className="relative py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-5">
         <Reveal className="max-w-xl">
-          <p className="t-eyebrow-on-stage">The Resonance loop</p>
+          <p className="t-eyebrow-on-stage">{t('loop.eyebrow')}</p>
           <h2 className="t-heading mt-3" style={{ color: 'var(--text-ink)' }}>
-            Four steps. One direction: offline.
+            {t('loop.heading')}
           </h2>
         </Reveal>
 
@@ -389,7 +369,7 @@ function Loop() {
             aria-hidden="true"
           />
           <ol className="grid gap-10 md:grid-cols-4 md:gap-4">
-            {LOOP_STEPS.map((step, i) => (
+            {loopSteps.map((step, i) => (
               <li key={step.n} className="relative pl-8 md:pl-0">
                 <span
                   className="absolute left-0 top-2 h-3.5 w-3.5 rounded-full bg-violet md:hidden"
@@ -417,43 +397,13 @@ function Loop() {
 /* §4 Modes                                                            */
 /* ------------------------------------------------------------------ */
 
-const MODES = [
-  {
-    title: 'Daily Queue',
-    caption: 'Your 5–10 best shots at something real. Refreshes at noon.',
-    tier: 'FREE',
-    bullets: ['Curated on intent + compatibility', 'Refreshes at noon', 'Filters & dealbreakers included'],
-    vignette: 'queue',
-  },
-  {
-    title: 'Classic Swipe',
-    caption: 'Volume mode, when you want it. Intent filters still on.',
-    tier: 'FREE',
-    bullets: ['Full deck access', 'Intent filters stay on', 'Same limited likes'],
-    vignette: 'swipe',
-  },
-  {
-    title: 'Nearby Feed',
-    caption: 'Real-time, local, now.',
-    tier: 'RESONANCE+',
-    bullets: ['Live local grid', 'Activity-based surfacing', 'Same safety rules'],
-    vignette: 'nearby',
-  },
-  {
-    title: 'Events',
-    caption: 'RSVP and meet IRL, low pressure.',
-    tier: 'FREE',
-    bullets: ['Curated local events', 'See who else is going', 'Group-first formats'],
-    vignette: 'events',
-  },
-  {
-    title: 'Travel',
-    caption: 'Change your city before you land.',
-    tier: 'RESONANCE X',
-    bullets: ['Set your destination early', 'Queue pre-builds on arrival', 'Local date ideas ready'],
-    vignette: 'travel',
-  },
-] as const;
+type Mode = {
+  title: string;
+  caption: string;
+  tier: string;
+  bullets: string[];
+  vignette: string;
+};
 
 function ModeVignette({ kind }: { kind: string }) {
   /* tiny CSS-only UI vignettes */
@@ -518,7 +468,8 @@ function ModeVignette({ kind }: { kind: string }) {
   );
 }
 
-function ModePanel({ mode, index }: { mode: (typeof MODES)[number]; index: number }) {
+function ModePanel({ mode, index }: { mode: Mode; index: number }) {
+  const { t } = useTranslation('landing');
   const [flipped, setFlipped] = useState(false);
   return (
     <Reveal delay={0.08 * index} className="shrink-0 snap-start">
@@ -527,7 +478,7 @@ function ModePanel({ mode, index }: { mode: (typeof MODES)[number]; index: numbe
         onClick={() => setFlipped((f) => !f)}
         className="block h-[360px] w-[280px] [perspective:1200px]"
         aria-pressed={flipped}
-        aria-label={`${mode.title} — tap for details`}
+        aria-label={t('modes.tapForDetails', { title: mode.title })}
       >
         <motion.div
           className="relative h-full w-full [transform-style:preserve-3d]"
@@ -544,7 +495,7 @@ function ModePanel({ mode, index }: { mode: (typeof MODES)[number]; index: numbe
             >
               <div className="flex h-full flex-col">
                 <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                  {mode.tier}
+                  {mode.tier === 'FREE' ? t('modes.tierFree') : mode.tier}
                 </p>
                 <h3 className="t-title-sm mt-2">{mode.title}</h3>
                 <p className="t-caption mt-2 text-secondary">{mode.caption}</p>
@@ -573,14 +524,34 @@ function ModePanel({ mode, index }: { mode: (typeof MODES)[number]; index: numbe
   );
 }
 
+const MODE_ORDER = [
+  { key: 'queue', tier: 'FREE', vignette: 'queue' },
+  { key: 'swipe', tier: 'FREE', vignette: 'swipe' },
+  { key: 'nearby', tier: 'RESONANCE+', vignette: 'nearby' },
+  { key: 'events', tier: 'FREE', vignette: 'events' },
+  { key: 'travel', tier: 'RESONANCE X', vignette: 'travel' },
+] as const;
+
 function Modes() {
+  const { t } = useTranslation('landing');
+  const modes: Mode[] = MODE_ORDER.map((m) => ({
+    title: t(`modes.${m.key}.title`),
+    caption: t(`modes.${m.key}.caption`),
+    tier: m.tier,
+    bullets: [
+      t(`modes.${m.key}.bullet1`),
+      t(`modes.${m.key}.bullet2`),
+      t(`modes.${m.key}.bullet3`),
+    ],
+    vignette: m.vignette,
+  }));
   return (
     <section id="modes" data-fx="modes" className="relative overflow-hidden py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-5">
         <Reveal>
-          <p className="t-eyebrow-on-stage">Modes</p>
+          <p className="t-eyebrow-on-stage">{t('modes.eyebrow')}</p>
           <h2 className="t-heading mt-3" style={{ color: 'var(--text-ink)' }}>
-            One app, every way to meet
+            {t('modes.heading')}
           </h2>
         </Reveal>
       </div>
@@ -588,7 +559,7 @@ function Modes() {
         data-fx="modes-rail"
         className="no-scrollbar mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 md:px-[max(1.25rem,calc((100vw-72rem)/2))]"
       >
-        {MODES.map((m, i) => (
+        {modes.map((m, i) => (
           <ModePanel key={m.title} mode={m} index={i} />
         ))}
         <div className="w-1 shrink-0" aria-hidden="true" />
@@ -602,13 +573,14 @@ function Modes() {
 /* ------------------------------------------------------------------ */
 
 function Outcomes() {
+  const { t } = useTranslation('landing');
   return (
     <section data-fx="outcomes" className="relative my-8 overflow-hidden md:my-16">
       <div className="relative h-[80dvh] min-h-[520px] w-full overflow-hidden">
         <img
           data-fx="outcomes-img"
           src="/landing-date.jpg"
-          alt="A couple mid-laugh at a small café table in the evening"
+          alt={t('outcomes.alt')}
           className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
         />
@@ -618,17 +590,15 @@ function Outcomes() {
             {/* Section hero glow surface (home.md §5): edge amber in Warm
                 Glass / HUD gradient in Night HUD */}
             <GlassCard edge="amber" className="max-w-lg p-7">
-              <p className="t-eyebrow">Outcomes, not engagement</p>
+              <p className="t-eyebrow">{t('outcomes.eyebrow')}</p>
               <h2 className="t-heading mt-3">
-                The metric we optimize is your first date.
+                {t('outcomes.heading')}
               </h2>
               <p className="t-value mt-3">
-                Our We Met loop asks how it went — and every answer makes the
-                next queue sharper.
+                {t('outcomes.body')}
               </p>
               <p className="t-caption mt-4 text-secondary">
-                68% match→conversation · 31% conversation→date · 4.6★ match
-                quality (beta cohort)
+                {t('outcomes.stats')}
               </p>
             </GlassCard>
           </Reveal>
@@ -642,33 +612,32 @@ function Outcomes() {
 /* §6 Safety & intent                                                  */
 /* ------------------------------------------------------------------ */
 
-const SAFETY_ROWS = [
-  { icon: BadgeCheck, title: 'Photo verification', body: 'Mandatory selfie + live check. No badge, no browsing.' },
-  { icon: Shield, title: 'Screenshot alerts', body: 'If someone screenshots your chat or photos, you know.' },
-  { icon: EyeOff, title: 'Hidden words', body: 'Filter the phrases you never want to receive.' },
-  { icon: Ghost, title: 'Anonymity mode', body: 'Browse unseen until you choose to be seen.' },
-  { icon: ScanFace, title: 'AI scam defense', body: 'Romance-scam patterns flagged before they reach you.' },
-  { icon: HeartHandshake, title: 'Consent tools', body: 'Clear, in-app ways to set and respect boundaries.' },
-];
-
 function Safety() {
+  const { t } = useTranslation('landing');
+  const safetyRows = [
+    { icon: BadgeCheck, title: t('safety.rows.verification.title'), body: t('safety.rows.verification.body') },
+    { icon: Shield, title: t('safety.rows.screenshots.title'), body: t('safety.rows.screenshots.body') },
+    { icon: EyeOff, title: t('safety.rows.hiddenWords.title'), body: t('safety.rows.hiddenWords.body') },
+    { icon: Ghost, title: t('safety.rows.anonymity.title'), body: t('safety.rows.anonymity.body') },
+    { icon: ScanFace, title: t('safety.rows.scam.title'), body: t('safety.rows.scam.body') },
+    { icon: HeartHandshake, title: t('safety.rows.consent.title'), body: t('safety.rows.consent.body') },
+  ];
   return (
     <section id="safety" className="relative py-24 md:py-32">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 md:grid-cols-2">
         <div className="md:sticky md:top-28 md:self-start">
           <Reveal>
-            <p className="t-eyebrow-on-stage">Safety & intent</p>
+            <p className="t-eyebrow-on-stage">{t('safety.eyebrow')}</p>
             <h2 className="t-heading mt-3" style={{ color: 'var(--text-ink)' }}>
-              Safety isn't a settings page.
+              {t('safety.heading')}
             </h2>
             <p className="t-value mt-4 max-w-md text-ink-secondary">
-              Verification, consent, and reporting are first-class UI — visible
-              where you browse, match, and chat. Never buried three menus deep.
+              {t('safety.body')}
             </p>
           </Reveal>
         </div>
         <div className="space-y-3">
-          {SAFETY_ROWS.map((row, i) => (
+          {safetyRows.map((row, i) => (
             <Reveal key={row.title} delay={0.06 * i}>
               <div className="group flex items-start gap-4 rounded-[20px] bg-field p-5 transition-transform duration-med ease-glassy-out hover:-translate-y-0.5">
                 <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-field-focus">
@@ -694,41 +663,29 @@ function Safety() {
 /* §7 Testimonials                                                     */
 /* ------------------------------------------------------------------ */
 
-const QUOTES = [
-  {
-    img: '/avatar-t1.jpg',
-    name: 'Elena, 29',
-    quote: 'The daily cap felt limiting for a day. Then it felt like relief.',
-  },
-  {
-    img: '/avatar-t2.jpg',
-    name: 'Arjun, 33',
-    quote: 'Prompts did what my opening lines never could. We met in five days.',
-  },
-  {
-    img: '/avatar-t3.jpg',
-    name: 'Ren, 27',
-    quote: 'First app where stating my intent upfront didn\u2019t scare people off — it attracted the right ones.',
-  },
-];
-
 function Testimonials() {
+  const { t } = useTranslation('landing');
+  const quotes = [
+    { img: '/avatar-t1.jpg', name: 'Elena, 29', quote: t('testimonials.q1.quote') },
+    { img: '/avatar-t2.jpg', name: 'Arjun, 33', quote: t('testimonials.q2.quote') },
+    { img: '/avatar-t3.jpg', name: 'Ren, 27', quote: t('testimonials.q3.quote') },
+  ];
   return (
     <section className="relative py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-5">
         <Reveal className="text-center">
-          <p className="t-eyebrow-on-stage">Early signals</p>
+          <p className="t-eyebrow-on-stage">{t('testimonials.eyebrow')}</p>
           <h2 className="t-heading mt-3" style={{ color: 'var(--text-ink)' }}>
-            People who stopped scrolling
+            {t('testimonials.heading')}
           </h2>
         </Reveal>
         <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {QUOTES.map((q, i) => (
+          {quotes.map((q, i) => (
             <Reveal key={q.name} delay={0.1 * i} y={40}>
               <GlassCard ringX={i * 50 - 40} className="h-full p-6">
                 <img
                   src={q.img}
-                  alt={`${q.name} headshot`}
+                  alt={t('testimonials.headshotAlt', { name: q.name })}
                   className="h-10 w-10 rounded-full object-cover"
                   loading="lazy"
                 />
@@ -748,6 +705,7 @@ function Testimonials() {
 /* ------------------------------------------------------------------ */
 
 function Pricing() {
+  const { t } = useTranslation('landing');
   const plusRef = useRef<HTMLDivElement>(null);
   const plusInView = useInView(plusRef, { amount: 0.5, once: true });
 
@@ -755,13 +713,12 @@ function Pricing() {
     <section id="pricing" className="relative py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-5 text-center">
         <Reveal>
-          <p className="t-eyebrow-on-stage">Pricing</p>
+          <p className="t-eyebrow-on-stage">{t('pricing.eyebrow')}</p>
           <h2 className="t-heading mt-3" style={{ color: 'var(--text-ink)' }}>
-            Free is real. Plus is power. X is wings.
+            {t('pricing.heading')}
           </h2>
           <p className="t-value mx-auto mt-4 max-w-lg text-ink-secondary">
-            Resonance works without paying. Resonance+ and Resonance X add
-            depth for people who want more signal, more reach, and more places.
+            {t('pricing.body')}
           </p>
         </Reveal>
 
@@ -769,11 +726,11 @@ function Pricing() {
           <Reveal>
             <GlassCard ringX={-40} className="h-full p-6">
               <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
-                FREE
+                {t('pricing.tierFree')}
               </p>
-              <h3 className="t-title-sm mt-2">Start with intent</h3>
+              <h3 className="t-title-sm mt-2">{t('pricing.free.title')}</h3>
               <p className="t-caption mt-3 text-secondary">
-                Daily queue · Limited likes · Full safety stack · Events RSVP
+                {t('pricing.free.features')}
               </p>
             </GlassCard>
           </Reveal>
@@ -789,9 +746,9 @@ function Pricing() {
                 )}
               >
                 <p className="t-micro text-violet">RESONANCE+</p>
-                <h3 className="t-title-sm mt-2">Deeper signal</h3>
+                <h3 className="t-title-sm mt-2">{t('pricing.plus.title')}</h3>
                 <p className="t-caption mt-3 text-secondary">
-                  See who likes you · More Pulses · Advanced filters · Nearby feed
+                  {t('pricing.plus.features')}
                 </p>
               </GlassCard>
             </div>
@@ -801,16 +758,16 @@ function Pricing() {
               <p className="t-micro" style={{ color: 'var(--text-secondary)' }}>
                 RESONANCE X
               </p>
-              <h3 className="t-title-sm mt-2">Go anywhere</h3>
+              <h3 className="t-title-sm mt-2">{t('pricing.x.title')}</h3>
               <p className="t-caption mt-3 text-secondary">
-                Everything in + · Travel mode · Priority placement · X-only events
+                {t('pricing.x.features')}
               </p>
             </GlassCard>
           </Reveal>
         </div>
 
         <Reveal delay={0.2} className="mt-8">
-          <BtnGhost to="/premium">Compare plans →</BtnGhost>
+          <BtnGhost to="/premium">{t('pricing.compare')}</BtnGhost>
         </Reveal>
       </div>
     </section>
@@ -821,43 +778,28 @@ function Pricing() {
 /* §9 FAQ                                                              */
 /* ------------------------------------------------------------------ */
 
-const FAQS = [
-  {
-    q: 'Is Resonance free?',
-    a: 'Yes. The daily queue, limited likes, messaging, events, and the full safety stack are free forever. Resonance+ and X add convenience and reach — never core safety.',
-  },
-  {
-    q: 'Why a daily limit?',
-    a: 'Because attention is the ingredient. A small queue means every profile gets read, every like means something, and the app can optimize for dates instead of time-on-screen.',
-  },
-  {
-    q: 'How does photo verification work?',
-    a: 'During onboarding you take a selfie and pass a quick live check. Verified members get a badge; unverified accounts can’t browse or be seen. It takes under a minute.',
-  },
-  {
-    q: 'What is a Pulse?',
-    a: 'A Pulse is a super-like with weight. It pins you to the top of their Likes You grid with a violet underline. They’re intentionally scarce — free members get a few per week.',
-  },
-  {
-    q: 'Which modes are free?',
-    a: 'Daily Queue, Classic Swipe, and Events are free. Nearby Feed is Resonance+. Travel mode is Resonance X. Filters and dealbreakers are free in every mode.',
-  },
-];
-
 function Faq() {
+  const { t } = useTranslation('landing');
   const [open, setOpen] = useState<number | null>(null);
+  const faqs = [
+    { q: t('faq.q1.q'), a: t('faq.q1.a') },
+    { q: t('faq.q2.q'), a: t('faq.q2.a') },
+    { q: t('faq.q3.q'), a: t('faq.q3.a') },
+    { q: t('faq.q4.q'), a: t('faq.q4.a') },
+    { q: t('faq.q5.q'), a: t('faq.q5.a') },
+  ];
   return (
     <section className="relative py-24 md:py-32">
       <div className="mx-auto max-w-2xl px-5">
         <Reveal className="text-center">
-          <p className="t-eyebrow-on-stage">FAQ</p>
+          <p className="t-eyebrow-on-stage">{t('faq.eyebrow')}</p>
           <h2 className="t-heading mt-3" style={{ color: 'var(--text-ink)' }}>
-            Fair questions
+            {t('faq.heading')}
           </h2>
         </Reveal>
         <Reveal delay={0.1} className="mt-10">
           <GlassCard className="p-2">
-            {FAQS.map((item, i) => {
+            {faqs.map((item, i) => {
               const isOpen = open === i;
               return (
                 <div key={item.q} className={cn(i > 0 && 'mt-2')}>
@@ -904,6 +846,7 @@ function Faq() {
 /* ------------------------------------------------------------------ */
 
 function FinalCta() {
+  const { t } = useTranslation('landing');
   return (
     <section className="relative px-5 py-28 text-center md:py-36">
       <motion.div
@@ -916,11 +859,11 @@ function FinalCta() {
         <BrandMark size={72} />
       </motion.div>
       <h2 className="t-heading mx-auto mt-8 max-w-md" style={{ color: 'var(--text-ink)' }}>
-        <Words text="Your queue opens tomorrow at noon." />
+        <Words text={t('finalCta.heading')} />
       </h2>
       <Reveal delay={0.2}>
         <p className="t-value mx-auto mt-4 max-w-sm text-ink-secondary">
-          Build your profile tonight. Wake up to people worth meeting.
+          {t('finalCta.body')}
         </p>
         <div className="relative mt-9 inline-block">
           <span
@@ -929,14 +872,14 @@ function FinalCta() {
           />
           {/* AUTH-SLOT: rewired to useAuth() in Phase 5 */}
           <BtnPrimary to="/signin" className="h-14 px-10">
-            Create your profile
+            {t('finalCta.button')}
           </BtnPrimary>
         </div>
         <p className="t-caption mt-5" style={{ color: 'var(--text-secondary)' }}>
-          Free to start · Takes two minutes · Photo verification required
+          {t('finalCta.caption')}
         </p>
         <div className="mt-7 flex justify-center">
-          <ShareButton label="Share with a friend who needs this" />
+          <ShareButton label={t('finalCta.share')} />
         </div>
       </Reveal>
     </section>

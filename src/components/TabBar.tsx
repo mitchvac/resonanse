@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Compass, Heart, MessageCircle, CalendarDays, Gamepad2, User } from 'lucide-react';
 
 /**
@@ -12,12 +13,12 @@ import { Compass, Heart, MessageCircle, CalendarDays, Gamepad2, User } from 'luc
  * Matches (--ok).
  */
 const TABS = [
-  { to: '/discover', label: 'Discover', icon: Compass },
-  { to: '/likes', label: 'Likes', icon: Heart, badge: true },
-  { to: '/matches', label: 'Matches', icon: MessageCircle, unread: true },
-  { to: '/events', label: 'Events', icon: CalendarDays },
-  { to: '/community', label: 'Community', icon: Gamepad2 },
-  { to: '/profile', label: 'Profile', icon: User },
+  { to: '/discover', labelKey: 'nav.discover', icon: Compass },
+  { to: '/likes', labelKey: 'nav.likes', icon: Heart, badge: true },
+  { to: '/matches', labelKey: 'nav.matches', icon: MessageCircle, unread: true },
+  { to: '/events', labelKey: 'nav.events', icon: CalendarDays },
+  { to: '/community', labelKey: 'nav.community', icon: Gamepad2 },
+  { to: '/profile', labelKey: 'nav.profile', icon: User },
 ] as const;
 
 export default function TabBar({
@@ -27,9 +28,10 @@ export default function TabBar({
   likesCount?: number;
   hasUnreadChat?: boolean;
 }) {
+  const { t } = useTranslation('common');
   return (
     <nav
-      aria-label="Primary"
+      aria-label={t('nav.primary')}
       className="absolute inset-x-3 z-30"
       style={{ bottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}
     >
@@ -43,7 +45,7 @@ export default function TabBar({
               key={tab.to}
               to={tab.to}
               className="relative flex min-h-[44px] flex-col items-center justify-center gap-1"
-              aria-label={tab.label}
+              aria-label={t(tab.labelKey)}
             >
               {({ isActive }) => (
                 <>
@@ -62,7 +64,7 @@ export default function TabBar({
                       <span
                         className="absolute -right-2.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white"
                         style={{ background: 'var(--violet)' }}
-                        aria-label={`${likesCount} likes`}
+                        aria-label={t('nav.likesBadge', { count: likesCount })}
                       >
                         {likesCount}
                       </span>
@@ -71,7 +73,7 @@ export default function TabBar({
                       <span
                         className="absolute -right-1.5 -top-0.5 h-2 w-2 rounded-full"
                         style={{ background: 'var(--ok)' }}
-                        aria-label="Unread messages"
+                        aria-label={t('nav.unreadMessages')}
                       />
                     )}
                   </span>
@@ -81,7 +83,7 @@ export default function TabBar({
                       color: isActive ? 'var(--text)' : 'var(--text-secondary)',
                     }}
                   >
-                    {tab.label}
+                    {t(tab.labelKey)}
                   </span>
                   {isActive && (
                     <span

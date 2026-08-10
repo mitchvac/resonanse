@@ -26,11 +26,7 @@ import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 
 import { useLocation, useNavigate } from "react-router";
 import { AuthLayoutSkeleton } from "./AuthLayoutSkeleton";
 import { Button } from "./ui/button";
-
-const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
-];
+import { useTranslation } from "react-i18next";
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 280;
@@ -47,6 +43,7 @@ export default function AuthLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { isLoading, user } = useAuth();
+  const { t } = useTranslation('landing');
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -62,11 +59,10 @@ export default function AuthLayout({
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
           <div className="flex flex-col items-center gap-6">
             <h1 className="text-2xl font-semibold tracking-tight text-center">
-              Sign in to continue
+              {t('authLayout.signInTitle')}
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Access to this dashboard requires authentication. Continue to
-              launch the login flow.
+              {t('authLayout.signInBody')}
             </p>
           </div>
           <Button
@@ -76,7 +72,7 @@ export default function AuthLayout({
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >
-            Sign in
+            {t('authLayout.signIn')}
           </Button>
         </div>
       </div>
@@ -108,6 +104,11 @@ function AuthLayoutContent({
   setSidebarWidth,
 }: AuthLayoutContentProps) {
   const { user, logout } = useAuth();
+  const { t } = useTranslation('landing');
+  const menuItems = [
+    { icon: LayoutDashboard, label: t('authLayout.page1'), path: "/" },
+    { icon: Users, label: t('authLayout.page2'), path: "/some-path" },
+  ];
   const location = useLocation();
   const navigate = useNavigate();
   const { state, toggleSidebar } = useSidebar();
@@ -173,7 +174,7 @@ function AuthLayoutContent({
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-semibold tracking-tight truncate">
-                    Navigation
+                    {t('authLayout.navigation')}
                   </span>
                 </div>
               ) : null}
@@ -228,7 +229,7 @@ function AuthLayoutContent({
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
+                  <span>{t('authLayout.signOut')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -252,7 +253,7 @@ function AuthLayoutContent({
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-1">
                   <span className="tracking-tight text-foreground">
-                    {activeMenuItem?.label ?? "Menu"}
+                    {activeMenuItem?.label ?? t('authLayout.menu')}
                   </span>
                 </div>
               </div>

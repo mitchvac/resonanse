@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import FlowChrome from '@/components/flow/FlowChrome';
 import { FlowToast } from '@/components/flow/feedback';
@@ -44,6 +45,7 @@ const EASE_OUT = [0.22, 1, 0.36, 1] as [number, number, number, number];
 const EASE_SPRING = [0.34, 1.56, 0.64, 1] as [number, number, number, number];
 
 export default function Onboarding() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -58,9 +60,9 @@ export default function Onboarding() {
   const saveError = useCallback(() => {
     setToast({
       id: Date.now(),
-      message: "Couldn't save — check your connection and try again.",
+      message: t('onboarding.saveError'),
     });
-  }, []);
+  }, [t]);
 
   const update = useCallback((patch: Partial<OnboardingDraft>) => {
     setDraft((d) => {
@@ -233,20 +235,20 @@ export default function Onboarding() {
     switch (step) {
       case 1:
         return {
-          label: saving ? 'Saving…' : 'Continue',
+          label: saving ? t('onboarding.saving') : t('onboarding.continue'),
           enabled: basicsValid && !saving,
           action: () => void saveBasics(),
         };
       case 2:
         return {
-          label: saving ? 'Saving…' : 'Continue',
+          label: saving ? t('onboarding.saving') : t('onboarding.continue'),
           enabled: intentValid && !saving,
           action: () => void saveIntent(),
         };
       case 3:
-        return { label: 'Continue', enabled: draft.verified, action: () => goTo(4) };
+        return { label: t('onboarding.continue'), enabled: draft.verified, action: () => goTo(4) };
       case 4:
-        return { label: 'Continue', enabled: true, action: () => goTo(5) };
+        return { label: t('onboarding.continue'), enabled: true, action: () => goTo(5) };
       default:
         return null; // steps 0, 5 (wallet authority) & 6 (done) carry their own CTAs
     }
@@ -263,7 +265,7 @@ export default function Onboarding() {
           onBack={() => goTo(step - 1)}
           right={
             <BtnGhost onClick={saveAndExit} className="t-caption px-2">
-              Save &amp; exit
+              {t('onboarding.saveExit')}
             </BtnGhost>
           }
         />
@@ -352,7 +354,7 @@ export default function Onboarding() {
             className="t-caption pointer-events-auto underline underline-offset-4"
             style={{ color: step === 3 ? 'rgba(255,255,255,0.6)' : 'var(--text-secondary)' }}
           >
-            Demo mode — sign in to save your progress
+            {t('onboarding.demoHint')}
           </button>
         </div>
       )}
