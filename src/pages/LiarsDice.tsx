@@ -6,6 +6,7 @@ import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 import { LOGIN_PATH } from '@/const';
+import WinFireworks from '@/components/games/WinFireworks';
 import {
   BID_FACES,
   bidDecision,
@@ -700,6 +701,9 @@ export default function LiarsDice() {
             </GlassCard>
           </section>
         )}
+
+        {/* V83 — fireworks when the human takes the table */}
+        <WinFireworks fire={phase === 'over' && winner === 'You'} />
       </div>
     </div>
   );

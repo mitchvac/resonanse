@@ -13,14 +13,19 @@ export default function MatchMoment({
   open,
   theirPhoto,
   theirName,
-  myPhoto = '/self-01.jpg',
+  myPhoto = null,
+  myName = '',
   matchId,
   onClose,
 }: {
   open: boolean;
   theirPhoto: string;
   theirName: string;
-  myPhoto?: string;
+  /** Caller's own first profile photo. Null when they have none — we render
+      an initial disc instead. NEVER default this to a stock face: showing a
+      stranger's photo as "you" reads as a fake profile (V83 bug report). */
+  myPhoto?: string | null;
+  myName?: string;
   matchId: number | null;
   onClose: () => void;
 }) {
@@ -46,15 +51,33 @@ export default function MatchMoment({
         >
           <div className="flex w-full max-w-[340px] flex-col items-center px-6 text-center">
             <div className="relative flex items-center justify-center">
-              <motion.img
-                src={myPhoto}
-                alt="Your photo"
-                className="h-24 w-24 rounded-full object-cover ring-4"
-                style={{ ['--tw-ring-color' as string]: 'rgba(255,255,255,0.8)' }}
-                initial={{ x: reduced ? 0 : -60, opacity: 0 }}
-                animate={{ x: -14, opacity: 1 }}
-                transition={spring}
-              />
+              {myPhoto ? (
+                <motion.img
+                  src={myPhoto}
+                  alt="Your photo"
+                  className="h-24 w-24 rounded-full object-cover ring-4"
+                  style={{ ['--tw-ring-color' as string]: 'rgba(255,255,255,0.8)' }}
+                  initial={{ x: reduced ? 0 : -60, opacity: 0 }}
+                  animate={{ x: -14, opacity: 1 }}
+                  transition={spring}
+                />
+              ) : (
+                <motion.div
+                  aria-label="You"
+                  className="flex h-24 w-24 items-center justify-center rounded-full ring-4"
+                  style={{
+                    ['--tw-ring-color' as string]: 'rgba(255,255,255,0.8)',
+                    background: 'linear-gradient(135deg, var(--violet), var(--violet-deep, var(--violet)))',
+                  }}
+                  initial={{ x: reduced ? 0 : -60, opacity: 0 }}
+                  animate={{ x: -14, opacity: 1 }}
+                  transition={spring}
+                >
+                  <span className="t-heading text-white" aria-hidden="true">
+                    {(myName.trim()[0] ?? '♥').toUpperCase()}
+                  </span>
+                </motion.div>
+              )}
               <motion.img
                 src={theirPhoto}
                 alt={`Photo of ${theirName}`}

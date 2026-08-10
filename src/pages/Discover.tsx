@@ -97,6 +97,7 @@ export default function Discover() {
   const remainingQuery = trpc.likes.remaining.useQuery();
   const receivedQuery = trpc.likes.received.useQuery();
   const entitlementsQuery = trpc.premium.entitlements.useQuery();
+  const meQuery = trpc.profile.me.useQuery(); // V83 — own photo for the match moment
 
   const [mode, setMode] = useState<Mode>('Queue');
   const [queueIndex, setQueueIndex] = useState(0);
@@ -551,6 +552,8 @@ export default function Discover() {
         open={!!match}
         theirPhoto={match?.entry.profile.photos?.[0] ?? '/avatar-01.jpg'}
         theirName={match?.entry.profile.displayName ?? ''}
+        myPhoto={meQuery.data?.profile?.photos?.filter(Boolean)[0] ?? null}
+        myName={meQuery.data?.profile?.displayName ?? ''}
         matchId={match?.matchId ?? null}
         onClose={() => setMatch(null)}
       />

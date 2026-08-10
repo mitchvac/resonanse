@@ -7,6 +7,7 @@ import { trpc } from '@/providers/trpc';
 import { useAuth } from '@/hooks/useAuth';
 import { LOGIN_PATH } from '@/const';
 import { cn } from '@/lib/utils';
+import WinFireworks from '@/components/games/WinFireworks';
 
 const GLYPHS = ['✦', '❍', '△', '☾', '✕', '❑', '∿', '♁'];
 type Turn = 0 | 1;
@@ -352,6 +353,9 @@ export default function Concentration() {
             </GlassCard>
           </section>
         )}
+
+        {/* V83 — fireworks on a human win (never on Riley's) */}
+        <WinFireworks fire={gameOver && scores[0] > scores[1]} />
       </div>
     </div>
   );

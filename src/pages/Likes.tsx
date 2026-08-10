@@ -42,6 +42,7 @@ export default function Likes() {
   const reduced = useReducedMotion();
   const utils = trpc.useUtils();
   const receivedQuery = trpc.likes.received.useQuery();
+  const meQuery = trpc.profile.me.useQuery(); // V83 — own photo for the match moment
 
   const serverBlurred = receivedQuery.data?.blurred ?? true;
   // dev-style Free / + preview toggle (likes-you.md "States & edge cases")
@@ -520,6 +521,8 @@ export default function Likes() {
         open={!!match}
         theirPhoto={match?.photo ?? '/avatar-01.jpg'}
         theirName={match?.name ?? ''}
+        myPhoto={meQuery.data?.profile?.photos?.filter(Boolean)[0] ?? null}
+        myName={meQuery.data?.profile?.displayName ?? ''}
         matchId={match?.matchId ?? null}
         onClose={() => setMatch(null)}
       />

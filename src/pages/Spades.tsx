@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowLeft, Clapperboard, RotateCcw, Send, Ticket } from 'lucide-react';
 import AdWatchModal from '@/components/AdWatchModal';
+import WinFireworks from '@/components/games/WinFireworks';
 import GlassCard from '@/components/GlassCard';
 import { BtnGlass, BtnPrimary } from '@/components/ui/buttons';
 import { trpc } from '@/providers/trpc';
@@ -799,6 +800,9 @@ export default function Spades() {
             onGranted={() => void passesQuery.refetch()}
           />
         )}
+
+        {/* V83 — full-table fireworks when the human couple takes the match */}
+        <WinFireworks fire={g.phase === 'over' && g.gameOver && g.score.us > g.score.them} />
       </div>
     </div>
   );
