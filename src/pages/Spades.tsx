@@ -94,6 +94,46 @@ function freshGame(dealingMsg: string): Game {
   };
 }
 
+// Suit colors: ♠(0) & ♣(3) black, ♥(1) & ♦(2) red.
+const SUIT_RED = [false, true, true, false];
+const CANON_SUITS = [1, 3, 2, 0]; // ♥ ♣ ♦ ♠ — canonical tie-break order
+
+// Order the non-empty suit blocks so colors strictly alternate left→right
+// (♥ ♣ ♦ ♠ at a full deal). As you play out a block mid-hand, the rest
+// re-balance: leftover blacks slide in between the reds, and leftover reds
+// slide in between the blacks, so two same-colored suits never sit side by
+// side unless it can't be helped. Tie-breaks: red on the left, spades (trump)
+// on the right.
+function arrangeSuits(present: number[]): number[] {
+  let best: number[] | null = null;
+  let bestScore = Infinity;
+  const permute = (arr: number[], l: number): void => {
+    if (l >= arr.length - 1) {
+      let adj = 0;
+      for (let i = 1; i < arr.length; i++) if (SUIT_RED[arr[i]] === SUIT_RED[arr[i - 1]]) adj++;
+      const score = adj * 100 + (SUIT_RED[arr[0]] ? 0 : 10) + (arr[arr.length - 1] === 0 ? 0 : 1);
+      if (score < bestScore) {
+        bestScore = score;
+        best = arr.slice();
+      }
+      return;
+    }
+    for (let i = l; i < arr.length; i++) {
+      [arr[l], arr[i]] = [arr[i], arr[l]];
+      permute(arr, l + 1);
+      [arr[l], arr[i]] = [arr[i], arr[l]];
+    }
+  };
+  permute(present.slice(), 0);
+  return best ?? present;
+}
+
+function sortHand(hand: CardT[]): CardT[] {
+  const present = CANON_SUITS.filter((s) => hand.some((c) => c.s === s));
+  const pos = new Map(arrangeSuits(present).map((s, i) => [s, i]));
+  return hand.slice().sort((a, b) => (pos.get(a.s) ?? 0) - (pos.get(b.s) ?? 0) || b.r - a.r);
+}
+
 function dealInto(g: Game, biddingMsg: string) {
   const deck: CardT[] = [];
   for (let s = 0; s < 4; s++) for (let r = 2; r <= 14; r++) deck.push({ s, r });
@@ -103,13 +143,8 @@ function dealInto(g: Game, biddingMsg: string) {
   }
   // Hand layout: suit colors strictly ALTERNATE left→right (♥ red · ♣ black ·
   // ♦ red · ♠ black) so hearts and diamonds never sit side by side — at card
-  // size they're easy to confuse. Spades (trump) always anchor the right end.
-  const SUIT_SORT = [3, 0, 2, 1]; // suit idx → position: ♥=0 ♣=1 ♦=2 ♠=3
-  g.hands = [0, 1, 2, 3].map((p) =>
-    deck
-      .slice(p * 13, p * 13 + 13)
-      .sort((a, b) => SUIT_SORT[a.s] - SUIT_SORT[b.s] || b.r - a.r),
-  );
+  // size they're easy to confuse. Spades (trump) anchor the right end.
+  g.hands = [0, 1, 2, 3].map((p) => sortHand(deck.slice(p * 13, p * 13 + 13)));
   g.bids = [null, null, null, null];
   g.tricks = [0, 0, 0, 0];
   g.trick = [];
@@ -715,7 +750,9 @@ export default function Spades() {
             )}
 
             <div className="mt-4 flex justify-center overflow-visible pt-3" aria-label={t('spades.yourHandAria')}>
-              {g.hands[0].map((card, i) => {
+              {/* re-sorted every render: as blocks empty out mid-hand, the
+                  remaining suits re-balance so colors keep alternating */}
+              {sortHand(g.hands[0]).map((card, i) => {
                 const enabled = legalHand.includes(card);
                 return (
                   <button
