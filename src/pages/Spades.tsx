@@ -101,8 +101,14 @@ function dealInto(g: Game, biddingMsg: string) {
     const j = (Math.random() * (i + 1)) | 0;
     [deck[i], deck[j]] = [deck[j], deck[i]];
   }
+  // Hand layout: suit colors strictly ALTERNATE left→right (♥ red · ♣ black ·
+  // ♦ red · ♠ black) so hearts and diamonds never sit side by side — at card
+  // size they're easy to confuse. Spades (trump) always anchor the right end.
+  const SUIT_SORT = [3, 0, 2, 1]; // suit idx → position: ♥=0 ♣=1 ♦=2 ♠=3
   g.hands = [0, 1, 2, 3].map((p) =>
-    deck.slice(p * 13, p * 13 + 13).sort((a, b) => a.s - b.s || b.r - a.r),
+    deck
+      .slice(p * 13, p * 13 + 13)
+      .sort((a, b) => SUIT_SORT[a.s] - SUIT_SORT[b.s] || b.r - a.r),
   );
   g.bids = [null, null, null, null];
   g.tricks = [0, 0, 0, 0];
@@ -180,13 +186,13 @@ function botCard(g: Game, p: number) {
 function CardFace({ card, mini = false }: { card: CardT; mini?: boolean }) {
   return (
     <span className={cn('relative block h-full w-full rounded-[inherit] bg-white text-[#16161C] ring-1 ring-black/10', isRed(card) && 'text-[#B32626]')}>
-      <span className={cn('absolute left-1 top-1 font-bold leading-none', mini ? 'text-[12px]' : 'text-[13px]')}>
+      <span className={cn('absolute left-1 top-1 font-bold leading-none', mini ? 'text-[12px]' : 'text-[15px]')}>
         {rankOf(card)}
       </span>
-      <span className={cn('absolute left-1 leading-none', mini ? 'top-4 text-[9px]' : 'top-[18px] text-[10px]')}>
+      <span className={cn('absolute left-1 leading-none', mini ? 'top-4 text-[9px]' : 'top-[21px] text-[12px]')}>
         {SUIT[card.s]}
       </span>
-      <span className={cn('absolute bottom-0.5 right-1 leading-none opacity-55', mini ? 'text-[17px]' : 'text-[20px]')}>
+      <span className={cn('absolute bottom-0.5 right-1 leading-none opacity-55', mini ? 'text-[17px]' : 'text-[25px]')}>
         {SUIT[card.s]}
       </span>
     </span>
@@ -684,6 +690,57 @@ export default function Spades() {
               </GlassCard>
             </div>
 
+            {/* status + bidding + hand sit directly under the scoreboard, so
+                the felt, the bid buttons and the cards are all on screen
+                together — no scrolling up and down mid-hand */}
+            <p className="t-body mt-4 min-h-[44px] text-center" style={{ color: 'var(--text)' }} aria-live="polite">
+              {g.msg}
+            </p>
+
+            {g.phase === 'bid' && g.bidTurn === 0 && (
+              <div className="mt-1 flex flex-wrap justify-center gap-1.5" aria-label={t('spades.yourBidAria')}>
+                {Array.from({ length: 14 }, (_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className="t-caption min-h-[40px] min-w-[42px] rounded-[10px] px-3"
+                    style={{ background: 'var(--field)', color: 'var(--text)' }}
+                    onClick={() => placeBid(i)}
+                    disabled={consumeMut.isPending}
+                  >
+                    {i === 0 ? t('spades.nilBid') : i}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 flex justify-center overflow-visible pt-3" aria-label={t('spades.yourHandAria')}>
+              {g.hands[0].map((card, i) => {
+                const enabled = legalHand.includes(card);
+                return (
+                  <button
+                    key={`${card.s}-${card.r}-${i}`}
+                    type="button"
+                    disabled={!enabled}
+                    onClick={() => play(0, card)}
+                    aria-label={t('spades.cardAria', { rank: rankOf(card), suit: t(`spades.suit.${SUIT_NAME[card.s]}`) })}
+                    className={cn(
+                      // Fixed size (no sm: bump): the app renders in a ~400px phone shell even on
+                      // desktop viewports, and sm: breakpoints key off viewport width — responsive
+                      // sizes overflowed the shell. 56px cards with a 26px step fit all 13 in ~368px.
+                      'relative h-[80px] w-[56px] shrink-0 rounded-[7px] shadow-xl transition-transform duration-fast',
+                      i > 0 && '-ml-[30px]',
+                      enabled && 'hover:-translate-y-3 focus-visible:-translate-y-3',
+                      !enabled && g.phase === 'play' && 'brightness-[0.7] saturate-[0.6]',
+                    )}
+                    style={{ zIndex: i }}
+                  >
+                    <CardFace card={card} />
+                  </button>
+                );
+              })}
+            </div>
+
             <GlassCard className="mt-4 p-4">
               <div className="flex items-baseline justify-between gap-2">
                 <p className="t-micro">{t('spades.chat.title')}</p>
@@ -769,51 +826,6 @@ export default function Spades() {
                 </BtnPrimary>
               </form>
             </GlassCard>
-
-            <p className="t-body mt-4 min-h-[44px] text-center" style={{ color: 'var(--text)' }} aria-live="polite">
-              {g.msg}
-            </p>
-
-            {g.phase === 'bid' && g.bidTurn === 0 && (
-              <div className="mt-1 flex flex-wrap justify-center gap-1.5" aria-label={t('spades.yourBidAria')}>
-                {Array.from({ length: 14 }, (_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    className="t-caption min-h-[40px] min-w-[42px] rounded-[10px] px-3"
-                    style={{ background: 'var(--field)', color: 'var(--text)' }}
-                    onClick={() => placeBid(i)}
-                    disabled={consumeMut.isPending}
-                  >
-                    {i === 0 ? t('spades.nilBid') : i}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-4 flex justify-center overflow-visible pt-3" aria-label={t('spades.yourHandAria')}>
-              {g.hands[0].map((card, i) => {
-                const enabled = legalHand.includes(card);
-                return (
-                  <button
-                    key={`${card.s}-${card.r}-${i}`}
-                    type="button"
-                    disabled={!enabled}
-                    onClick={() => play(0, card)}
-                    aria-label={t('spades.cardAria', { rank: rankOf(card), suit: t(`spades.suit.${SUIT_NAME[card.s]}`) })}
-                    className={cn(
-                      'relative h-[66px] w-[47px] shrink-0 rounded-[6px] shadow-xl transition-transform duration-fast',
-                      i > 0 && '-ml-[18px]',
-                      enabled && 'hover:-translate-y-3 focus-visible:-translate-y-3',
-                      !enabled && g.phase === 'play' && 'brightness-[0.7] saturate-[0.6]',
-                    )}
-                    style={{ zIndex: i }}
-                  >
-                    <CardFace card={card} />
-                  </button>
-                );
-              })}
-            </div>
 
             {g.phase === 'over' && (
               <div className="mt-5 flex justify-center">
