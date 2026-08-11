@@ -9,10 +9,13 @@ import {
   getConversationContext,
   insertMessage,
   insertVideoNote,
+  isUserRemoved,
   listMessages,
   mergeMessageMeta,
+  REMOVAL_NOTICE_TEXT,
   setConversationEphemeral,
 } from "./queries/chat";
+import { runScamScan } from "./lib/scamShield/hook";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -121,6 +124,22 @@ export const chatRouter = createRouter({
         });
       }
 
+      // V93 removal guards (Phase 0): a removed account can still READ its
+      // history but never send; sending TO a removed account is refused with
+      // the same neutral §8.9 line.
+      if (ctx.user.removedAt) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: REMOVAL_NOTICE_TEXT,
+        });
+      }
+      if (await isUserRemoved(context.peerId)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: REMOVAL_NOTICE_TEXT,
+        });
+      }
+
       const message = await insertMessage({
         conversationId: input.conversationId,
         senderId: ctx.user.id,
@@ -128,6 +147,22 @@ export const chatRouter = createRouter({
         content: input.content,
         expiresAt: expiryFor(context.conversation),
       });
+
+      // Scam Shield (V93-P1): scan AFTER the message is stored, wrapped so a
+      // detector failure NEVER blocks sending. Nothing here touches `message`
+      // or `reply` — the send response is byte-identical and the sender never
+      // learns anything. Any warning goes to the OTHER participant only.
+      try {
+        await runScamScan({
+          conversationId: input.conversationId,
+          senderId: ctx.user.id,
+          peerId: context.peerId,
+          messageId: message.id,
+          content: input.content,
+        });
+      } catch (err) {
+        console.error("[scam-shield] scan failed (send unaffected)", err);
+      }
 
       // Seed users reply in the same call so the demo thread feels alive.
       let reply = null;

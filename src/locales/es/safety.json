@@ -1,0 +1,59 @@
+{
+  "standing": {
+    "title": "Tu situación",
+    "clean": "Historial limpio — sin strikes activos. Sigue siendo tú.",
+    "strikeN": "Strike {{n}} de 3",
+    "issued": "Emitido el {{date}}",
+    "expires": "Caduca el {{date}}",
+    "appeal": "Apelar",
+    "appealed": "Apelación {{status}}",
+    "ack": "Lo he leído",
+    "acked": "Leído",
+    "caption": "Los strikes caducan 90 días después de emitirse. Una persona revisa cada eliminación, y siempre puedes apelar.",
+    "removedTitle": "Tu cuenta de Resonance ha sido eliminada",
+    "removedBody": "Un miembro de nuestro equipo — una persona, no un bot — revisó tu cuenta y confirmó una tercera infracción. Tus matches solo ven esto: “Esta cuenta ya no está en Resonance.” No se dice nada más sobre ti, a nadie.",
+    "rule": {
+      "A1": "Regla de seguridad contra estafas / fraude",
+      "A2": "Acoso / amenazas",
+      "A3": "Identidad falsa"
+    }
+  },
+  "scamBanner": {
+    "title": "Un aviso de Scam Shield",
+    "body": "Esta conversación muestra un patrón común en las estafas románticas. Nunca envíes cripto ni dinero a alguien que no hayas conocido en persona — por muy real que se sienta.",
+    "note": "La otra persona no ha sido acusada de nada y no puede ver este aviso.",
+    "gotIt": "Entendido"
+  },
+  "cryptoHint": {
+    "body": "Hablar de cripto aquí es totalmente válido — aprender es bienvenido. Un consejo que protege a todos: nunca envíes dinero ni cripto a alguien que no hayas conocido en persona.",
+    "dismissAria": "Cerrar este consejo"
+  },
+  "removed": {
+    "peer": "Esta cuenta ya no está en Resonance."
+  },
+  "appeal": {
+    "title": "Apela esta decisión",
+    "body": "Si crees que es un error, puedes apelar. Otro miembro de nuestro equipo lo revisará todo desde cero — respondemos en 72 horas y decidimos en 7 días. Si tu apelación prospera, todo se restaura exactamente como estaba.",
+    "placeholder": "Cuéntanos, con tus palabras, por qué crees que esta decisión es un error. Una persona lee cada palabra.",
+    "submit": "Enviar apelación",
+    "thanks": "Recibido — una persona ya está en tu caso. Tu apelación está en la cola; pase lo que pase, te lo contará una persona, con palabras claras.",
+    "error": "No pudimos enviar tu apelación — revisa tu conexión e inténtalo de nuevo.",
+    "status": {
+      "open": "en la cola",
+      "in_review": "en revisión",
+      "upheld": "aceptada",
+      "denied": "rechazada"
+    }
+  },
+  "settings": {
+    "rowTitle": "Tu situación",
+    "rowCaptionClean": "Sin strikes activos",
+    "rowCaptionStrikes": "{{count}} strike activo",
+    "rowCaptionStrikes_other": "{{count}} strikes activos",
+    "rowCaptionRemoved": "Cuenta eliminada — apela aquí"
+  },
+  "toasts": {
+    "ackDone": "Gracias por leerlo — anotado.",
+    "ackError": "No pudimos guardarlo — revisa tu conexión e inténtalo de nuevo."
+  }
+}

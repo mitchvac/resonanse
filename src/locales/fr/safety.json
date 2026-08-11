@@ -1,0 +1,59 @@
+{
+  "standing": {
+    "title": "Votre situation",
+    "clean": "Dossier vierge — aucun strike actif. Restez vous-même.",
+    "strikeN": "Strike {{n}} sur 3",
+    "issued": "Émis le {{date}}",
+    "expires": "Expire le {{date}}",
+    "appeal": "Faire appel",
+    "appealed": "Appel {{status}}",
+    "ack": "Je l'ai lu",
+    "acked": "Lu",
+    "caption": "Les strikes expirent 90 jours après leur émission. Chaque suppression est examinée par un humain, et vous pouvez toujours faire appel.",
+    "removedTitle": "Votre compte Resonance a été supprimé",
+    "removedBody": "Un membre de notre équipe — un humain, pas un bot — a examiné votre compte et confirmé une troisième infraction. Vos matches ne voient que ceci : « Ce compte n'est plus sur Resonance. » Rien de plus n'est dit sur vous, à personne.",
+    "rule": {
+      "A1": "Règle de sécurité anti-arnaque / fraude",
+      "A2": "Harcèlement / menaces",
+      "A3": "Fausse identité"
+    }
+  },
+  "scamBanner": {
+    "title": "Un rappel de Scam Shield",
+    "body": "Cette conversation présente un schéma fréquent dans les arnaques sentimentales. N'envoyez jamais de crypto ni d'argent à quelqu'un que vous n'avez pas rencontré en personne — même si tout semble réel.",
+    "note": "L'autre personne n'a été accusée de rien et ne peut pas voir cet avis.",
+    "gotIt": "Compris"
+  },
+  "cryptoHint": {
+    "body": "Parler de crypto ici est tout à fait OK — apprendre est bienvenu. Un conseil qui protège tout le monde : n'envoyez jamais d'argent ni de crypto à quelqu'un que vous n'avez pas rencontré en personne.",
+    "dismissAria": "Fermer ce conseil"
+  },
+  "removed": {
+    "peer": "Ce compte n'est plus sur Resonance."
+  },
+  "appeal": {
+    "title": "Faites appel de cette décision",
+    "body": "Si vous pensez qu'il s'agit d'une erreur, vous pouvez faire appel. Un autre membre de notre équipe réexaminera tout à neuf — nous répondons sous 72 heures et décidons sous 7 jours. Si votre appel aboutit, tout est restauré exactement comme avant.",
+    "placeholder": "Dites-nous, avec vos mots, pourquoi vous pensez que cette décision est fausse. Un humain lit chaque mot.",
+    "submit": "Envoyer l'appel",
+    "thanks": "C'est bien reçu — un humain est sur votre cas. Votre appel est dans la file ; quelle que soit l'issue, vous l'entendrez d'une personne, en mots simples.",
+    "error": "Impossible d'envoyer votre appel — vérifiez votre connexion et réessayez.",
+    "status": {
+      "open": "dans la file",
+      "in_review": "en cours d'examen",
+      "upheld": "accepté",
+      "denied": "refusé"
+    }
+  },
+  "settings": {
+    "rowTitle": "Votre situation",
+    "rowCaptionClean": "Aucun strike actif",
+    "rowCaptionStrikes": "{{count}} strike actif",
+    "rowCaptionStrikes_other": "{{count}} strikes actifs",
+    "rowCaptionRemoved": "Compte supprimé — faites appel ici"
+  },
+  "toasts": {
+    "ackDone": "Merci de l'avoir lu — c'est noté.",
+    "ackError": "Impossible d'enregistrer — vérifiez votre connexion et réessayez."
+  }
+}

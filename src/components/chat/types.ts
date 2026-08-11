@@ -8,6 +8,31 @@ export type ChatData = RouterOutputs['chat']['messages'];
 export type ChatMessage = ChatData['messages'][number];
 export type DateIdea = RouterOutputs['chat']['dateIdeas']['ideas'][number];
 
+/* ------------------------------------------------------------------ */
+/* V93 removed-peer tombstone: after a strike-3 removal the server      */
+/* appends ONE neutral system message (meta.event === 'account_removed')*/
+/* to every conversation of the removed user. matches.list may also     */
+/* expose removedPeer on the entry. Either signal means: history stays  */
+/* readable, composer is disabled, preview shows the neutral line.      */
+/* ------------------------------------------------------------------ */
+export function isAccountRemovedMessage(
+  m: { kind?: string; meta?: unknown } | null | undefined,
+): boolean {
+  return (
+    m?.kind === 'system' &&
+    (m.meta as { event?: string } | null | undefined)?.event === 'account_removed'
+  );
+}
+
+export function isRemovedPeer(entry: MatchEntry | null | undefined): boolean {
+  if (!entry) return false;
+  return (
+    isAccountRemovedMessage(entry.lastMessage) ||
+    (entry as { removedPeer?: boolean }).removedPeer === true
+  );
+}
+
+
 /** Relative timestamp per matches.md §2 ("2m" / "1h" / "3d"). */
 export function relTime(input: Date | string, t: TFunction): string {
   const ts = input instanceof Date ? input.getTime() : new Date(input).getTime();

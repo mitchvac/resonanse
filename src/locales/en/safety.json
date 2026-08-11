@@ -1,0 +1,59 @@
+{
+  "standing": {
+    "title": "Your standing",
+    "clean": "Clean record — no active strikes. Keep being you.",
+    "strikeN": "Strike {{n}} of 3",
+    "issued": "Issued {{date}}",
+    "expires": "Expires {{date}}",
+    "appeal": "Appeal",
+    "appealed": "Appeal {{status}}",
+    "ack": "I've read this",
+    "acked": "Read",
+    "caption": "Strikes expire 90 days after they're issued. A human reviews every removal, and you can always appeal.",
+    "removedTitle": "Your account has been removed",
+    "removedBody": "A member of our team — a human, not a bot — reviewed your account and confirmed a third violation. Your matches see only this: “This account is no longer on Resonance.” Nothing more is said about you, to anyone.",
+    "rule": {
+      "A1": "Scam / fraud safety rule",
+      "A2": "Harassment / threats",
+      "A3": "Fake identity"
+    }
+  },
+  "scamBanner": {
+    "title": "Heads up from Scam Shield",
+    "body": "This conversation is showing a pattern common in romance scams. Never send crypto or money to someone you haven't met in person — no matter how real it feels.",
+    "note": "The other person hasn't been accused of anything and can't see this notice.",
+    "gotIt": "Got it"
+  },
+  "cryptoHint": {
+    "body": "Totally fine to talk crypto here — learning is welcome. One tip that protects everyone: never send money or crypto to someone you haven't met in person.",
+    "dismissAria": "Dismiss this tip"
+  },
+  "removed": {
+    "peer": "This account is no longer on Resonance."
+  },
+  "appeal": {
+    "title": "Appeal this decision",
+    "body": "If you believe this is wrong, you can appeal. A different member of our team will review everything fresh — we reply within 72 hours and decide within 7 days. If your appeal succeeds, everything is restored exactly as it was.",
+    "placeholder": "Tell us, in your own words, why you think this decision is wrong. A human reads every word.",
+    "submit": "Submit appeal",
+    "thanks": "We've got it — a human is on your case. Your appeal is in the queue; whatever the outcome, you'll hear it from a person, in plain words.",
+    "error": "Couldn't send your appeal — check your connection and try again.",
+    "status": {
+      "open": "in the queue",
+      "in_review": "in review",
+      "upheld": "successful",
+      "denied": "denied"
+    }
+  },
+  "settings": {
+    "rowTitle": "Your standing",
+    "rowCaptionClean": "No active strikes",
+    "rowCaptionStrikes": "{{count}} active strike",
+    "rowCaptionStrikes_other": "{{count}} active strikes",
+    "rowCaptionRemoved": "Account removed — appeal here"
+  },
+  "toasts": {
+    "ackDone": "Thanks for reading — noted.",
+    "ackError": "Couldn't save that — check your connection and try again."
+  }
+}

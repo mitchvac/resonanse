@@ -18,9 +18,18 @@
     "eyebrow": "O problema",
     "heading": "Baralhos infinitos. Intenções misturadas. Conversas mortas.",
     "body": "Os apps antigos lucram com a sua solidão. Volume em vez de qualidade, paywalls em vez de resultados e uma economia de swipe que recompensa nunca se encontrar.",
-    "stat1": { "suffix": " min", "label": "DESLIZANDO / DIA" },
-    "stat2": { "suffix": "%", "label": "MATCH → ENCONTRO" },
-    "stat3": { "static": "1 em 2", "label": "SENTEM-SE PIOR" }
+    "stat1": {
+      "suffix": " min",
+      "label": "DESLIZANDO / DIA"
+    },
+    "stat2": {
+      "suffix": "%",
+      "label": "MATCH → ENCONTRO"
+    },
+    "stat3": {
+      "static": "1 em 2",
+      "label": "SENTEM-SE PIOR"
+    }
   },
   "loop": {
     "eyebrow": "O ciclo Resonance",
@@ -125,9 +134,15 @@
     "eyebrow": "Primeiros sinais",
     "heading": "Pessoas que pararam de deslizar",
     "headshotAlt": "Foto de {{name}}",
-    "q1": { "quote": "O limite diário pareceu restritivo por um dia. Depois, virou alívio." },
-    "q2": { "quote": "Os prompts fizeram o que minhas cantadas nunca conseguiram. Nos encontramos em cinco dias." },
-    "q3": { "quote": "O primeiro app em que dizer minha intenção de cara não assustou ninguém — atraiu as pessoas certas." }
+    "q1": {
+      "quote": "O limite diário pareceu restritivo por um dia. Depois, virou alívio."
+    },
+    "q2": {
+      "quote": "Os prompts fizeram o que minhas cantadas nunca conseguiram. Nos encontramos em cinco dias."
+    },
+    "q3": {
+      "quote": "O primeiro app em que dizer minha intenção de cara não assustou ninguém — atraiu as pessoas certas."
+    }
   },
   "pricing": {
     "eyebrow": "Preços",
@@ -255,5 +270,47 @@
     "page2": "Página 2",
     "signOut": "Sair",
     "menu": "Menu"
+  },
+  "guidelines": {
+    "eyebrow": "Padrões da comunidade",
+    "title": "Diretrizes da comunidade",
+    "intro": "A maioria dos apps de relacionamento pune as pessoas. O Resonance foi feito para estar do seu lado — e cada regra abaixo existe para cumprir duas promessas ao mesmo tempo: protegemos você de quem quer te fazer mal, e nunca tratamos um erro honesto como crime.",
+    "promise": {
+      "title": "Nossa promessa",
+      "p1": "Protegemos você das pessoas que querem te fazer mal — golpistas, assediadores, perfis falsos. Com firmeza e rapidez.",
+      "p2": "Nunca tratamos um erro honesto como crime. Uma frase desajeitada, uma semana parada, uma conversa que esfriou — isso é humano, e respondemos ensinando e orientando, não punindo. Quando agimos, explicamos. Quando removemos, damos um caminho de volta."
+    },
+    "twoTiers": {
+      "title": "Dois tipos de regras",
+      "p1": "O Resonance nunca usa uma única escada de punição para tudo. Existem exatamente dois níveis, e eles nunca se misturam.",
+      "safetyTitle": "Regras de segurança (strikes)",
+      "safetyBody": "As sérias: nada de padrões de golpe ou fraude, nada de assédio, ameaças ou ódio, nada de identidade falsa por trás de um selo verificado. Quebrá-las gera um strike — um aviso privado que ensina. Na pior hipótese, no terceiro strike e só depois de revisão humana, a conta pode ser removida. Sempre com recurso.",
+      "kindTitle": "Regras de gentileza (nunca um strike)",
+      "kindBody": "As do dia a dia: responda quando puder, encerre ciclos com gentileza, não suma sem uma palavra. Quebrá-las resulta, no máximo, em um lembrete amigável ou um pouco menos de visibilidade — nunca um strike, nunca uma remoção, nunca uma marca pública contra você.",
+      "p2": "Um deslize de gentileza nunca pode se acumular até virar um strike. Só as três categorias de segurança podem."
+    },
+    "strike": {
+      "title": "O que é um strike?",
+      "p1": "Um strike é um aviso privado que ensina, não pune. Ele sempre cita a regra e mostra o que a acionou, e só é visível para você, em Ajustes → Sua situação.",
+      "s1": "Strike 1: mostramos a regra e o que aconteceu — a maioria das pessoas simplesmente não sabia.",
+      "s2": "Strike 2: um último aviso claro, em palavras simples.",
+      "s3": "Strike 3: a conta é removida — mas um humano sempre revisa antes, e você sempre pode recorrer.",
+      "p2": "Strikes expiram 90 dias após a emissão, automaticamente. Uma única denúncia ou uma única frase sinalizada nunca pode criar um strike — todo strike precisa de corroboração, e toda remoção é revisada por um humano antes de acontecer."
+    },
+    "money": {
+      "title": "A única regra sobre dinheiro",
+      "p1": "Falar sobre cripto ou investimentos aqui é sempre tranquilo — aprender é bem-vindo, e o tema nunca é sinalizado. Nunca.",
+      "p2": "Uma linha clara: nunca envie dinheiro ou cripto para alguém que você não conheceu pessoalmente. Se uma conversa começar a ir por esse caminho, avisamos a pessoa a quem está sendo pedido — isso é o Scam Shield — e ninguém é acusado de nada."
+    },
+    "kindness": {
+      "title": "Regras de gentileza",
+      "p1": "As pessoas somem por razões reais — a vida acontece, as conversas esfriam. Ghosting recebe orientação, nunca punição: um lembrete gentil para fechar o ciclo, despedidas amáveis em um toque e selos conquistados por bons hábitos. Encerrar o ciclo com gentileza é sempre mais fácil do que sumir.",
+      "p2": "Regras de gentileza nunca geram strike, suspensão ou remoção — e nada negativo aparece no seu perfil. Quem fica quieto porque se sentiu inseguro nunca é penalizado."
+    },
+    "removal": {
+      "title": "Quando uma conta é removida",
+      "p1": "A remoção só acontece no terceiro strike, só depois de um humano revisar tudo, e sempre com caminho de recurso — um revisor diferente responde em até 72 horas e decide em até 7 dias. Um recurso aceito restaura tudo exatamente como estava.",
+      "p2": "A outra pessoa vê apenas uma linha neutra — “Esta conta não está mais no Resonance.” Nunca um motivo, nunca um rótulo. Remoções podem estar erradas; é exatamente por isso que o recurso existe."
+    }
   }
 }

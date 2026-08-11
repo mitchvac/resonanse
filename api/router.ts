@@ -12,10 +12,12 @@ import { passwordAuthRouter } from "./passwordAuthRouter";
 import { premiumRouter } from "./premiumRouter";
 import { profileRouter } from "./profileRouter";
 import { safetyRouter } from "./safetyRouter";
+import { moderationRouter } from "./moderationRouter";
 import { sanctionsRouter } from "./sanctionsRouter";
 import { translateRouter } from "./translateRouter";
 import { videoCallRouter } from "./videoCallRouter";
 import { voiceRouter } from "./voiceRouter";
+import { scamShieldRouter } from "./scamShieldRouter";
 import { walletRouter } from "./walletRouter";
 import { walletEarnRouter } from "./walletEarnRouter";
 import { walletSecurityRouter } from "./walletSecurityRouter";
@@ -36,9 +38,11 @@ export const appRouter = createRouter({
   events: eventsRouter,
   premium: premiumRouter,
   safety: safetyRouter,
+  moderation: moderationRouter,
   translate: translateRouter,
   videoCall: videoCallRouter,
   voice: voiceRouter,
+  scamShield: scamShieldRouter,
   wallet: walletRouter,
   walletEarn: walletEarnRouter,
   walletSecurity: walletSecurityRouter,

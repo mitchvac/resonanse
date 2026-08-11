@@ -9,6 +9,7 @@ import {
   messages,
   passes,
   profiles,
+  users,
   videoNotes,
   type Conversation,
   type InsertMessage,
@@ -225,6 +226,8 @@ export type MatchListEntry = {
   archivedAt: Date | null;
   mutedAt: Date | null;
   otherProfile: Profile | null;
+  /** V93: true when the peer's account was removed (tombstone state in the UI). */
+  removedPeer: boolean;
   lastMessage: Message | null;
 };
 
@@ -257,6 +260,12 @@ export async function listMatchesForUser(
       .where(eq(profiles.userId, otherId))
       .limit(1);
 
+    const peerUserRows = await db
+      .select({ removedAt: users.removedAt })
+      .from(users)
+      .where(eq(users.id, otherId))
+      .limit(1);
+
     let lastMessage: Message | null = null;
     if (conversation) {
       const msgRows = await db
@@ -275,6 +284,7 @@ export async function listMatchesForUser(
       archivedAt: conversation?.archivedAt ?? null,
       mutedAt: conversation?.mutedAt ?? null,
       otherProfile: profileRows.at(0) ?? null,
+      removedPeer: peerUserRows.at(0)?.removedAt != null,
       lastMessage,
     });
   }
@@ -379,4 +389,60 @@ export async function getConversationContext(conversationId: number, userId: num
     peerProfile: profileRows.at(0) ?? null,
     myProfile: myProfileRows.at(0) ?? null,
   };
+}
+
+/** The neutral, defamation-safe removal line (community standards §8.9). */
+export const REMOVAL_NOTICE_TEXT = "This account is no longer on Resonance.";
+
+/** V93: is this account removed? Drives the chat.send guards. */
+export async function isUserRemoved(userId: number): Promise<boolean> {
+  const rows = await getDb()
+    .select({ removedAt: users.removedAt })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return rows.at(0)?.removedAt != null;
+}
+
+/**
+ * V93: after a confirmed strike-3 removal, every conversation of the removed
+ * member gets ONE neutral system notice (never the reason, never a category).
+ * Idempotent — skips conversations that already carry the notice.
+ */
+export async function insertRemovalNotices(userId: number): Promise<number> {
+  const db = getDb();
+  const matchRows = await db
+    .select()
+    .from(matches)
+    .where(or(eq(matches.userAId, userId), eq(matches.userBId, userId)));
+
+  let inserted = 0;
+  for (const match of matchRows) {
+    const conversation = await findConversationByMatchId(match.id);
+    if (!conversation) continue;
+
+    const existing = await db
+      .select({ id: messages.id })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.conversationId, conversation.id),
+          eq(messages.senderId, userId),
+          eq(messages.kind, "system"),
+          eq(messages.content, REMOVAL_NOTICE_TEXT),
+        ),
+      )
+      .limit(1);
+    if (existing.length > 0) continue;
+
+    await insertMessage({
+      conversationId: conversation.id,
+      senderId: userId,
+      kind: "system",
+      content: REMOVAL_NOTICE_TEXT,
+      meta: { event: "account_removed" },
+    });
+    inserted++;
+  }
+  return inserted;
 }

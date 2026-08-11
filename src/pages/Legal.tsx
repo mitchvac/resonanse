@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import BrandMark from '@/components/BrandMark';
 import GlassCard from '@/components/GlassCard';
@@ -15,6 +17,62 @@ import { BtnGhost } from '@/components/ui/buttons';
 export type LegalDocSlug = 'privacy' | 'terms' | 'cookies' | 'guidelines' | 'report' | 'data';
 
 const LAST_UPDATED = '2026-08-07';
+
+/* V93 — the guidelines page is the first translated legal doc: its content
+   is the condensed Community Standards (standards doc Part 1 §§2–7, copy
+   deck §8 voice) and ships in the `landing` namespace for all 8 locales.
+   The remaining docs stay English-only for now. */
+function buildGuidelinesDoc(t: TFunction): LegalDoc {
+  return {
+    slug: 'guidelines',
+    eyebrow: t('guidelines.eyebrow'),
+    title: t('guidelines.title'),
+    intro: t('guidelines.intro'),
+    sections: [
+      {
+        heading: t('guidelines.promise.title'),
+        body: [t('guidelines.promise.p1'), t('guidelines.promise.p2')],
+      },
+      {
+        heading: t('guidelines.twoTiers.title'),
+        body: [
+          t('guidelines.twoTiers.p1'),
+          <P key="safety">
+            <strong style={{ color: 'var(--text)' }}>{t('guidelines.twoTiers.safetyTitle')} — </strong>
+            {t('guidelines.twoTiers.safetyBody')}
+          </P>,
+          <P key="kind">
+            <strong style={{ color: 'var(--text)' }}>{t('guidelines.twoTiers.kindTitle')} — </strong>
+            {t('guidelines.twoTiers.kindBody')}
+          </P>,
+          t('guidelines.twoTiers.p2'),
+        ],
+      },
+      {
+        heading: t('guidelines.strike.title'),
+        body: [
+          t('guidelines.strike.p1'),
+          t('guidelines.strike.s1'),
+          t('guidelines.strike.s2'),
+          t('guidelines.strike.s3'),
+          t('guidelines.strike.p2'),
+        ],
+      },
+      {
+        heading: t('guidelines.money.title'),
+        body: [t('guidelines.money.p1'), t('guidelines.money.p2')],
+      },
+      {
+        heading: t('guidelines.kindness.title'),
+        body: [t('guidelines.kindness.p1'), t('guidelines.kindness.p2')],
+      },
+      {
+        heading: t('guidelines.removal.title'),
+        body: [t('guidelines.removal.p1'), t('guidelines.removal.p2')],
+      },
+    ],
+  };
+}
 
 type LegalSection = {
   heading: string;
@@ -75,7 +133,7 @@ function ResourceLink({ href, title, caption }: { href: string; title: string; c
   );
 }
 
-const DOCS: Record<LegalDocSlug, LegalDoc> = {
+const DOCS: Record<Exclude<LegalDocSlug, 'guidelines'>, LegalDoc> = {
   privacy: {
     slug: 'privacy',
     eyebrow: 'Legal',
@@ -307,85 +365,6 @@ const DOCS: Record<LegalDocSlug, LegalDoc> = {
     ],
   },
 
-  guidelines: {
-    slug: 'guidelines',
-    eyebrow: 'Safety',
-    title: 'Community Guidelines',
-    intro:
-      'Resonance works because people show up honestly and treat each other like humans. These are the rules that keep it that way.',
-    sections: [
-      {
-        heading: 'Date with intent',
-        body: [
-          'Be here to actually meet people. Reply when you mean to, unmatch kindly when you don’t, and treat every profile as a person with a day of their own.',
-        ],
-      },
-      {
-        heading: 'Be yourself',
-        body: [
-          'Use real, recent photos of you. No impersonation, no catfishing, no AI-generated stand-ins for your face. Photo verification exists so everyone can trust the queue.',
-        ],
-      },
-      {
-        heading: 'No harassment or hate',
-        body: [
-          'No slurs, threats, sexual comments without consent, stalking, or content that demeans people based on race, religion, gender, sexuality, disability, or body. One strike can be enough if it’s severe.',
-        ],
-      },
-      {
-        heading: 'No scams or solicitation',
-        body: [
-          'Never ask matches for money, gift cards, crypto, or “investment” help — and report anyone who asks you. Resonance staff will never ask for your password, verification codes, or seed phrase. Commercial promotion and escort solicitation are prohibited.',
-        ],
-      },
-      {
-        heading: 'Bots are always labelled',
-        body: [
-          'The community game room sometimes fills seats with automated players. Every bot is labelled “BOT · name” in the player list — no exceptions, no disguised accounts. If you ever suspect an unlabelled bot anywhere on Resonance, report it.',
-        ],
-      },
-      {
-        heading: 'Consent tools are real',
-        body: [
-          'Consent-gated tags are private until both people choose to share. “Wait for my first message” and vanish-mode chats are enforced by the product, not by etiquette. Respect a no the first time.',
-        ],
-      },
-      {
-        heading: 'Block & report',
-        body: [
-          <P key="tools">
-            Every profile sheet has a Report control, every chat has a Trust & safety sheet, and{' '}
-            <AppLink to="/settings">Settings → Blocked accounts</AppLink> lets you review who you’ve
-            blocked. Blocking is instant, free, and the other person is never told. Details:{' '}
-            <AppLink to="/report">Report & Safety</AppLink>.
-          </P>,
-        ],
-      },
-      {
-        heading: 'Enforcement',
-        body: [
-          'Reports are reviewed by trained humans. Outcomes range from a warning to photo re-verification to permanent removal, depending on severity and history. We may remove anyone whose behavior endangers members, with or without prior reports.',
-        ],
-      },
-      {
-        heading: 'Appeals',
-        body: [
-          <P key="appeals">
-            Think we got it wrong? Email{' '}
-            <a
-              href="mailto:safety@resonanse.app"
-              className="underline underline-offset-2"
-              style={{ color: 'var(--text)' }}
-            >
-              safety@resonanse.app
-            </a>{' '}
-            and a different reviewer will take a fresh look.
-          </P>,
-        ],
-      },
-    ],
-  },
-
   report: {
     slug: 'report',
     eyebrow: 'Safety',
@@ -544,7 +523,8 @@ const DOC_ORDER: LegalDocSlug[] = ['privacy', 'terms', 'cookies', 'guidelines', 
 
 export default function Legal({ doc }: { doc: LegalDocSlug }) {
   const navigate = useNavigate();
-  const d = DOCS[doc];
+  const { t } = useTranslation('landing');
+  const d = doc === 'guidelines' ? buildGuidelinesDoc(t) : DOCS[doc];
   return (
     <div className="relative min-h-[100dvh] overflow-x-clip">
       <StageBackdrop />
@@ -598,7 +578,7 @@ export default function Legal({ doc }: { doc: LegalDocSlug }) {
                 className="t-caption underline underline-offset-2"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                {DOCS[s].title}
+                {s === 'guidelines' ? t('guidelines.title') : DOCS[s].title}
               </Link>
             ))}
           </div>

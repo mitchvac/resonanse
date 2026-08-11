@@ -18,9 +18,18 @@
     "eyebrow": "The problem",
     "heading": "Endless decks. Mixed intents. Dead chats.",
     "body": "Legacy apps monetize your loneliness. Volume over quality, paywalls over outcomes, and a swipe economy that rewards never meeting.",
-    "stat1": { "suffix": " min", "label": "SWIPING / DAY" },
-    "stat2": { "suffix": "%", "label": "MATCH → DATE" },
-    "stat3": { "static": "1 in 2", "label": "FEEL WORSE" }
+    "stat1": {
+      "suffix": " min",
+      "label": "SWIPING / DAY"
+    },
+    "stat2": {
+      "suffix": "%",
+      "label": "MATCH → DATE"
+    },
+    "stat3": {
+      "static": "1 in 2",
+      "label": "FEEL WORSE"
+    }
   },
   "loop": {
     "eyebrow": "The Resonance loop",
@@ -125,9 +134,15 @@
     "eyebrow": "Early signals",
     "heading": "People who stopped scrolling",
     "headshotAlt": "{{name}} headshot",
-    "q1": { "quote": "The daily cap felt limiting for a day. Then it felt like relief." },
-    "q2": { "quote": "Prompts did what my opening lines never could. We met in five days." },
-    "q3": { "quote": "First app where stating my intent upfront didn’t scare people off — it attracted the right ones." }
+    "q1": {
+      "quote": "The daily cap felt limiting for a day. Then it felt like relief."
+    },
+    "q2": {
+      "quote": "Prompts did what my opening lines never could. We met in five days."
+    },
+    "q3": {
+      "quote": "First app where stating my intent upfront didn’t scare people off — it attracted the right ones."
+    }
   },
   "pricing": {
     "eyebrow": "Pricing",
@@ -255,5 +270,47 @@
     "page2": "Page 2",
     "signOut": "Sign out",
     "menu": "Menu"
+  },
+  "guidelines": {
+    "eyebrow": "Community Standards",
+    "title": "Community Guidelines",
+    "intro": "Most dating apps punish people. Resonance is built to be on your side — and every rule below exists to keep two promises at once: we protect you from people who'd hurt you, and we never treat an honest mistake like a crime.",
+    "promise": {
+      "title": "Our promise",
+      "p1": "We protect you from the people who would hurt you — scammers, harassers, fakes. Firmly and fast.",
+      "p2": "We never treat an honest mistake like a crime. A clumsy sentence, a quiet week, a conversation that fizzled — these are human, and we respond with teaching and coaching, not punishment. When we enforce, we explain. When we remove, we give a way back."
+    },
+    "twoTiers": {
+      "title": "Two kinds of rules",
+      "p1": "Resonance never uses one punishment ladder for everything. There are exactly two tiers, and they never mix.",
+      "safetyTitle": "Safety rules (strikes)",
+      "safetyBody": "The serious ones: no scam or fraud patterns, no harassment, threats, or hate, no fake identity behind a verified badge. Break these and you get a strike — a private warning that teaches. Worst case, at strike three and only after a human review, an account can be removed. Always with appeal.",
+      "kindTitle": "Kindness rules (never a strike)",
+      "kindBody": "The everyday ones: reply when you can, close loops kindly, don't vanish without a word. Break these and the worst that happens is a friendly nudge or quietly reduced visibility — never a strike, never a removal, never a public mark against you.",
+      "p2": "A kindness slip can never add up to a strike. Only the three safety categories can."
+    },
+    "strike": {
+      "title": "What's a strike?",
+      "p1": "A strike is a private warning that teaches, not punishes. It always quotes the rule and shows what triggered it, and it's only visible to you, in Settings → Your standing.",
+      "s1": "Strike 1: we show you the rule and what happened — most people just didn't know.",
+      "s2": "Strike 2: a clear final warning, in plain words.",
+      "s3": "Strike 3: the account is removed — but a human always reviews first, and you can always appeal.",
+      "p2": "Strikes expire 90 days after they're issued, automatically. One report or one flagged phrase alone can never create a strike — every strike needs corroboration, and every removal is reviewed by a human before it happens."
+    },
+    "money": {
+      "title": "The one money rule",
+      "p1": "Talking about crypto or investing here is always fine — learning is welcome, and the topic is never flagged. Ever.",
+      "p2": "One bright line: never send money or crypto to someone you haven't met in person. If a conversation starts moving that way, we warn the person being asked — that's Scam Shield — and nobody is accused of anything."
+    },
+    "kindness": {
+      "title": "Kindness rules",
+      "p1": "People vanish for real reasons — life happens, conversations fade. Ghosting gets coaching, never punishment: a gentle close-the-loop nudge, one-tap kind goodbyes, and earned badges for good habits. Closing the loop kindly is always easier than vanishing.",
+      "p2": "Kindness rules never produce a strike, a suspension, or a removal — and nothing negative ever shows on your profile. Someone who goes quiet because they felt unsafe is never penalized."
+    },
+    "removal": {
+      "title": "When an account is removed",
+      "p1": "Removal happens only at strike three, only after a human reviews everything, and always with an appeal path — a different reviewer answers within 72 hours and decides within 7 days. A successful appeal restores everything exactly as it was.",
+      "p2": "The other person sees only a neutral line — “This account is no longer on Resonance.” Never a reason, never a label. Removals can be wrong; that's exactly why the appeal exists."
+    }
   }
 }

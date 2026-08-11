@@ -38,6 +38,8 @@ import type { ChatMessage } from '@/components/chat/types';
 import {
   dayLabel,
   firstNameOf,
+  isAccountRemovedMessage,
+  isRemovedPeer,
   sameDay,
 } from '@/components/chat/types';
 import { trpc } from '@/providers/trpc';
@@ -53,6 +55,11 @@ const GOAL_KEY: Record<string, string> = {
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/* V93 crypto inline hint — first time the member drafts a crypto/off-platform
+   topic word, per topic per device (localStorage 'scamhint.<topic>').
+   Server-side persistence of the dismissal is a documented follow-up. */
+const CRYPTO_TOPIC_RE = /\b(bitcoin|btc|crypto|ethereum|whatsapp|telegram)\b/i;
 
 /** Day divider — centered micro label pill (chat.md §2). */
 function DayDivider({ label }: { label: string }) {
@@ -226,6 +233,7 @@ function useTranslateHealth() {
 
 export default function Chat() {
   const { t } = useTranslation('connect');
+  const { t: ts } = useTranslation('safety');
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -258,6 +266,25 @@ export default function Chat() {
   const conversation = chatQuery.data?.conversation;
   const match = chatQuery.data?.match;
   const peer = chatQuery.data?.peer ?? matchEntry?.otherProfile ?? null;
+
+  /* V93 Scam Shield — victim-side warning. Recipient-only by construction:
+     the server returns warning rows for ME in this conversation; the sender
+     is never told anything (standards doc §4.4). */
+  const warningsQuery = trpc.scamShield.unackedWarnings.useQuery(
+    { conversationId },
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+      enabled: Number.isFinite(conversationId) && conversationId > 0,
+    },
+  );
+  const scamWarnings = warningsQuery.data?.warnings ?? [];
+  const ackWarning = trpc.scamShield.ackWarning.useMutation({
+    onSettled: () => void utils.scamShield.unackedWarnings.invalidate(),
+  });
+  const ackAllWarnings = () => {
+    for (const w of scamWarnings) ackWarning.mutate({ warningId: w.id });
+  };
   const peerName = firstNameOf(peer?.displayName, t('chat.them'));
   const peerPhoto = peer?.photos?.[0] ?? '/avatar-01.jpg';
 
@@ -275,6 +302,7 @@ export default function Chat() {
   const [justVideoVerified, setJustVideoVerified] = useState(false);
   const [noteRecorderOpen, setNoteRecorderOpen] = useState(false);
   const [safetyBarDismissed, setSafetyBarDismissed] = useState(true);
+  const [cryptoHintTopic, setCryptoHintTopic] = useState<string | null>(null);
 
   /* Resonance Translate — capability probe + per-message target cache.
      When both engines are unconfigured, no translate UI renders at all. */
@@ -337,6 +365,22 @@ export default function Chat() {
     setSafetyBarDismissed(dismissed || !fresh);
   }, [match]);
 
+  /* V93 crypto inline hint — shown once per topic per device (§8.6):
+     talking crypto is always fine; the tip only states the one money rule. */
+  useEffect(() => {
+    if (cryptoHintTopic) return;
+    const m = draft.match(CRYPTO_TOPIC_RE);
+    if (!m) return;
+    const topic = m[1].toLowerCase();
+    try {
+      if (window.localStorage.getItem(`scamhint.${topic}`) === '1') return;
+      window.localStorage.setItem(`scamhint.${topic}`, '1');
+    } catch {
+      /* private mode */
+    }
+    setCryptoHintTopic(topic);
+  }, [draft, cryptoHintTopic]);
+
   /* Starters tray: thread new or stale (48h), or pre-opened from the rail (§3) */
   useEffect(() => {
     if (searchParams.get('starters') === '1') {
@@ -372,6 +416,11 @@ export default function Chat() {
 
   const closed = !!chatQuery.error;
 
+  /* V93 removed-peer tombstone — the thread ends with the neutral removal
+     notice (or matches.list flags removedPeer): history stays readable,
+     sending is blocked. */
+  const peerRemoved = isAccountRemovedMessage(messages.at(-1)) || isRemovedPeer(matchEntry);
+
   /* Screenshot proxy (chat.md §5): the web can't detect real screenshots —
      a tab going hidden in vanish mode is the standard signal. Server
      persists the system bubble so both sides see it. */
@@ -394,7 +443,7 @@ export default function Chat() {
   /* ---- Send (§7) — outgoing slides in, seed replies after typing dots ---- */
   const handleSend = () => {
     const content = draft.trim();
-    if (!content || sendMut.isPending) return;
+    if (!content || sendMut.isPending || peerRemoved) return;
     setDraft('');
     sendMut.mutate(
       { conversationId, content },
@@ -678,6 +727,52 @@ export default function Chat() {
         )}
       </AnimatePresence>
 
+      {/* V93 Scam Shield — victim-side banner (recipient only, --danger accent) */}
+      <AnimatePresence>
+        {scamWarnings.length > 0 && !closed && (
+          <motion.div
+            className="mx-3 mt-2 overflow-hidden"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div
+              className="rounded-2xl px-3.5 py-3"
+              style={{
+                background: 'var(--glass-a)',
+                border: 'var(--glass-quiet-border)',
+                boxShadow: 'inset 0 0 0 1px var(--danger)',
+              }}
+              role="alert"
+            >
+              <div className="flex items-center gap-2">
+                <Shield size={14} className="shrink-0" style={{ color: 'var(--danger)' }} aria-hidden="true" />
+                <p className="t-caption flex-1 font-bold" style={{ color: 'var(--danger)' }}>
+                  {ts('scamBanner.title')}
+                </p>
+              </div>
+              <p className="t-caption mt-1.5" style={{ color: 'var(--text)' }}>
+                {ts('scamBanner.body')}
+              </p>
+              <p className="t-micro mt-1" style={{ color: 'var(--text-secondary)' }}>
+                {ts('scamBanner.note')}
+              </p>
+              <div className="mt-2 flex justify-end">
+                <BtnGlass
+                  className="h-9 px-4"
+                  onClick={ackAllWarnings}
+                  disabled={ackWarning.isPending}
+                  ariaLabel={ts('scamBanner.gotIt')}
+                >
+                  {ts('scamBanner.gotIt')}
+                </BtnGlass>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Ephemeral micro banner (§5) */}
       <AnimatePresence>
         {ephemeral && !closed && (
@@ -879,7 +974,7 @@ export default function Chat() {
       </div>
 
       {/* §3 AI starters tray (above input) */}
-      {!closed && conversationId > 0 && (
+      {!closed && !peerRemoved && conversationId > 0 && (
         <StartersTray
           conversationId={conversationId}
           peerName={peerName}
@@ -891,8 +986,46 @@ export default function Chat() {
         />
       )}
 
-      {/* §7 Composer */}
-      {!closed && (
+      {/* V93 crypto inline hint — dismissible glass tip above the composer,
+          once per topic per device (§8.6) */}
+      <AnimatePresence>
+        {cryptoHintTopic !== null && !closed && !peerRemoved && (
+          <motion.div
+            className="mx-3 mb-2 overflow-hidden"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            role="status"
+          >
+            <div
+              className="flex items-center gap-2 rounded-2xl px-3.5 py-2.5"
+              style={{
+                background: 'var(--glass-a)',
+                border: 'var(--glass-quiet-border)',
+                boxShadow: 'var(--glass-hi), var(--glass-lo), var(--glass-shadow)',
+              }}
+            >
+              <p className="t-caption flex-1" style={{ color: 'var(--text-secondary)' }}>
+                {ts('cryptoHint.body')}
+              </p>
+              <button
+                type="button"
+                onClick={() => setCryptoHintTopic(null)}
+                className="flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center"
+                style={{ color: 'var(--text-secondary)' }}
+                aria-label={ts('cryptoHint.dismissAria')}
+              >
+                <X size={14} aria-hidden="true" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* §7 Composer — replaced by the neutral tombstone line when the peer's
+          account was removed (V93, standards doc §7) */}
+      {!closed && !peerRemoved && (
         <Composer
           peerName={peerName}
           value={draft}
@@ -906,6 +1039,16 @@ export default function Chat() {
           onVideoNote={() => setNoteRecorderOpen(true)}
           onActionToast={showToast}
         />
+      )}
+      {!closed && peerRemoved && (
+        <div
+          className="px-3"
+          style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}
+        >
+          <p className="t-caption py-3 text-center" style={{ color: 'var(--text-secondary)' }}>
+            {ts('removed.peer')}
+          </p>
+        </div>
       )}
 
       {/* §4 Date ideas sheet */}

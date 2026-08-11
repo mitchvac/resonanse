@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNull, lte, notInArray, or } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, notInArray, or } from "drizzle-orm";
 import {
   blocks,
   conversations,
@@ -6,6 +6,7 @@ import {
   matches,
   passes,
   profiles,
+  users,
   type Conversation,
   type Like,
   type Match,
@@ -172,6 +173,13 @@ export async function getDiscoveryQueue(
   ];
 
   const conditions = [eq(profiles.isSeed, true), isNull(profiles.pausedAt)];
+  // V93: removed accounts (users.removedAt) are excluded like paused ones.
+  conditions.push(
+    notInArray(
+      profiles.userId,
+      db.select({ id: users.id }).from(users).where(isNotNull(users.removedAt)),
+    ),
+  );
   if (excludedUserIds.length > 0) {
     conditions.push(notInArray(profiles.userId, excludedUserIds));
   }

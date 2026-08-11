@@ -18,9 +18,18 @@
     "eyebrow": "Le problème",
     "heading": "Des paquets sans fin. Des intentions mélangées. Des chats morts.",
     "body": "Les apps historiques monétisent ta solitude. Le volume avant la qualité, les paywalls avant les résultats, et une économie du swipe qui récompense le fait de ne jamais se rencontrer.",
-    "stat1": { "suffix": " min", "label": "SWIPES / JOUR" },
-    "stat2": { "suffix": "%", "label": "MATCH → RENDEZ-VOUS" },
-    "stat3": { "static": "1 sur 2", "label": "SE SENTENT MOINS BIEN" }
+    "stat1": {
+      "suffix": " min",
+      "label": "SWIPES / JOUR"
+    },
+    "stat2": {
+      "suffix": "%",
+      "label": "MATCH → RENDEZ-VOUS"
+    },
+    "stat3": {
+      "static": "1 sur 2",
+      "label": "SE SENTENT MOINS BIEN"
+    }
   },
   "loop": {
     "eyebrow": "La boucle Resonance",
@@ -125,9 +134,15 @@
     "eyebrow": "Premiers signaux",
     "heading": "Des gens qui ont arrêté de scroller",
     "headshotAlt": "Portrait de {{name}}",
-    "q1": { "quote": "La limite quotidienne m’a semblé contraignante un jour. Puis ce fut un soulagement." },
-    "q2": { "quote": "Les prompts ont réussi là où mes phrases d’accroche échouaient. On s’est rencontrés en cinq jours." },
-    "q3": { "quote": "La première app où dire mes intentions d’emblée n’a pas fait fuir les gens — ça a attiré les bons." }
+    "q1": {
+      "quote": "La limite quotidienne m’a semblé contraignante un jour. Puis ce fut un soulagement."
+    },
+    "q2": {
+      "quote": "Les prompts ont réussi là où mes phrases d’accroche échouaient. On s’est rencontrés en cinq jours."
+    },
+    "q3": {
+      "quote": "La première app où dire mes intentions d’emblée n’a pas fait fuir les gens — ça a attiré les bons."
+    }
   },
   "pricing": {
     "eyebrow": "Tarifs",
@@ -255,5 +270,47 @@
     "page2": "Page 2",
     "signOut": "Se déconnecter",
     "menu": "Menu"
+  },
+  "guidelines": {
+    "eyebrow": "Standards de la communauté",
+    "title": "Règles de la communauté",
+    "intro": "La plupart des applis de rencontre punissent les gens. Resonance est conçue pour être de votre côté — et chaque règle ci-dessous existe pour tenir deux promesses à la fois : nous vous protégeons de ceux qui voudraient vous nuire, et nous ne traitons jamais une erreur honnête comme un crime.",
+    "promise": {
+      "title": "Notre promesse",
+      "p1": "Nous vous protégeons des personnes qui voudraient vous nuire — arnaqueurs, harceleurs, faux profils. Fermement et vite.",
+      "p2": "Nous ne traitons jamais une erreur honnête comme un crime. Une phrase maladroite, une semaine calme, une conversation qui s'est essoufflée — c'est humain, et nous répondons par la pédagogie et l'accompagnement, pas par la punition. Quand nous agissons, nous expliquons. Quand nous supprimons, nous offrons un chemin de retour."
+    },
+    "twoTiers": {
+      "title": "Deux types de règles",
+      "p1": "Resonance n'utilise jamais une seule échelle de sanction pour tout. Il y a exactement deux niveaux, et ils ne se mélangent jamais.",
+      "safetyTitle": "Règles de sécurité (strikes)",
+      "safetyBody": "Les sérieuses : pas de schémas d'arnaque ou de fraude, pas de harcèlement, de menaces ou de haine, pas de fausse identité derrière un badge vérifié. Les enfreindre, c'est recevoir un strike — un avertissement privé qui enseigne. Au pire, au troisième strike et seulement après examen humain, un compte peut être supprimé. Toujours avec appel possible.",
+      "kindTitle": "Règles de convivialité (jamais de strike)",
+      "kindBody": "Celles de tous les jours : répondez quand vous pouvez, bouclez les conversations avec gentillesse, ne disparaissez pas sans un mot. Les enfreindre, c'est au pire un petit rappel amical ou une visibilité discrètement réduite — jamais un strike, jamais une suppression, jamais une marque publique contre vous.",
+      "p2": "Un écart de convivialité ne peut jamais s'additionner jusqu'à devenir un strike. Seules les trois catégories de sécurité le peuvent."
+    },
+    "strike": {
+      "title": "Qu'est-ce qu'un strike ?",
+      "p1": "Un strike est un avertissement privé qui enseigne, pas qui punit. Il cite toujours la règle et montre ce qui l'a déclenché, et il n'est visible que par vous, dans Réglages → Votre situation.",
+      "s1": "Strike 1 : nous vous montrons la règle et ce qui s'est passé — la plupart des gens ne savaient simplement pas.",
+      "s2": "Strike 2 : un dernier avertissement clair, en mots simples.",
+      "s3": "Strike 3 : le compte est supprimé — mais un humain examine toujours d'abord, et vous pouvez toujours faire appel.",
+      "p2": "Les strikes expirent 90 jours après leur émission, automatiquement. Un seul signalement ou une seule phrase repérée ne peut jamais créer un strike — chaque strike exige une corroboration, et chaque suppression est examinée par un humain avant d'arriver."
+    },
+    "money": {
+      "title": "L'unique règle sur l'argent",
+      "p1": "Parler de crypto ou d'investissement ici est toujours OK — apprendre est bienvenu, et le sujet n'est jamais signalé. Jamais.",
+      "p2": "Une ligne claire : n'envoyez jamais d'argent ni de crypto à quelqu'un que vous n'avez pas rencontré en personne. Si une conversation commence à aller dans ce sens, nous prévenons la personne à qui on le demande — c'est Scam Shield — et personne n'est accusé de rien."
+    },
+    "kindness": {
+      "title": "Règles de convivialité",
+      "p1": "Les gens disparaissent pour de vraies raisons — la vie arrive, les conversations s'essoufflent. Le ghosting reçoit de l'accompagnement, jamais de punition : un doux rappel pour boucler la boucle, des adieux gentils en un geste et des badges mérités pour les bonnes habitudes. Boucler la boucle avec gentillesse est toujours plus facile que de disparaître.",
+      "p2": "Les règles de convivialité ne produisent jamais de strike, de suspension ni de suppression — et rien de négatif n'apparaît jamais sur votre profil. Quelqu'un qui se tait parce qu'il ne se sentait pas en sécurité n'est jamais pénalisé."
+    },
+    "removal": {
+      "title": "Quand un compte est supprimé",
+      "p1": "La suppression n'arrive qu'au troisième strike, seulement après qu'un humain a tout examiné, et toujours avec un chemin d'appel — un examinateur différent répond sous 72 heures et décide sous 7 jours. Un appel réussi restaure tout exactement comme c'était.",
+      "p2": "L'autre personne ne voit qu'une ligne neutre — « Ce compte n'est plus sur Resonance. » Jamais de raison, jamais d'étiquette. Les suppressions peuvent se tromper ; c'est exactement pour ça que l'appel existe."
+    }
   }
 }

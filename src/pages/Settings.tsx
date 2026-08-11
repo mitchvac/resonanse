@@ -22,6 +22,8 @@ import {
   ExternalLink,
   PauseCircle,
   Wallet,
+  Scale,
+  Check,
 } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import GlassSheet from '@/components/GlassSheet';
@@ -174,6 +176,7 @@ function TopBar({ title, onBack }: { title: string; onBack: () => void }) {
 export default function Settings() {
   const navigate = useNavigate();
   const { t } = useTranslation('settings');
+  const { t: ts } = useTranslation('safety');
   const { logout } = useAuth();
   const utils = trpc.useUtils();
   const { data: meData, isLoading: meLoading } = trpc.profile.me.useQuery();
@@ -183,7 +186,7 @@ export default function Settings() {
   const verified = profile?.verificationStatus === 'verified' || profile?.verified === true;
 
   const { toasts, push } = useToasts();
-  const [view, setView] = useState<'main' | 'hidden-words' | 'blocked'>('main');
+  const [view, setView] = useState<'main' | 'hidden-words' | 'blocked' | 'standing'>('main');
 
   /* ── §1 Appearance ──────────────────────────────────────────────── */
   const [theme, setThemeState] = useState<ThemeChoice>(readThemeChoice);
@@ -390,6 +393,29 @@ export default function Settings() {
   });
   const [unblockTarget, setUnblockTarget] = useState<number | null>(null);
 
+  /* Your standing — V93 community standards: strikes, removal, appeals.
+     Member-facing mirror of the moderation system (standards doc §5.6:
+     "Standing is always visible"). */
+  const standingQuery = trpc.safety.myStanding.useQuery(undefined, { retry: false });
+  const activeStrikes = standingQuery.data?.activeStrikes ?? [];
+  const removedAt = standingQuery.data?.removedAt ?? null;
+  const appeals = standingQuery.data?.appeals ?? [];
+  const acknowledgeStrike = trpc.safety.acknowledgeStrike.useMutation({
+    onSuccess: () => {
+      void utils.safety.myStanding.invalidate();
+      push(ts('toasts.ackDone'));
+    },
+    onError: () => push(ts('toasts.ackError')),
+  });
+  const [appealBody, setAppealBody] = useState('');
+  const submitAppeal = trpc.safety.submitAppeal.useMutation({
+    onSuccess: () => {
+      setAppealBody('');
+      void utils.safety.myStanding.invalidate();
+    },
+    onError: () => push(ts('appeal.error')),
+  });
+
   /* ── §5 AI & matching ───────────────────────────────────────────── */
   const [aiStarters, setAiStarters] = useLocalToggle('resonance-ai-starters', true);
   const [weMetFeedback, setWeMetFeedback] = useLocalToggle('resonance-wemet-feedback', true);
@@ -405,6 +431,168 @@ export default function Settings() {
         : [...discovery.showMe, opt],
     });
   };
+
+  /* ================================================================ */
+  /* Your standing — V93 Phase 0 (sub-screen, pattern: hidden-words)   */
+  /* ================================================================ */
+  if (view === 'standing') {
+    const strikes = [...activeStrikes].sort(
+      (a, b) => new Date(a.issuedAt).getTime() - new Date(b.issuedAt).getTime(),
+    );
+    const openAppeal = appeals.find((a) => a.status === 'open' || a.status === 'in_review');
+    /* The removal strike is the latest active strike (strike 3 triggers
+       removal); submitAppeal is only reachable when removedAt is set. */
+    const removalStrikeId = strikes.at(-1)?.id ?? null;
+    const fmtDate = (d: string | Date) =>
+      new Date(d).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    return (
+      <div className="relative h-full">
+        <RangeStyleTag />
+        <ToastHost toasts={toasts} />
+        <div className="no-scrollbar h-full overflow-y-auto px-5 pb-10">
+          <TopBar title={ts('standing.title')} onBack={() => setView('main')} />
+
+          {standingQuery.isLoading ? (
+            <div className="mt-5 flex flex-col gap-2" aria-busy="true">
+              <div className="glass skeleton-shimmer h-16 rounded-[16px]" />
+              <div className="glass skeleton-shimmer h-16 rounded-[16px]" />
+            </div>
+          ) : (
+            <>
+              {removedAt && (
+                <div className="mt-5 rounded-[16px] p-4" style={{ background: 'var(--field)' }}>
+                  <p className="t-value font-bold" style={{ color: 'var(--danger)' }}>
+                    {ts('standing.removedTitle')}
+                  </p>
+                  <p className="t-caption mt-2" style={{ color: 'var(--text-secondary)' }}>
+                    {ts('standing.removedBody')}
+                  </p>
+                </div>
+              )}
+
+              {strikes.length === 0 && !removedAt ? (
+                <div className="flex flex-col items-center gap-3 py-12 text-center">
+                  <ShieldCheck size={32} style={{ color: 'var(--ok)' }} aria-hidden="true" />
+                  <p className="t-body" style={{ color: 'var(--text-secondary)' }}>
+                    {ts('standing.clean')}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-5 flex flex-col gap-2">
+                  {strikes.map((s, i) => (
+                    <div
+                      key={s.id}
+                      className="rounded-[16px] p-4"
+                      style={{ background: 'var(--field)' }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="t-value font-bold" style={{ color: 'var(--text)' }}>
+                          {ts('standing.strikeN', { n: i + 1 })}
+                        </p>
+                        {s.acknowledgedAt ? (
+                          <span
+                            className="t-caption inline-flex items-center gap-1 font-bold"
+                            style={{ color: 'var(--ok)' }}
+                          >
+                            <Check size={13} strokeWidth={3} aria-hidden="true" />
+                            {ts('standing.acked')}
+                          </span>
+                        ) : (
+                          <BtnGlass
+                            className="h-9 shrink-0 px-4"
+                            disabled={acknowledgeStrike.isPending}
+                            onClick={() => acknowledgeStrike.mutate({ strikeId: s.id })}
+                            ariaLabel={ts('standing.ack')}
+                          >
+                            {ts('standing.ack')}
+                          </BtnGlass>
+                        )}
+                      </div>
+                      <p className="t-caption mt-1.5" style={{ color: 'var(--text)' }}>
+                        {ts(`standing.rule.${s.category}`)} · {s.ruleRef}
+                      </p>
+                      <p className="t-caption mt-1" style={{ color: 'var(--text-secondary)' }}>
+                        {ts('standing.issued', { date: fmtDate(s.issuedAt) })}
+                        {' · '}
+                        {ts('standing.expires', { date: fmtDate(s.expiresAt) })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {removedAt && (
+                <div className="mt-4 rounded-[16px] p-4" style={{ background: 'var(--field)' }}>
+                  <p className="t-value font-bold" style={{ color: 'var(--text)' }}>
+                    {ts('appeal.title')}
+                  </p>
+                  {openAppeal ? (
+                    <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+                      {ts('appeal.thanks')}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="t-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+                        {ts('appeal.body')}
+                      </p>
+                      <textarea
+                        value={appealBody}
+                        onChange={(e) => setAppealBody(e.target.value)}
+                        placeholder={ts('appeal.placeholder')}
+                        aria-label={ts('appeal.title')}
+                        rows={4}
+                        className="t-value mt-3 w-full resize-none rounded-[16px] px-4 py-3 outline-none focus:ring-1 focus:ring-[var(--violet)]"
+                        style={{ background: 'var(--stage-base)', color: 'var(--text)' }}
+                      />
+                      <BtnPrimary
+                        className="mt-3 w-full"
+                        disabled={
+                          !appealBody.trim() || submitAppeal.isPending || removalStrikeId === null
+                        }
+                        onClick={() => {
+                          if (removalStrikeId !== null) {
+                            submitAppeal.mutate({
+                              strikeId: removalStrikeId,
+                              body: appealBody.trim(),
+                            });
+                          }
+                        }}
+                      >
+                        {ts('appeal.submit')}
+                      </BtnPrimary>
+                    </>
+                  )}
+                  {appeals.length > 0 && (
+                    <div className="mt-3 flex flex-col gap-1">
+                      {appeals.map((a) => (
+                        <p
+                          key={a.id}
+                          className="t-caption"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
+                          {ts('standing.appealed', { status: ts(`appeal.status.${a.status}`) })}
+                          {' · '}
+                          {fmtDate(a.createdAt)}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <p className="t-caption mt-5 px-1" style={{ color: 'var(--text-secondary)' }}>
+                {ts('standing.caption')}
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   /* ================================================================ */
   /* Hidden-words manager — settings.md §4 (sub-screen)                */
@@ -810,6 +998,19 @@ export default function Settings() {
                   {t('rows.photoVerification.reverify')}
                 </BtnGhost>
               </div>
+              <SettingRow
+                icon={<Scale size={16} aria-hidden="true" />}
+                title={ts('settings.rowTitle')}
+                caption={
+                  removedAt
+                    ? ts('settings.rowCaptionRemoved')
+                    : activeStrikes.length
+                      ? ts('settings.rowCaptionStrikes', { count: activeStrikes.length })
+                      : ts('settings.rowCaptionClean')
+                }
+                chevron
+                onClick={() => setView('standing')}
+              />
               <SettingRow
                 icon={
                   <EyeOff

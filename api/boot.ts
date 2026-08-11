@@ -12,6 +12,8 @@ import {
 } from "./google/auth";
 import { Paths } from "@contracts/constants";
 import { startEventAgent } from "./lib/eventEngine/agent";
+import { startModerationAgent } from "./lib/moderation/agent";
+import { startScamShieldAgent } from "./lib/scamShield/agent";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
@@ -41,5 +43,9 @@ if (env.isProduction) {
     console.log(`Server running on http://localhost:${port}/`);
     // Fire-and-forget: curate event feeds on boot + every 20 minutes.
     startEventAgent();
+    // Fire-and-forget: appeal-SLA watchdog on boot + every 15 minutes.
+    startModerationAgent();
+    // Fire-and-forget: blocked-domain cache refresh on boot + every 6 hours.
+    startScamShieldAgent();
   });
 }

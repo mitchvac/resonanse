@@ -18,9 +18,18 @@
     "eyebrow": "El problema",
     "heading": "Barajas infinitas. Intenciones mezcladas. Chats muertos.",
     "body": "Las apps de siempre monetizan tu soledad. Volumen antes que calidad, muros de pago antes que resultados y una economía del swipe que premia no quedar nunca.",
-    "stat1": { "suffix": " min", "label": "DESLIZANDO / DÍA" },
-    "stat2": { "suffix": "%", "label": "MATCH → CITA" },
-    "stat3": { "static": "1 de cada 2", "label": "SE SIENTEN PEOR" }
+    "stat1": {
+      "suffix": " min",
+      "label": "DESLIZANDO / DÍA"
+    },
+    "stat2": {
+      "suffix": "%",
+      "label": "MATCH → CITA"
+    },
+    "stat3": {
+      "static": "1 de cada 2",
+      "label": "SE SIENTEN PEOR"
+    }
   },
   "loop": {
     "eyebrow": "El ciclo Resonance",
@@ -125,9 +134,15 @@
     "eyebrow": "Primeras señales",
     "heading": "Personas que dejaron de deslizar",
     "headshotAlt": "Foto de {{name}}",
-    "q1": { "quote": "El límite diario me pareció restrictivo un día. Al siguiente, un alivio." },
-    "q2": { "quote": "Las preguntas lograron lo que mis frases de apertura jamás. Nos conocimos en cinco días." },
-    "q3": { "quote": "La primera app donde decir lo que busco de entrada no espantó a la gente: atrajo a las personas correctas." }
+    "q1": {
+      "quote": "El límite diario me pareció restrictivo un día. Al siguiente, un alivio."
+    },
+    "q2": {
+      "quote": "Las preguntas lograron lo que mis frases de apertura jamás. Nos conocimos en cinco días."
+    },
+    "q3": {
+      "quote": "La primera app donde decir lo que busco de entrada no espantó a la gente: atrajo a las personas correctas."
+    }
   },
   "pricing": {
     "eyebrow": "Precios",
@@ -255,5 +270,47 @@
     "page2": "Página 2",
     "signOut": "Cerrar sesión",
     "menu": "Menú"
+  },
+  "guidelines": {
+    "eyebrow": "Normas de la comunidad",
+    "title": "Normas de la comunidad",
+    "intro": "La mayoría de las apps de citas castigan a la gente. Resonance está hecha para estar de tu lado — y cada regla de abajo existe para cumplir dos promesas a la vez: te protegemos de quienes querrían hacerte daño, y nunca tratamos un error honesto como un crimen.",
+    "promise": {
+      "title": "Nuestra promesa",
+      "p1": "Te protegemos de las personas que querrían hacerte daño — estafadores, acosadores, perfiles falsos. Con firmeza y rapidez.",
+      "p2": "Nunca tratamos un error honesto como un crimen. Una frase torpe, una semana tranquila, una conversación que se apagó — eso es humano, y respondemos enseñando y acompañando, no castigando. Cuando actuamos, explicamos. Cuando eliminamos, damos un camino de vuelta."
+    },
+    "twoTiers": {
+      "title": "Dos tipos de reglas",
+      "p1": "Resonance nunca usa una sola escala de castigo para todo. Hay exactamente dos niveles, y nunca se mezclan.",
+      "safetyTitle": "Reglas de seguridad (strikes)",
+      "safetyBody": "Las serias: nada de patrones de estafa o fraude, nada de acoso, amenazas u odio, nada de identidad falsa detrás de una insignia verificada. Si las rompes, recibes un strike — un aviso privado que enseña. En el peor caso, con el tercer strike y solo tras una revisión humana, la cuenta puede ser eliminada. Siempre con apelación.",
+      "kindTitle": "Reglas de convivencia (nunca un strike)",
+      "kindBody": "Las de cada día: responde cuando puedas, cierra los ciclos con amabilidad, no desaparezcas sin una palabra. Si las rompes, lo peor que pasa es un recordatorio amable o algo menos de visibilidad — nunca un strike, nunca una eliminación, nunca una marca pública en tu contra.",
+      "p2": "Un tropiezo de convivencia nunca puede sumar hasta convertirse en un strike. Solo las tres categorías de seguridad pueden."
+    },
+    "strike": {
+      "title": "¿Qué es un strike?",
+      "p1": "Un strike es un aviso privado que enseña, no castiga. Siempre cita la regla y muestra qué la activó, y solo es visible para ti, en Ajustes → Tu situación.",
+      "s1": "Strike 1: te mostramos la regla y lo que pasó — la mayoría simplemente no lo sabía.",
+      "s2": "Strike 2: una última advertencia clara, en palabras simples.",
+      "s3": "Strike 3: la cuenta se elimina — pero una persona siempre revisa primero, y siempre puedes apelar.",
+      "p2": "Los strikes caducan 90 días después de emitirse, automáticamente. Un solo reporte o una sola frase marcada nunca pueden crear un strike — cada strike necesita corroboración, y cada eliminación la revisa una persona antes de ocurrir."
+    },
+    "money": {
+      "title": "La única regla sobre dinero",
+      "p1": "Hablar de cripto o de inversiones aquí siempre está bien — aprender es bienvenido, y el tema nunca se marca. Nunca.",
+      "p2": "Una línea clara: nunca envíes dinero ni cripto a alguien que no hayas conocido en persona. Si una conversación empieza a ir por ahí, avisamos a la persona a la que se lo piden — eso es Scam Shield — y nadie es acusado de nada."
+    },
+    "kindness": {
+      "title": "Reglas de convivencia",
+      "p1": "La gente desaparece por razones reales — la vida pasa, las conversaciones se apagan. El ghosting recibe acompañamiento, nunca castigo: un recordatorio amable para cerrar el ciclo, despedidas amables de un toque e insignias que se ganan por buenos hábitos. Cerrar el ciclo con amabilidad siempre es más fácil que desaparecer.",
+      "p2": "Las reglas de convivencia nunca producen un strike, una suspensión o una eliminación — y nada negativo aparece jamás en tu perfil. Quien se calla porque se sintió inseguro nunca es penalizado."
+    },
+    "removal": {
+      "title": "Cuando una cuenta es eliminada",
+      "p1": "La eliminación solo ocurre con el tercer strike, solo después de que una persona lo revise todo, y siempre con un camino de apelación — un revisor distinto responde en 72 horas y decide en 7 días. Una apelación exitosa lo restaura todo exactamente como estaba.",
+      "p2": "La otra persona solo ve una línea neutral — “Esta cuenta ya no está en Resonance.” Nunca un motivo, nunca una etiqueta. Las eliminaciones pueden equivocarse; exactamente por eso existe la apelación."
+    }
   }
 }

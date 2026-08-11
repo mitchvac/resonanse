@@ -31,6 +31,10 @@ export const users = mysqlTable("users", {
     .notNull()
     .$onUpdate(() => new Date()),
   lastSignInAt: timestamp("lastSignInAt").defaultNow().notNull(),
+  /** Set when moderation removes the account (strike 3, human-confirmed). */
+  removedAt: timestamp("removedAt"),
+  /** The user_strikes.id whose confirmation removed the account. */
+  removalStrikeId: bigint("removalStrikeId", { mode: "number", unsigned: true }),
 });
 
 export type User = typeof users.$inferSelect;
@@ -422,6 +426,13 @@ export const reports = mysqlTable(
       .references(() => users.id),
     reason: varchar("reason", { length: 60 }).notNull(),
     detail: text("detail"),
+    /** V93: reports became a real moderation queue ('open' until reviewed). */
+    status: varchar("status", { length: 24 }).notNull().default("open"),
+    /** Reporter trust weight (§5.5 anti-weaponization); low weight never corroborates alone. */
+    weight: double("weight").notNull().default(1),
+    /** Connected-account collapse key — one dedupGroup counts as one report. */
+    dedupGroup: varchar("dedupGroup", { length: 64 }),
+    reviewedAt: timestamp("reviewedAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [index("reports_target_idx").on(table.targetUserId)],
@@ -1051,3 +1062,199 @@ export const gamePasses = mysqlTable(
 
 export type GamePass = typeof gamePasses.$inferSelect;
 export type InsertGamePass = typeof gamePasses.$inferInsert;
+
+// ── V93 Phase 0 — moderation foundations ──────────────────────────────
+/* Tier A hard strikes (scam/fraud, harassment, fake identity) with read-time
+   90-day decay, human-reviewed removal with appeal, and a full audit trail.
+   Corroboration basis is mandatory on every strike — no single-signal strikes
+   (community standards §5.4). varchar (not mysqlEnum) per V93 conventions. */
+
+export const STRIKE_CATEGORIES = ["A1", "A2", "A3"] as const;
+export const STRIKE_BASES = [
+  "multi_report",
+  "detector_human",
+  "high_conf_plus",
+] as const;
+
+export const userStrikes = mysqlTable(
+  "user_strikes",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    /** 'A1' scam/fraud | 'A2' harassment/threats | 'A3' fake identity. */
+    category: varchar("category", { length: 8 }).notNull(),
+    /** The quoted rule key shown to the member. */
+    ruleRef: varchar("ruleRef", { length: 64 }).notNull(),
+    /** Corroboration basis — mandatory (§5.4). */
+    basis: varchar("basis", { length: 24 }).notNull(),
+    /** Comma-joined scam_signals/report IDs backing the strike. */
+    signalRefs: varchar("signalRefs", { length: 255 }).notNull().default(""),
+    /** The reviewing human (system strikes still store one, per §5.4). */
+    issuedBy: bigint("issuedBy", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    acknowledgedAt: timestamp("acknowledgedAt"),
+    issuedAt: timestamp("issuedAt").defaultNow().notNull(),
+    /** issuedAt + 90 days, set by code. Decay is read-time: queries filter expiresAt > now. */
+    expiresAt: timestamp("expiresAt").notNull(),
+    voidedAt: timestamp("voidedAt"),
+    voidReason: varchar("voidReason", { length: 255 }),
+  },
+  (table) => [
+    index("user_strikes_user_active_idx").on(
+      table.userId,
+      table.voidedAt,
+      table.expiresAt,
+    ),
+  ],
+);
+
+export type UserStrike = typeof userStrikes.$inferSelect;
+export type InsertUserStrike = typeof userStrikes.$inferInsert;
+
+export const APPEAL_STATUSES = [
+  "open",
+  "in_review",
+  "upheld",
+  "denied",
+] as const;
+
+export const removalAppeals = mysqlTable(
+  "removal_appeals",
+  {
+    id: serial("id").primaryKey(),
+    userId: bigint("userId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    strikeId: bigint("strikeId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => userStrikes.id),
+    body: text("body").notNull(),
+    status: varchar("status", { length: 24 }).notNull().default("open"),
+    reviewedBy: bigint("reviewedBy", { mode: "number", unsigned: true }).references(
+      () => users.id,
+    ),
+    /** SLA: first human response ≤ 72h, decision ≤ 7d (agent alerts on breach). */
+    firstResponseAt: timestamp("firstResponseAt"),
+    decidedAt: timestamp("decidedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [
+    index("removal_appeals_status_idx").on(table.status, table.createdAt),
+  ],
+);
+
+export type RemovalAppeal = typeof removalAppeals.$inferSelect;
+export type InsertRemovalAppeal = typeof removalAppeals.$inferInsert;
+
+/** The audit trail for everything a moderator does. */
+export const moderationActions = mysqlTable(
+  "moderation_actions",
+  {
+    id: serial("id").primaryKey(),
+    actorId: bigint("actorId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    action: varchar("action", { length: 48 }).notNull(),
+    targetUserId: bigint("targetUserId", { mode: "number", unsigned: true }).references(
+      () => users.id,
+    ),
+    refs: varchar("refs", { length: 255 }).notNull().default(""),
+    note: varchar("note", { length: 500 }).notNull().default(""),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [
+    index("moderation_actions_target_idx").on(table.targetUserId, table.createdAt),
+  ],
+);
+
+export type ModerationAction = typeof moderationActions.$inferSelect;
+export type InsertModerationAction = typeof moderationActions.$inferInsert;
+
+/**
+ * V93-P1 Scam Shield. The detector stores pattern CLASSES and a score —
+ * never message content (content already lives in `messages`; duplicating
+ * it would double the privacy surface). Crypto/finance topic talk scores 0;
+ * only extraction-ask combinations (P1-P5) produce rows here.
+ */
+export const SCAM_SIGNAL_DISPOSITIONS = [
+  "none",
+  "recipient_warning",
+  "queued_review",
+  "dismissed",
+  "confirmed",
+] as const;
+
+export const scamSignals = mysqlTable(
+  "scam_signals",
+  {
+    id: serial("id").primaryKey(),
+    /** Not an FK — conversations may purge; signals must survive for review. */
+    conversationId: bigint("conversationId", { mode: "number", unsigned: true }).notNull(),
+    senderId: bigint("senderId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    messageId: bigint("messageId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => messages.id),
+    /** Comma-joined pattern class IDs ('P1'..'P5') — the pattern, not the content. */
+    patterns: varchar("patterns", { length: 64 }).notNull().default(""),
+    score: int("score").notNull().default(0),
+    disposition: varchar("disposition", { length: 24 }).notNull().default("none"),
+    reviewedBy: bigint("reviewedBy", { mode: "number", unsigned: true }).references(
+      () => users.id,
+    ),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [
+    index("scam_signals_sender_idx").on(table.senderId, table.createdAt),
+    index("scam_signals_conversation_idx").on(table.conversationId, table.createdAt),
+  ],
+);
+
+export type ScamSignal = typeof scamSignals.$inferSelect;
+export type InsertScamSignal = typeof scamSignals.$inferInsert;
+
+/**
+ * Recipient-side only. The sender is never joined to this row in any
+ * user-facing query — the warned member sees a banner, the sender sees nothing.
+ */
+export const VICTIM_WARNING_LEVELS = ["standard", "elevated"] as const;
+
+export const victimWarnings = mysqlTable(
+  "victim_warnings",
+  {
+    id: serial("id").primaryKey(),
+    signalId: bigint("signalId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => scamSignals.id),
+    recipientId: bigint("recipientId", { mode: "number", unsigned: true })
+      .notNull()
+      .references(() => users.id),
+    conversationId: bigint("conversationId", { mode: "number", unsigned: true }).notNull(),
+    level: varchar("level", { length: 16 }).notNull().default("standard"),
+    shownAt: timestamp("shownAt").defaultNow().notNull(),
+    acknowledgedAt: timestamp("acknowledgedAt"),
+  },
+  (table) => [
+    index("victim_warnings_recipient_idx").on(table.recipientId, table.acknowledgedAt),
+  ],
+);
+
+export type VictimWarning = typeof victimWarnings.$inferSelect;
+export type InsertVictimWarning = typeof victimWarnings.$inferInsert;
+
+/** Local mirror of the URLhaus blocklist + manual entries, read via an in-memory cache. */
+export const BLOCKED_DOMAIN_SOURCES = ["urlhaus", "safe_browsing", "manual"] as const;
+
+export const blockedDomains = mysqlTable("blocked_domains", {
+  id: serial("id").primaryKey(),
+  domain: varchar("domain", { length: 255 }).notNull().unique(),
+  source: varchar("source", { length: 24 }).notNull().default("manual"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type BlockedDomain = typeof blockedDomains.$inferSelect;
+export type InsertBlockedDomain = typeof blockedDomains.$inferInsert;

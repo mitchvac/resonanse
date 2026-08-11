@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Archive, ArchiveRestore, BellOff, Bell, Check, Flag, MapPin, Timer, UserX } from 'lucide-react';
 import type { MatchEntry } from '@/components/chat/types';
-import { relTime } from '@/components/chat/types';
+import { isRemovedPeer, relTime } from '@/components/chat/types';
 import { cn } from '@/lib/utils';
 
 export type OutcomeChipKind = 'replied' | 'date' | 'wemet';
@@ -96,11 +96,14 @@ export default function ConversationRow({
   onRemove: () => void;
 }) {
   const { t } = useTranslation('connect');
+  const { t: ts } = useTranslation('safety');
   const [open, setOpen] = useState(false);
   const profile = entry.otherProfile;
   const photo = profile?.photos?.[0] ?? '/avatar-01.jpg';
   const name = profile?.displayName?.split(' ')[0] ?? t('matches.defaultName');
   const last = entry.lastMessage;
+  /* V93 removed-peer tombstone — neutral muted line instead of the preview. */
+  const removedPeer = isRemovedPeer(entry);
   const previewText = last
     ? last.kind === 'date_idea'
       ? t('matches.previewDateIdea')
@@ -110,11 +113,13 @@ export default function ConversationRow({
     : '';
   const preview = typing
     ? null
-    : last
-      ? last.senderId === myUserId
-        ? t('matches.previewYou', { content: previewText })
-        : previewText
-      : t('matches.previewSayHello');
+    : removedPeer
+      ? ts('removed.peer')
+      : last
+        ? last.senderId === myUserId
+          ? t('matches.previewYou', { content: previewText })
+          : previewText
+        : t('matches.previewSayHello');
 
   return (
     <motion.div
@@ -223,8 +228,8 @@ export default function ConversationRow({
             <TypingDots />
           ) : (
             <span
-              className={cn('t-caption block truncate', unread ? 'font-bold' : '')}
-              style={{ color: unread ? 'var(--text)' : 'var(--text-secondary)' }}
+              className={cn('t-caption block truncate', unread && !removedPeer ? 'font-bold' : '')}
+              style={{ color: unread && !removedPeer ? 'var(--text)' : 'var(--text-secondary)' }}
             >
               {preview}
             </span>

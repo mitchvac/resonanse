@@ -1,0 +1,59 @@
+{
+  "standing": {
+    "title": "Sua situação",
+    "clean": "Ficha limpa — nenhum strike ativo. Continue sendo você.",
+    "strikeN": "Strike {{n}} de 3",
+    "issued": "Emitido em {{date}}",
+    "expires": "Expira em {{date}}",
+    "appeal": "Recorrer",
+    "appealed": "Recurso {{status}}",
+    "ack": "Eu li",
+    "acked": "Lido",
+    "caption": "Strikes expiram 90 dias após a emissão. Um humano revisa toda remoção, e você sempre pode recorrer.",
+    "removedTitle": "Sua conta do Resonance foi removida",
+    "removedBody": "Um membro da nossa equipe — um humano, não um robô — revisou sua conta e confirmou uma terceira violação. Seus matches veem apenas isto: “Esta conta não está mais no Resonance.” Nada mais é dito sobre você, para ninguém.",
+    "rule": {
+      "A1": "Regra de segurança contra golpes / fraude",
+      "A2": "Assédio / ameaças",
+      "A3": "Identidade falsa"
+    }
+  },
+  "scamBanner": {
+    "title": "Alerta do Scam Shield",
+    "body": "Esta conversa está mostrando um padrão comum em golpes românticos. Nunca envie cripto ou dinheiro para alguém que você não conheceu pessoalmente — por mais real que pareça.",
+    "note": "A outra pessoa não foi acusada de nada e não pode ver este aviso.",
+    "gotIt": "Entendi"
+  },
+  "cryptoHint": {
+    "body": "Falar sobre cripto aqui é totalmente tranquilo — aprender é bem-vindo. Uma dica que protege todo mundo: nunca envie dinheiro ou cripto para alguém que você não conheceu pessoalmente.",
+    "dismissAria": "Fechar esta dica"
+  },
+  "removed": {
+    "peer": "Esta conta não está mais no Resonance."
+  },
+  "appeal": {
+    "title": "Recorra desta decisão",
+    "body": "Se você acredita que isso está errado, pode recorrer. Um membro diferente da nossa equipe vai revisar tudo do zero — respondemos em até 72 horas e decidimos em até 7 dias. Se o seu recurso for aceito, tudo é restaurado exatamente como estava.",
+    "placeholder": "Conte, com suas palavras, por que você acha que esta decisão está errada. Um humano lê cada palavra.",
+    "submit": "Enviar recurso",
+    "thanks": "Recebemos — um humano está cuidando do seu caso. Seu recurso está na fila; aconteça o que acontecer, você vai ouvir de uma pessoa, em palavras claras.",
+    "error": "Não foi possível enviar seu recurso — verifique sua conexão e tente de novo.",
+    "status": {
+      "open": "na fila",
+      "in_review": "em análise",
+      "upheld": "aceito",
+      "denied": "negado"
+    }
+  },
+  "settings": {
+    "rowTitle": "Sua situação",
+    "rowCaptionClean": "Nenhum strike ativo",
+    "rowCaptionStrikes": "{{count}} strike ativo",
+    "rowCaptionStrikes_other": "{{count}} strikes ativos",
+    "rowCaptionRemoved": "Conta removida — recorra aqui"
+  },
+  "toasts": {
+    "ackDone": "Obrigado por ler — anotado.",
+    "ackError": "Não foi possível salvar — verifique sua conexão e tente de novo."
+  }
+}

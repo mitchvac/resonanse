@@ -1,0 +1,59 @@
+{
+  "standing": {
+    "title": "Dein Stand",
+    "clean": "Saubere Bilanz — keine aktiven Strikes. Bleib einfach du.",
+    "strikeN": "Strike {{n}} von 3",
+    "issued": "Ausgestellt am {{date}}",
+    "expires": "Läuft ab am {{date}}",
+    "appeal": "Einspruch",
+    "appealed": "Einspruch {{status}}",
+    "ack": "Habe ich gelesen",
+    "acked": "Gelesen",
+    "caption": "Strikes laufen 90 Tage nach Ausstellung ab. Jede Entfernung wird von einem Menschen geprüft, und du kannst jederzeit Einspruch einlegen.",
+    "removedTitle": "Dein Resonance-Konto wurde entfernt",
+    "removedBody": "Ein Mitglied unseres Teams — ein Mensch, kein Bot — hat dein Konto geprüft und einen dritten Verstoß bestätigt. Deine Matches sehen nur: „Dieses Konto ist nicht mehr auf Resonance.“ Mehr wird über dich nicht gesagt, niemandem.",
+    "rule": {
+      "A1": "Sicherheitsregel zu Scams / Betrug",
+      "A2": "Belästigung / Drohungen",
+      "A3": "Falsche Identität"
+    }
+  },
+  "scamBanner": {
+    "title": "Kurzer Hinweis vom Scam Shield",
+    "body": "Diese Unterhaltung zeigt ein Muster, das bei Romance-Scams häufig vorkommt. Schicke niemals Krypto oder Geld an jemanden, den du noch nicht persönlich getroffen hast — egal, wie echt es sich anfühlt.",
+    "note": "Die andere Person wurde nicht beschuldigt und kann diesen Hinweis nicht sehen.",
+    "gotIt": "Verstanden"
+  },
+  "cryptoHint": {
+    "body": "Über Krypto zu reden ist hier völlig okay — Lernen ist willkommen. Ein Tipp, der alle schützt: Schicke niemals Geld oder Krypto an jemanden, den du noch nicht persönlich getroffen hast.",
+    "dismissAria": "Diesen Tipp schließen"
+  },
+  "removed": {
+    "peer": "Dieses Konto ist nicht mehr auf Resonance."
+  },
+  "appeal": {
+    "title": "Lege Einspruch ein",
+    "body": "Wenn du glaubst, dass das falsch ist, kannst du Einspruch einlegen. Ein anderes Teammitglied prüft alles neu — wir antworten innerhalb von 72 Stunden und entscheiden innerhalb von 7 Tagen. Wenn dein Einspruch erfolgreich ist, wird alles genau so wiederhergestellt, wie es war.",
+    "placeholder": "Sag uns in eigenen Worten, warum du diese Entscheidung für falsch hältst. Ein Mensch liest jedes Wort.",
+    "submit": "Einspruch senden",
+    "thanks": "Angekommen — ein Mensch kümmert sich um deinen Fall. Dein Einspruch ist in der Warteschlange; wie es auch ausgeht, du hörst es von einem Menschen, in klaren Worten.",
+    "error": "Dein Einspruch konnte nicht gesendet werden — prüfe deine Verbindung und versuche es erneut.",
+    "status": {
+      "open": "in der Warteschlange",
+      "in_review": "in Prüfung",
+      "upheld": "erfolgreich",
+      "denied": "abgelehnt"
+    }
+  },
+  "settings": {
+    "rowTitle": "Dein Stand",
+    "rowCaptionClean": "Keine aktiven Strikes",
+    "rowCaptionStrikes": "{{count}} aktiver Strike",
+    "rowCaptionStrikes_other": "{{count}} aktive Strikes",
+    "rowCaptionRemoved": "Konto entfernt — hier Einspruch einlegen"
+  },
+  "toasts": {
+    "ackDone": "Danke fürs Lesen — notiert.",
+    "ackError": "Das konnte nicht gespeichert werden — prüfe deine Verbindung und versuche es erneut."
+  }
+}

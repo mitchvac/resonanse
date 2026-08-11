@@ -18,9 +18,18 @@
     "eyebrow": "Das Problem",
     "heading": "Endlose Stapel. Gemischte Absichten. Tote Chats.",
     "body": "Alte Apps monetarisieren deine Einsamkeit. Masse statt Klasse, Paywalls statt Ergebnisse und eine Swipe-Ökonomie, die belohnt, sich nie zu treffen.",
-    "stat1": { "suffix": " Min.", "label": "SWIPEN / TAG" },
-    "stat2": { "suffix": "%", "label": "MATCH → DATE" },
-    "stat3": { "static": "1 von 2", "label": "FÜHLEN SICH SCHLECHTER" }
+    "stat1": {
+      "suffix": " Min.",
+      "label": "SWIPEN / TAG"
+    },
+    "stat2": {
+      "suffix": "%",
+      "label": "MATCH → DATE"
+    },
+    "stat3": {
+      "static": "1 von 2",
+      "label": "FÜHLEN SICH SCHLECHTER"
+    }
   },
   "loop": {
     "eyebrow": "Der Resonance-Kreislauf",
@@ -125,9 +134,15 @@
     "eyebrow": "Erste Signale",
     "heading": "Menschen, die aufgehört haben zu scrollen",
     "headshotAlt": "Porträt von {{name}}",
-    "q1": { "quote": "Das Tageslimit fühlte sich einen Tag lang eng an. Dann wie Erleichterung." },
-    "q2": { "quote": "Die Prompts schafften, was meine Anmachsprüche nie konnten. Wir trafen uns nach fünf Tagen." },
-    "q3": { "quote": "Die erste App, bei der meine ehrliche Absicht niemanden verschreckte – sie zog die Richtigen an." }
+    "q1": {
+      "quote": "Das Tageslimit fühlte sich einen Tag lang eng an. Dann wie Erleichterung."
+    },
+    "q2": {
+      "quote": "Die Prompts schafften, was meine Anmachsprüche nie konnten. Wir trafen uns nach fünf Tagen."
+    },
+    "q3": {
+      "quote": "Die erste App, bei der meine ehrliche Absicht niemanden verschreckte – sie zog die Richtigen an."
+    }
   },
   "pricing": {
     "eyebrow": "Preise",
@@ -255,5 +270,47 @@
     "page2": "Seite 2",
     "signOut": "Abmelden",
     "menu": "Menü"
+  },
+  "guidelines": {
+    "eyebrow": "Community-Standards",
+    "title": "Community-Richtlinien",
+    "intro": "Die meisten Dating-Apps bestrafen Menschen. Resonance ist gebaut, um auf deiner Seite zu sein — und jede Regel hier existiert, um zwei Versprechen gleichzeitig zu halten: Wir schützen dich vor Menschen, die dir schaden wollen, und wir behandeln einen ehrlichen Fehler nie wie ein Verbrechen.",
+    "promise": {
+      "title": "Unser Versprechen",
+      "p1": "Wir schützen dich vor den Menschen, die dir schaden wollen — Scammer, Belästiger, Fakes. Konsequent und schnell.",
+      "p2": "Wir behandeln einen ehrlichen Fehler nie wie ein Verbrechen. Ein ungeschickter Satz, eine ruhige Woche, eine eingeschlafene Unterhaltung — das ist menschlich, und wir reagieren mit Lehre und Coaching, nicht mit Strafe. Wenn wir durchgreifen, erklären wir. Wenn wir entfernen, geben wir einen Weg zurück."
+    },
+    "twoTiers": {
+      "title": "Zwei Arten von Regeln",
+      "p1": "Resonance benutzt niemals eine Strafleiter für alles. Es gibt genau zwei Ebenen, und sie vermischen sich nie.",
+      "safetyTitle": "Sicherheitsregeln (Strikes)",
+      "safetyBody": "Die ernsten: keine Scam- oder Betrugsmuster, keine Belästigung, Drohungen oder Hass, keine falsche Identität hinter einem Verifizierungsabzeichen. Wer sie bricht, bekommt einen Strike — eine private Warnung, die lehrt. Im schlimmsten Fall, beim dritten Strike und nur nach menschlicher Prüfung, kann ein Konto entfernt werden. Immer mit Einspruchsmöglichkeit.",
+      "kindTitle": "Anstandsregeln (nie ein Strike)",
+      "kindBody": "Die alltäglichen: Antworte, wenn du kannst, schließe Gespräche freundlich ab, verschwinde nicht ohne ein Wort. Wer sie bricht, bekommt schlimmstenfalls einen freundlichen Hinweis oder etwas weniger Sichtbarkeit — nie einen Strike, nie eine Entfernung, nie ein öffentliches negatives Zeichen.",
+      "p2": "Ein Anstandsfehler kann sich niemals zu einem Strike aufsummieren. Nur die drei Sicherheitskategorien können das."
+    },
+    "strike": {
+      "title": "Was ist ein Strike?",
+      "p1": "Ein Strike ist eine private Warnung, die lehrt, nicht straft. Er zitiert immer die Regel und zeigt, was sie ausgelöst hat, und ist nur für dich sichtbar, unter Einstellungen → Dein Stand.",
+      "s1": "Strike 1: Wir zeigen dir die Regel und was passiert ist — die meisten wussten es einfach nicht.",
+      "s2": "Strike 2: eine klare letzte Warnung, in klaren Worten.",
+      "s3": "Strike 3: das Konto wird entfernt — aber ein Mensch prüft immer zuerst, und du kannst jederzeit Einspruch einlegen.",
+      "p2": "Strikes laufen 90 Tage nach Ausstellung automatisch ab. Eine einzelne Meldung oder ein einzelnes markiertes Wort kann niemals einen Strike erzeugen — jeder Strike braucht eine Bestätigung, und jede Entfernung wird vorher von einem Menschen geprüft."
+    },
+    "money": {
+      "title": "Die eine Geldregel",
+      "p1": "Über Krypto oder Investieren zu reden ist hier immer in Ordnung — Lernen ist willkommen, und das Thema wird nie markiert. Niemals.",
+      "p2": "Eine klare Linie: Schicke niemals Geld oder Krypto an jemanden, den du noch nicht persönlich getroffen hast. Wenn eine Unterhaltung in diese Richtung geht, warnen wir die Person, die gefragt wird — das ist Scam Shield — und niemand wird beschuldigt."
+    },
+    "kindness": {
+      "title": "Anstandsregeln",
+      "p1": "Menschen verschwinden aus echten Gründen — das Leben passiert, Gespräche verlaufen. Ghosting bekommt Coaching, niemals Strafe: einen sanften Hinweis zum Abschließen, freundliche Abschiede per Fingertipp und verdiente Abzeichen für gute Gewohnheiten. Ein Gespräch freundlich abzuschließen ist immer leichter als zu verschwinden.",
+      "p2": "Anstandsregeln erzeugen nie einen Strike, eine Sperrung oder eine Entfernung — und nichts Negatives erscheint je auf deinem Profil. Wer still wird, weil er sich unsicher fühlte, wird nie bestraft."
+    },
+    "removal": {
+      "title": "Wenn ein Konto entfernt wird",
+      "p1": "Eine Entfernung passiert nur beim dritten Strike, nur nachdem ein Mensch alles geprüft hat, und immer mit einem Einspruchsweg — ein anderer Prüfer antwortet innerhalb von 72 Stunden und entscheidet innerhalb von 7 Tagen. Ein erfolgreicher Einspruch stellt alles genau so wieder her, wie es war.",
+      "p2": "Die andere Person sieht nur eine neutrale Zeile — „Dieses Konto ist nicht mehr auf Resonance.“ Nie einen Grund, nie ein Etikett. Entfernungen können falsch sein; genau deshalb gibt es den Einspruch."
+    }
   }
 }
