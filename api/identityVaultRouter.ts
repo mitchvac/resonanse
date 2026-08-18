@@ -92,7 +92,10 @@ export const identityVaultRouter = createRouter({
       await db
         .insert(identityVault)
         .values({ customerRef, payload })
-        .onDuplicateKeyUpdate({ set: { payload, updatedAt: new Date() } });
+        .onConflictDoUpdate({
+          target: identityVault.customerRef,
+          set: { payload, updatedAt: new Date() },
+        });
       await audit(customerRef, "UPSERT", ctx.user.id, { fieldCount });
       // Phase 3 hook: screen the freshly-submitted legal name against the
       // sanctions lists. Fire-and-forget — a screening outage must never

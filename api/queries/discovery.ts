@@ -351,7 +351,10 @@ export async function recordPass(
   await getDb()
     .insert(passes)
     .values({ fromUserId, toProfileId })
-    .onDuplicateKeyUpdate({ set: { toProfileId } });
+    .onConflictDoUpdate({
+      target: [passes.fromUserId, passes.toProfileId],
+      set: { toProfileId },
+    });
 }
 
 /**
@@ -380,7 +383,8 @@ export async function recordLike(
   await getDb()
     .insert(likes)
     .values(data)
-    .onDuplicateKeyUpdate({
+    .onConflictDoUpdate({
+      target: [likes.fromUserId, likes.toProfileId],
       set: {
         kind: data.kind,
         comment: data.comment ?? null,
@@ -422,7 +426,10 @@ export async function getOrCreateMatch(
     await db
       .insert(matches)
       .values({ userAId: a, userBId: b })
-      .onDuplicateKeyUpdate({ set: { userBId: b } });
+      .onConflictDoUpdate({
+        target: [matches.userAId, matches.userBId],
+        set: { userBId: b },
+      });
     const rows = await db
       .select()
       .from(matches)
@@ -452,7 +459,10 @@ export async function getOrCreateMatch(
     await db
       .insert(conversations)
       .values({ matchId: match.id, ephemeral })
-      .onDuplicateKeyUpdate({ set: { matchId: match.id } });
+      .onConflictDoUpdate({
+        target: conversations.matchId,
+        set: { matchId: match.id },
+      });
     const rows = await db
       .select()
       .from(conversations)
@@ -561,7 +571,10 @@ export async function seedIncomingLikes(
     await db
       .insert(likes)
       .values({ ...row, createdAt: now })
-      .onDuplicateKeyUpdate({ set: { toProfileId: myProfileId } });
+      .onConflictDoUpdate({
+        target: [likes.fromUserId, likes.toProfileId],
+        set: { toProfileId: myProfileId },
+      });
   }
 
   await db

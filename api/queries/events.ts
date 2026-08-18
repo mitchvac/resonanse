@@ -68,7 +68,10 @@ export async function upsertRsvp(
   await getDb()
     .insert(eventRsvps)
     .values({ eventId, userId, status })
-    .onDuplicateKeyUpdate({ set: { status } });
+    .onConflictDoUpdate({
+      target: [eventRsvps.eventId, eventRsvps.userId],
+      set: { status },
+    });
 }
 
 export async function cancelRsvp(eventId: number, userId: number): Promise<void> {

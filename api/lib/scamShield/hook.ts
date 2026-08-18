@@ -95,7 +95,7 @@ export async function runScamScan(args: {
       score,
       disposition,
     })
-    .$returningId();
+    .returning({ id: scamSignals.id });
 
   // Victim-side warning: the OTHER participant only, never the sender.
   if (disposition === "recipient_warning" || disposition === "queued_review") {

@@ -37,7 +37,10 @@ export async function blockUser(
   await getDb()
     .insert(blocks)
     .values({ blockerId, blockedId })
-    .onDuplicateKeyUpdate({ set: { blockedId } });
+    .onConflictDoUpdate({
+      target: [blocks.blockerId, blocks.blockedId],
+      set: { blockedId },
+    });
 }
 
 export async function unblockUser(

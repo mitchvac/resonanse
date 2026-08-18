@@ -67,7 +67,10 @@ async function syncUrlhaus(): Promise<number> {
     await db
       .insert(blockedDomains)
       .values(chunk.map((domain) => ({ domain, source: "urlhaus" as const })))
-      .onDuplicateKeyUpdate({ set: { domain: sql`values(domain)` } });
+      .onConflictDoUpdate({
+        target: blockedDomains.domain,
+        set: { domain: sql`excluded.domain` },
+      });
     upserted += chunk.length;
   }
   return upserted;

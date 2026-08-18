@@ -64,8 +64,11 @@ export const adsRouter = createRouter({
         message: `You already have ${MAX_BANKED_PASSES} games banked — play one before watching more.`,
       });
     }
-    const res = await db.insert(schema.adWatchSessions).values({ userId: ctx.user.id });
-    return { watchId: Number(res[0].insertId), adLengthSeconds: AD_LENGTH_SECONDS };
+    const [res] = await db
+      .insert(schema.adWatchSessions)
+      .values({ userId: ctx.user.id })
+      .returning({ id: schema.adWatchSessions.id });
+    return { watchId: Number(res.id), adLengthSeconds: AD_LENGTH_SECONDS };
   }),
 
   /**

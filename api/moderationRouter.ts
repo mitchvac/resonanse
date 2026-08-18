@@ -203,7 +203,7 @@ export const moderationRouter = createRouter({
           issuedBy: ctx.user.id,
           expiresAt,
         })
-        .$returningId();
+        .returning({ id: userStrikes.id });
       await logAction(
         ctx.user.id,
         "issue_strike",

@@ -190,7 +190,7 @@ export const safetyRouter = createRouter({
           body: input.body,
           status: "open",
         })
-        .$returningId();
+        .returning({ id: removalAppeals.id });
       return { ok: true as const, appealId };
     }),
 });

@@ -394,7 +394,10 @@ async function grantEntitlementInTx(
     await tx
       .insert(schema.entitlements)
       .values({ userId })
-      .onDuplicateKeyUpdate({ set: { userId } });
+      .onConflictDoUpdate({
+        target: schema.entitlements.userId,
+        set: { userId },
+      });
   }
   const set =
     tier === "plus"

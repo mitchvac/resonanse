@@ -493,7 +493,8 @@ async function seed() {
     await db
       .insert(users)
       .values(user)
-      .onDuplicateKeyUpdate({
+      .onConflictDoUpdate({
+        target: users.unionId,
         set: { name: persona.name, avatar: persona.photo },
       });
   }
@@ -532,7 +533,8 @@ async function seed() {
     await db
       .insert(profiles)
       .values(profile)
-      .onDuplicateKeyUpdate({
+      .onConflictDoUpdate({
+        target: profiles.userId,
         set: {
           displayName: persona.name,
           bio: persona.bio,
@@ -551,7 +553,7 @@ async function seed() {
     await db
       .insert(entitlements)
       .values({ userId: user.id })
-      .onDuplicateKeyUpdate({ set: { userId: user.id } });
+      .onConflictDoUpdate({ target: entitlements.userId, set: { userId: user.id } });
   }
 
   // 4. Events (idempotent via title check)
@@ -572,7 +574,7 @@ async function seed() {
   console.log(
     `Done. ${personas.length} users, ${profileCount} profiles, ${eventCount} new events (${existingTitles.size} already existed).`,
   );
-  process.exit(0); // close MySQL connection pool
+  process.exit(0); // close Postgres connection pool
 }
 
 seed();

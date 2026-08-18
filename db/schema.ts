@@ -1,30 +1,34 @@
-import { sql } from "drizzle-orm";
+// ── Postgres dialect (Supabase) — ported from MySQL/TiDB. ─────────────
+// All tables/columns/defaults/indexes/FKs/uniques preserved 1:1; only the
+// dialect mapping changed (bigserial PKs, pgEnum, jsonb, real booleans,
+// timestamp mode "string"). The 12 MySQL JSON-validity CHECK constraints
+// were dropped (jsonb self-validates); MySQL longtext/mediumtext/double
+// map to text/text/doublePrecision.
 import {
-  mysqlTable,
-  mysqlEnum,
-  serial,
+  pgTable,
+  pgEnum,
+  bigserial,
   bigint,
-  int,
-  double,
+  integer,
+  doublePrecision,
   boolean,
-  json,
-  longtext,
-  mediumtext,
+  jsonb,
   varchar,
   text,
   timestamp,
   uniqueIndex,
   index,
-  check,
-} from "drizzle-orm/mysql-core";
+} from "drizzle-orm/pg-core";
 
-export const users = mysqlTable("users", {
-  id: serial("id").primaryKey(),
+export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);
+
+export const users = pgTable("users", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
   unionId: varchar("unionId", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 320 }),
   avatar: text("avatar"),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: userRoleEnum("role").default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt")
     .defaultNow()
@@ -34,17 +38,17 @@ export const users = mysqlTable("users", {
   /** Set when moderation removes the account (strike 3, human-confirmed). */
   removedAt: timestamp("removedAt"),
   /** The user_strikes.id whose confirmation removed the account. */
-  removalStrikeId: bigint("removalStrikeId", { mode: "number", unsigned: true }),
+  removalStrikeId: bigint("removalStrikeId", { mode: "number" }),
 });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-export const passwordCredentials = mysqlTable(
+export const passwordCredentials = pgTable(
   "passwordCredentials",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     email: varchar("email", { length: 320 }).notNull(),
@@ -69,11 +73,11 @@ export type InsertPasswordCredential = typeof passwordCredentials.$inferInsert;
  * Single-use password reset tokens. Only the sha256 of the token is stored —
  * the raw token lives solely in the emailed link.
  */
-export const passwordResetTokens = mysqlTable(
+export const passwordResetTokens = pgTable(
   "passwordResetTokens",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     tokenHash: varchar("tokenHash", { length: 128 }).notNull(),
@@ -109,62 +113,65 @@ export const RELATIONSHIP_GOALS = [
   "friendship",
 ] as const;
 
-export const profiles = mysqlTable(
+export const relationshipGoalEnum = pgEnum("relationship_goal", RELATIONSHIP_GOALS);
+export const verificationStatusEnum = pgEnum("verification_status", [
+  "unverified",
+  "pending",
+  "verified",
+]);
+
+export const profiles = pgTable(
   "profiles",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     displayName: varchar("displayName", { length: 80 }).notNull(),
-    age: int("age").notNull(),
+    age: integer("age").notNull(),
     gender: varchar("gender", { length: 60 }),
     pronouns: varchar("pronouns", { length: 60 }),
     bio: text("bio"),
     city: varchar("city", { length: 120 }),
     /** Chosen events area (registry slug or custom city). Null = all areas. */
     eventArea: varchar("eventArea", { length: 120 }),
-    relationshipGoal: mysqlEnum("relationshipGoal", RELATIONSHIP_GOALS)
+    relationshipGoal: relationshipGoalEnum("relationshipGoal")
       .notNull()
       .default("explore"),
     relationshipStatus: varchar("relationshipStatus", { length: 60 }),
-    prompts: json("prompts").$type<ProfilePrompt[]>(),
-    desires: json("desires").$type<string[]>(),
-    lifestyle: json("lifestyle").$type<ProfileLifestyle>(),
-    photos: json("photos").$type<string[]>(),
-    voiceNoteUrl: mediumtext("voiceNoteUrl"),
-    heightCm: int("heightCm"),
+    prompts: jsonb("prompts").$type<ProfilePrompt[]>(),
+    desires: jsonb("desires").$type<string[]>(),
+    lifestyle: jsonb("lifestyle").$type<ProfileLifestyle>(),
+    photos: jsonb("photos").$type<string[]>(),
+    voiceNoteUrl: text("voiceNoteUrl"),
+    heightCm: integer("heightCm"),
     education: varchar("education", { length: 120 }),
     politics: varchar("politics", { length: 60 }),
     familyPlans: varchar("familyPlans", { length: 60 }),
     verified: boolean("verified").notNull().default(false),
     idVerifiedAt: timestamp("idVerifiedAt"),
     idDocType: varchar("idDocType", { length: 32 }),
-    verificationStatus: mysqlEnum("verificationStatus", [
-      "unverified",
-      "pending",
-      "verified",
-    ])
+    verificationStatus: verificationStatusEnum("verificationStatus")
       .notNull()
       .default("unverified"),
     onboardingComplete: boolean("onboardingComplete").notNull().default(false),
     anonymityMode: boolean("anonymityMode").notNull().default(false),
-    hiddenWords: json("hiddenWords").$type<string[]>(),
+    hiddenWords: jsonb("hiddenWords").$type<string[]>(),
     isSeed: boolean("isSeed").notNull().default(false),
     // Discovery preferences
-    showMe: json("showMe").$type<string[]>(),
-    openTo: json("openTo").$type<string[]>(),
+    showMe: jsonb("showMe").$type<string[]>(),
+    openTo: jsonb("openTo").$type<string[]>(),
     showIntent: boolean("showIntent").notNull().default(true),
     /** Consent-gated/kink tags — NEVER exposed in public profile views. */
-    privateDesires: json("privateDesires").$type<string[]>(),
+    privateDesires: jsonb("privateDesires").$type<string[]>(),
     /** Non-monogamy constellation — private, never public. */
     constellation:
-      json("constellation").$type<
+      jsonb("constellation").$type<
         Array<{ handle: string; name: string; photo: string; status: string }>
       >(),
     /** Private reflection ratings (1–5) — never public. */
-    reflections: json("reflections").$type<number[]>(),
-    weeklyGoal: int("weeklyGoal").notNull().default(1),
+    reflections: jsonb("reflections").$type<number[]>(),
+    weeklyGoal: integer("weeklyGoal").notNull().default(1),
     pausedAt: timestamp("pausedAt"),
     ephemeralDefault: boolean("ephemeralDefault").notNull().default(false),
     /** Idempotency marker for one-time lazy like-seeding. */
@@ -178,35 +185,28 @@ export const profiles = mysqlTable(
   (table) => [
     uniqueIndex("profiles_userId_unique").on(table.userId),
     index("profiles_seed_idx").on(table.isSeed),
-    check("prompts", sql`json_valid(\`prompts\`)`),
-    check("desires", sql`json_valid(\`desires\`)`),
-    check("lifestyle", sql`json_valid(\`lifestyle\`)`),
-    check("photos", sql`json_valid(\`photos\`)`),
-    check("hiddenWords", sql`json_valid(\`hiddenWords\`)`),
-    check("showMe", sql`json_valid(\`showMe\`)`),
-    check("openTo", sql`json_valid(\`openTo\`)`),
-    check("privateDesires", sql`json_valid(\`privateDesires\`)`),
-    check("constellation", sql`json_valid(\`constellation\`)`),
-    check("reflections", sql`json_valid(\`reflections\`)`),
   ],
 );
 
 export type Profile = typeof profiles.$inferSelect;
 export type InsertProfile = typeof profiles.$inferInsert;
 
-export const likes = mysqlTable(
+export const likeKindEnum = pgEnum("like_kind", ["like", "pulse", "flower", "wave", "kiss"]);
+export const likeTargetTypeEnum = pgEnum("like_target_type", ["profile", "prompt", "photo"]);
+
+export const likes = pgTable(
   "likes",
   {
-    id: serial("id").primaryKey(),
-    fromUserId: bigint("fromUserId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    fromUserId: bigint("fromUserId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    toProfileId: bigint("toProfileId", { mode: "number", unsigned: true })
+    toProfileId: bigint("toProfileId", { mode: "number" })
       .notNull()
       .references(() => profiles.id),
-    kind: mysqlEnum("kind", ["like", "pulse", "flower", "wave", "kiss"]).notNull().default("like"),
+    kind: likeKindEnum("kind").notNull().default("like"),
     comment: text("comment"),
-    targetType: mysqlEnum("targetType", ["profile", "prompt", "photo"])
+    targetType: likeTargetTypeEnum("targetType")
       .notNull()
       .default("profile"),
     targetRef: varchar("targetRef", { length: 255 }),
@@ -223,14 +223,14 @@ export const likes = mysqlTable(
 export type Like = typeof likes.$inferSelect;
 export type InsertLike = typeof likes.$inferInsert;
 
-export const passes = mysqlTable(
+export const passes = pgTable(
   "passes",
   {
-    id: serial("id").primaryKey(),
-    fromUserId: bigint("fromUserId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    fromUserId: bigint("fromUserId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    toProfileId: bigint("toProfileId", { mode: "number", unsigned: true })
+    toProfileId: bigint("toProfileId", { mode: "number" })
       .notNull()
       .references(() => profiles.id),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -243,17 +243,19 @@ export const passes = mysqlTable(
 export type Pass = typeof passes.$inferSelect;
 export type InsertPass = typeof passes.$inferInsert;
 
-export const matches = mysqlTable(
+export const weMetEnum = pgEnum("we_met", ["none", "met", "dated"]);
+
+export const matches = pgTable(
   "matches",
   {
-    id: serial("id").primaryKey(),
-    userAId: bigint("userAId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userAId: bigint("userAId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    userBId: bigint("userBId", { mode: "number", unsigned: true })
+    userBId: bigint("userBId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    weMet: mysqlEnum("weMet", ["none", "met", "dated"])
+    weMet: weMetEnum("weMet")
       .notNull()
       .default("none"),
     videoVerifiedAt: timestamp("videoVerifiedAt"),
@@ -268,11 +270,11 @@ export const matches = mysqlTable(
 export type Match = typeof matches.$inferSelect;
 export type InsertMatch = typeof matches.$inferInsert;
 
-export const conversations = mysqlTable(
+export const conversations = pgTable(
   "conversations",
   {
-    id: serial("id").primaryKey(),
-    matchId: bigint("matchId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    matchId: bigint("matchId", { mode: "number" })
       .notNull()
       .references(() => matches.id),
     ephemeral: boolean("ephemeral").notNull().default(false),
@@ -295,38 +297,36 @@ export type DateIdeaMeta = {
   status?: "proposed" | "accepted" | "declined";
 };
 
-export const messages = mysqlTable(
+export const messageKindEnum = pgEnum("message_kind", [
+  "text",
+  "ai_starter",
+  "date_idea",
+  "system",
+  "video_note",
+  "event_invite",
+]);
+
+export const messages = pgTable(
   "messages",
   {
-    id: serial("id").primaryKey(),
-    conversationId: bigint("conversationId", {
-      mode: "number",
-      unsigned: true,
-    })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    conversationId: bigint("conversationId", { mode: "number" })
       .notNull()
       .references(() => conversations.id),
-    senderId: bigint("senderId", { mode: "number", unsigned: true })
+    senderId: bigint("senderId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    kind: mysqlEnum("kind", [
-      "text",
-      "ai_starter",
-      "date_idea",
-      "system",
-      "video_note",
-      "event_invite",
-    ])
+    kind: messageKindEnum("kind")
       .notNull()
       .default("text"),
     content: text("content").notNull(),
-    meta: json("meta").$type<DateIdeaMeta | Record<string, unknown>>(),
+    meta: jsonb("meta").$type<DateIdeaMeta | Record<string, unknown>>(),
     /** Ephemeral conversations stamp this — rows expire 24h after send. */
     expiresAt: timestamp("expiresAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [
     index("messages_conversation_idx").on(table.conversationId),
-    check("meta", sql`json_valid(\`meta\`)`),
   ],
 );
 
@@ -342,19 +342,21 @@ export const EVENT_CATEGORIES = [
   "nightlife",
 ] as const;
 
-export const events = mysqlTable("events", {
-  id: serial("id").primaryKey(),
+export const eventCategoryEnum = pgEnum("event_category", EVENT_CATEGORIES);
+
+export const events = pgTable("events", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
   title: varchar("title", { length: 160 }).notNull(),
-  category: mysqlEnum("category", EVENT_CATEGORIES).notNull(),
+  category: eventCategoryEnum("category").notNull(),
   description: text("description"),
   image: varchar("image", { length: 255 }),
   city: varchar("city", { length: 120 }),
   venue: varchar("venue", { length: 160 }),
   address: varchar("address", { length: 255 }),
-  lat: double("lat"),
-  lng: double("lng"),
+  lat: doublePrecision("lat"),
+  lng: doublePrecision("lng"),
   startsAt: timestamp("startsAt").notNull(),
-  capacity: int("capacity").notNull().default(20),
+  capacity: integer("capacity").notNull().default(20),
   hostName: varchar("hostName", { length: 120 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
@@ -362,17 +364,19 @@ export const events = mysqlTable("events", {
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = typeof events.$inferInsert;
 
-export const eventRsvps = mysqlTable(
+export const rsvpStatusEnum = pgEnum("rsvp_status", ["going", "interested"]);
+
+export const eventRsvps = pgTable(
   "eventRsvps",
   {
-    id: serial("id").primaryKey(),
-    eventId: bigint("eventId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    eventId: bigint("eventId", { mode: "number" })
       .notNull()
       .references(() => events.id),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    status: mysqlEnum("status", ["going", "interested"])
+    status: rsvpStatusEnum("status")
       .notNull()
       .default("going"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -388,17 +392,19 @@ export type InsertEventRsvp = typeof eventRsvps.$inferInsert;
 
 export const TIERS = ["free", "plus", "x"] as const;
 
-export const entitlements = mysqlTable(
+export const tierEnum = pgEnum("tier", TIERS);
+
+export const entitlements = pgTable(
   "entitlements",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    tier: mysqlEnum("tier", TIERS).notNull().default("free"),
-    pulses: int("pulses").notNull().default(3),
-    boosts: int("boosts").notNull().default(0),
-    dailyLikeLimit: int("dailyLikeLimit").notNull().default(5),
+    tier: tierEnum("tier").notNull().default("free"),
+    pulses: integer("pulses").notNull().default(3),
+    boosts: integer("boosts").notNull().default(0),
+    dailyLikeLimit: integer("dailyLikeLimit").notNull().default(5),
     /** One-time free trial window (all features). Null until started. */
     trialStartedAt: timestamp("trialStartedAt"),
     trialEndsAt: timestamp("trialEndsAt"),
@@ -414,14 +420,14 @@ export const entitlements = mysqlTable(
 export type Entitlement = typeof entitlements.$inferSelect;
 export type InsertEntitlement = typeof entitlements.$inferInsert;
 
-export const reports = mysqlTable(
+export const reports = pgTable(
   "reports",
   {
-    id: serial("id").primaryKey(),
-    reporterId: bigint("reporterId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    reporterId: bigint("reporterId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    targetUserId: bigint("targetUserId", { mode: "number", unsigned: true })
+    targetUserId: bigint("targetUserId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     reason: varchar("reason", { length: 60 }).notNull(),
@@ -429,7 +435,7 @@ export const reports = mysqlTable(
     /** V93: reports became a real moderation queue ('open' until reviewed). */
     status: varchar("status", { length: 24 }).notNull().default("open"),
     /** Reporter trust weight (§5.5 anti-weaponization); low weight never corroborates alone. */
-    weight: double("weight").notNull().default(1),
+    weight: doublePrecision("weight").notNull().default(1),
     /** Connected-account collapse key — one dedupGroup counts as one report. */
     dedupGroup: varchar("dedupGroup", { length: 64 }),
     reviewedAt: timestamp("reviewedAt"),
@@ -441,14 +447,14 @@ export const reports = mysqlTable(
 export type Report = typeof reports.$inferSelect;
 export type InsertReport = typeof reports.$inferInsert;
 
-export const blocks = mysqlTable(
+export const blocks = pgTable(
   "blocks",
   {
-    id: serial("id").primaryKey(),
-    blockerId: bigint("blockerId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    blockerId: bigint("blockerId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    blockedId: bigint("blockedId", { mode: "number", unsigned: true })
+    blockedId: bigint("blockedId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -462,19 +468,26 @@ export const blocks = mysqlTable(
 export type Block = typeof blocks.$inferSelect;
 export type InsertBlock = typeof blocks.$inferInsert;
 
-export const feedback = mysqlTable(
+export const feedbackKindEnum = pgEnum("feedback_kind", [
+  "we_met",
+  "match_quality",
+  "date_feedback",
+  "event",
+]);
+
+export const feedback = pgTable(
   "feedback",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    matchId: bigint("matchId", { mode: "number", unsigned: true }).references(
+    matchId: bigint("matchId", { mode: "number" }).references(
       () => matches.id,
     ),
-    kind: mysqlEnum("kind", ["we_met", "match_quality", "date_feedback", "event"])
+    kind: feedbackKindEnum("kind")
       .notNull(),
-    rating: int("rating"),
+    rating: integer("rating"),
     note: text("note"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
@@ -486,21 +499,18 @@ export type InsertFeedback = typeof feedback.$inferInsert;
 
 // ── Triple verification: video notes + live video calls ────────────────
 
-export const videoNotes = mysqlTable(
+export const videoNotes = pgTable(
   "videoNotes",
   {
-    id: serial("id").primaryKey(),
-    conversationId: bigint("conversationId", {
-      mode: "number",
-      unsigned: true,
-    })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    conversationId: bigint("conversationId", { mode: "number" })
       .notNull()
       .references(() => conversations.id),
-    senderId: bigint("senderId", { mode: "number", unsigned: true })
+    senderId: bigint("senderId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    data: longtext("data").notNull(),
-    durationSec: int("durationSec").notNull(),
+    data: text("data").notNull(),
+    durationSec: integer("durationSec").notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [index("videoNotes_conversation_idx").on(table.conversationId)],
@@ -509,29 +519,28 @@ export const videoNotes = mysqlTable(
 export type VideoNote = typeof videoNotes.$inferSelect;
 export type InsertVideoNote = typeof videoNotes.$inferInsert;
 
-export const callSessions = mysqlTable(
+export const callStatusEnum = pgEnum("call_status", [
+  "ringing",
+  "active",
+  "declined",
+  "ended",
+  "missed",
+]);
+
+export const callSessions = pgTable(
   "callSessions",
   {
-    id: serial("id").primaryKey(),
-    conversationId: bigint("conversationId", {
-      mode: "number",
-      unsigned: true,
-    })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    conversationId: bigint("conversationId", { mode: "number" })
       .notNull()
       .references(() => conversations.id),
-    callerId: bigint("callerId", { mode: "number", unsigned: true })
+    callerId: bigint("callerId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    calleeId: bigint("calleeId", { mode: "number", unsigned: true })
+    calleeId: bigint("calleeId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    status: mysqlEnum("status", [
-      "ringing",
-      "active",
-      "declined",
-      "ended",
-      "missed",
-    ])
+    status: callStatusEnum("status")
       .notNull()
       .default("ringing"),
     answeredAt: timestamp("answeredAt"),
@@ -547,14 +556,14 @@ export const callSessions = mysqlTable(
 export type CallSession = typeof callSessions.$inferSelect;
 export type InsertCallSession = typeof callSessions.$inferInsert;
 
-export const callSignals = mysqlTable(
+export const callSignals = pgTable(
   "callSignals",
   {
-    id: serial("id").primaryKey(),
-    sessionId: bigint("sessionId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    sessionId: bigint("sessionId", { mode: "number" })
       .notNull()
       .references(() => callSessions.id),
-    fromUserId: bigint("fromUserId", { mode: "number", unsigned: true })
+    fromUserId: bigint("fromUserId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     payload: text("payload").notNull(),
@@ -572,11 +581,11 @@ export type InsertCallSignal = typeof callSignals.$inferInsert;
 // NEVER custodied — it is verified watch-only on-chain. All price math uses
 // INTEGER micro-USD units (0.10 USD = 100000, the +0.005 increment = 5000).
 
-export const dcWallets = mysqlTable(
+export const dcWallets = pgTable(
   "dc_wallets",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     walletId: varchar("walletId", { length: 64 }).notNull(),
@@ -596,9 +605,9 @@ export const dcWallets = mysqlTable(
 export type DcWallet = typeof dcWallets.$inferSelect;
 export type InsertDcWallet = typeof dcWallets.$inferInsert;
 
-export const dcLedger = mysqlTable("dc_ledger", {
+export const dcLedger = pgTable("dc_ledger", {
   walletId: varchar("walletId", { length: 64 }).primaryKey(),
-  balance: int("balance").notNull().default(0),
+  balance: integer("balance").notNull().default(0),
   updatedAt: timestamp("updatedAt")
     .defaultNow()
     .notNull()
@@ -609,10 +618,10 @@ export type DcLedgerRow = typeof dcLedger.$inferSelect;
 export type InsertDcLedgerRow = typeof dcLedger.$inferInsert;
 
 /** System-wide up-only price — a single singleton row with id = 1. */
-export const dcPriceState = mysqlTable("dc_price_state", {
-  id: int("id").primaryKey(),
-  currentPriceMicro: int("currentPriceMicro").notNull(),
-  totalSalesCount: int("totalSalesCount").notNull().default(0),
+export const dcPriceState = pgTable("dc_price_state", {
+  id: integer("id").primaryKey(),
+  currentPriceMicro: integer("currentPriceMicro").notNull(),
+  totalSalesCount: integer("totalSalesCount").notNull().default(0),
   lastSaleAt: timestamp("lastSaleAt"),
 });
 
@@ -621,19 +630,21 @@ export type InsertDcPriceStateRow = typeof dcPriceState.$inferInsert;
 
 export const DC_PAID_WITH = ["XRP", "RLUSD", "BTC", "XLM"] as const;
 
-export const dcSales = mysqlTable(
+export const dcPaidWithEnum = pgEnum("dc_paid_with", DC_PAID_WITH);
+
+export const dcSales = pgTable(
   "dc_sales",
   {
-    id: serial("id").primaryKey(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
     saleId: varchar("saleId", { length: 64 }).notNull(),
     buyerWalletId: varchar("buyerWalletId", { length: 64 }).notNull(),
     /** Supplier walletId, or the literal 'PLATFORM' for platform top-up sales. */
     sellerWalletId: varchar("sellerWalletId", { length: 64 }).notNull(),
-    amount: int("amount").notNull(),
-    pricePerCoinMicro: int("pricePerCoinMicro").notNull(),
+    amount: integer("amount").notNull(),
+    pricePerCoinMicro: integer("pricePerCoinMicro").notNull(),
     /** Exact fiat/crypto total paid, stored as text to avoid float drift. */
     totalPaidText: varchar("totalPaidText", { length: 64 }).notNull(),
-    paidWith: mysqlEnum("paidWith", DC_PAID_WITH).notNull(),
+    paidWith: dcPaidWithEnum("paidWith").notNull(),
     cryptoIntentId: varchar("cryptoIntentId", { length: 64 }),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
@@ -649,19 +660,21 @@ export type InsertDcSale = typeof dcSales.$inferInsert;
 
 export const DC_REWARD_STATUS = ["pending", "paid"] as const;
 
+export const dcRewardStatusEnum = pgEnum("dc_reward_status", DC_REWARD_STATUS);
+
 /**
  * Supplier reward OBLIGATIONS. The platform pays XRP from its own treasury
  * (6% bonus). Because the platform holds no keys, these are recorded as
  * 'pending' obligations and are NEVER broadcast on-chain by the server.
  */
-export const dcRewards = mysqlTable(
+export const dcRewards = pgTable(
   "dc_rewards",
   {
-    id: serial("id").primaryKey(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
     supplierWalletId: varchar("supplierWalletId", { length: 64 }).notNull(),
     saleId: varchar("saleId", { length: 64 }).notNull(),
     amountXrpText: varchar("amountXrpText", { length: 64 }).notNull(),
-    status: mysqlEnum("status", DC_REWARD_STATUS).notNull().default("pending"),
+    status: dcRewardStatusEnum("status").notNull().default("pending"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [index("dc_rewards_supplier_idx").on(table.supplierWalletId)],
@@ -671,16 +684,15 @@ export type DcReward = typeof dcRewards.$inferSelect;
 export type InsertDcReward = typeof dcRewards.$inferInsert;
 
 /** Append-only audit trail for every wallet action. */
-export const dcAudit = mysqlTable(
+export const dcAudit = pgTable(
   "dc_audit",
   {
-    id: serial("id").primaryKey(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
     actor: varchar("actor", { length: 128 }).notNull(),
     action: varchar("action", { length: 64 }).notNull(),
-    detail: json("detail").$type<Record<string, unknown>>(),
+    detail: jsonb("detail").$type<Record<string, unknown>>(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
-  () => [check("detail", sql`json_valid(\`detail\`)`)],
 );
 
 export type DcAuditRow = typeof dcAudit.$inferSelect;
@@ -699,24 +711,27 @@ export const DC_INTENT_STATUS = [
   "expired",
 ] as const;
 
+export const dcIntentPurposeEnum = pgEnum("dc_intent_purpose", DC_INTENT_PURPOSE);
+export const dcIntentStatusEnum = pgEnum("dc_intent_status", DC_INTENT_STATUS);
+
 /** Watch-only crypto payment intents — server verifies on-chain, never trusts the client. */
-export const dcCryptoIntents = mysqlTable(
+export const dcCryptoIntents = pgTable(
   "dc_crypto_intents",
   {
-    id: serial("id").primaryKey(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
     intentId: varchar("intentId", { length: 64 }).notNull(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    purpose: mysqlEnum("purpose", DC_INTENT_PURPOSE).notNull(),
-    asset: mysqlEnum("asset", DC_PAID_WITH).notNull(),
+    purpose: dcIntentPurposeEnum("purpose").notNull(),
+    asset: dcPaidWithEnum("asset").notNull(),
     address: varchar("address", { length: 128 }).notNull(),
     /** Destination tag (XRP/RLUSD) or text memo (XLM). NULL for BTC. */
     memoOrTag: varchar("memoOrTag", { length: 64 }),
     /** Exact on-chain amount expected, as a decimal string. */
     expectedAmountText: varchar("expectedAmountText", { length: 64 }).notNull(),
-    quotedUsdMicro: int("quotedUsdMicro").notNull(),
-    status: mysqlEnum("status", DC_INTENT_STATUS).notNull().default("pending"),
+    quotedUsdMicro: integer("quotedUsdMicro").notNull(),
+    status: dcIntentStatusEnum("status").notNull().default("pending"),
     txHash: varchar("txHash", { length: 128 }),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     expiresAt: timestamp("expiresAt").notNull(),
@@ -740,11 +755,11 @@ export type InsertDcCryptoIntent = typeof dcCryptoIntents.$inferInsert;
 /* the password or a plaintext seed (enforced in api/walletSecurityRouter).  */
 /* ------------------------------------------------------------------------ */
 
-export const walletKeys = mysqlTable(
+export const walletKeys = pgTable(
   "wallet_keys",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     walletId: varchar("walletId", { length: 64 }).notNull(),
@@ -776,16 +791,18 @@ export type InsertWalletKey = typeof walletKeys.$inferInsert;
 
 export const WALLET_DELEGATION_STATUS = ["active", "revoked"] as const;
 
-export const walletDelegations = mysqlTable(
+export const walletDelegationStatusEnum = pgEnum("wallet_delegation_status", WALLET_DELEGATION_STATUS);
+
+export const walletDelegations = pgTable(
   "wallet_delegations",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     walletId: varchar("walletId", { length: 64 }).notNull(),
     /** Wallets start 'revoked' — non-participating until the customer opts in. */
-    status: mysqlEnum("status", WALLET_DELEGATION_STATUS)
+    status: walletDelegationStatusEnum("status")
       .notNull()
       .default("revoked"),
     delegateKeyId: varchar("delegateKeyId", { length: 64 }),
@@ -817,15 +834,17 @@ export type InsertWalletDelegation = typeof walletDelegations.$inferInsert;
 
 export const IDENTITY_VAULT_STATUS = ["unverified", "verified", "suspended"] as const;
 
-export const identityVault = mysqlTable(
+export const identityVaultStatusEnum = pgEnum("identity_vault_status", IDENTITY_VAULT_STATUS);
+
+export const identityVault = pgTable(
   "identity_vault",
   {
-    id: serial("id").primaryKey(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
     /** Pseudonymous customer number — the ONLY link to wallet_keys/users. */
     customerRef: varchar("customerRef", { length: 32 }).notNull(),
     /** AES-256-GCM envelope JSON {iv,tag,data} (base64 fields). Never plaintext. */
-    payload: mediumtext("payload").notNull(),
-    status: mysqlEnum("status", IDENTITY_VAULT_STATUS)
+    payload: text("payload").notNull(),
+    status: identityVaultStatusEnum("status")
       .notNull()
       .default("unverified"),
     /** Optional retention deadline (legal-track decision; NULL = keep). */
@@ -848,15 +867,15 @@ export const identityVault = mysqlTable(
 export type IdentityVault = typeof identityVault.$inferSelect;
 export type InsertIdentityVault = typeof identityVault.$inferInsert;
 
-export const identityVaultAudit = mysqlTable(
+export const identityVaultAudit = pgTable(
   "identity_vault_audit",
   {
-    id: serial("id").primaryKey(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
     customerRef: varchar("customerRef", { length: 32 }).notNull(),
     /** UPSERT | EXPORT | PURGE | STATUS_CHANGE */
     action: varchar("action", { length: 32 }).notNull(),
-    actorUserId: bigint("actorUserId", { mode: "number", unsigned: true }),
-    meta: json("meta"),
+    actorUserId: bigint("actorUserId", { mode: "number" }),
+    meta: jsonb("meta"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [index("identity_vault_audit_ref_idx").on(table.customerRef)],
@@ -875,14 +894,16 @@ export type InsertIdentityVaultAudit = typeof identityVaultAudit.$inferInsert;
 
 export const SANCTIONS_SOURCES = ["OFAC_SDN", "OFAC_CONS"] as const;
 
-export const sanctionsEntries = mysqlTable(
+export const sanctionsSourceEnum = pgEnum("sanctions_source", SANCTIONS_SOURCES);
+
+export const sanctionsEntries = pgTable(
   "sanctions_entries",
   {
-    id: serial("id").primaryKey(),
-    source: mysqlEnum("source", SANCTIONS_SOURCES).notNull(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    source: sanctionsSourceEnum("source").notNull(),
     /** Watchlist names are PUBLIC government data — plaintext is fine here. */
     primaryName: varchar("primaryName", { length: 255 }).notNull(),
-    altNames: json("altNames"),
+    altNames: jsonb("altNames"),
     program: varchar("program", { length: 128 }),
     listUpdatedAt: timestamp("listUpdatedAt"),
     fetchedAt: timestamp("fetchedAt").defaultNow().notNull(),
@@ -895,17 +916,19 @@ export type InsertSanctionsEntry = typeof sanctionsEntries.$inferInsert;
 
 export const SANCTIONS_VERDICTS = ["CLEAR", "REVIEW", "MATCH"] as const;
 
-export const sanctionsResults = mysqlTable(
+export const sanctionsVerdictEnum = pgEnum("sanctions_verdict", SANCTIONS_VERDICTS);
+
+export const sanctionsResults = pgTable(
   "sanctions_results",
   {
-    id: serial("id").primaryKey(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
     customerRef: varchar("customerRef", { length: 32 }).notNull(),
     /** SHA-256 hex of the normalized query name — PII-free at rest. */
     queryNameHash: varchar("queryNameHash", { length: 64 }).notNull(),
-    matchedEntryId: bigint("matchedEntryId", { mode: "number", unsigned: true }),
+    matchedEntryId: bigint("matchedEntryId", { mode: "number" }),
     /** 0–100 match score. */
-    score: int("score").notNull().default(0),
-    verdict: mysqlEnum("verdict", SANCTIONS_VERDICTS).notNull().default("CLEAR"),
+    score: integer("score").notNull().default(0),
+    verdict: sanctionsVerdictEnum("verdict").notNull().default("CLEAR"),
     screenedAt: timestamp("screenedAt").defaultNow().notNull(),
   },
   (table) => [index("sanctions_results_ref_idx").on(table.customerRef)],
@@ -924,20 +947,20 @@ export type InsertSanctionsResult = typeof sanctionsResults.$inferInsert;
 /* events (daily check-in) update lastAwardedAt on the same row.             */
 /* ------------------------------------------------------------------------ */
 
-export const walletEarnEvents = mysqlTable(
+export const walletEarnEvents = pgTable(
   "wallet_earn_events",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     /** 'daily_checkin' | 'identity_vault' | future event types. */
     eventType: varchar("eventType", { length: 48 }).notNull(),
     /** Coins awarded on the latest grant. */
-    amount: int("amount").notNull(),
+    amount: integer("amount").notNull(),
     /** Repeatable events: last grant time (cooldown basis). */
     lastAwardedAt: timestamp("lastAwardedAt").defaultNow().notNull(),
-    meta: json("meta"),
+    meta: jsonb("meta"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   (table) => [
@@ -960,19 +983,21 @@ export type InsertWalletEarnEvent = typeof walletEarnEvents.$inferInsert;
 
 export const REFERRAL_STATUSES = ["pending", "qualified", "void"] as const;
 
-export const referralAttributions = mysqlTable(
+export const referralStatusEnum = pgEnum("referral_status", REFERRAL_STATUSES);
+
+export const referralAttributions = pgTable(
   "referral_attributions",
   {
-    id: serial("id").primaryKey(),
-    referrerUserId: bigint("referrerUserId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    referrerUserId: bigint("referrerUserId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    referredUserId: bigint("referredUserId", { mode: "number", unsigned: true })
+    referredUserId: bigint("referredUserId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     /** 'claim' (new member entered a code) — v1 only source. */
     source: varchar("source", { length: 16 }).notNull().default("claim"),
-    status: mysqlEnum("status", REFERRAL_STATUSES).notNull().default("pending"),
+    status: referralStatusEnum("status").notNull().default("pending"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     qualifiedAt: timestamp("qualifiedAt"),
   },
@@ -994,22 +1019,24 @@ export const BOUNTY_STATUSES = [
   "clawedback",
 ] as const;
 
-export const bountyObligations = mysqlTable(
+export const bountyStatusEnum = pgEnum("bounty_status", BOUNTY_STATUSES);
+
+export const bountyObligations = pgTable(
   "bounty_obligations",
   {
-    id: serial("id").primaryKey(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
     /** The member who EARNED the bounty. */
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     /** 'referral_conversion' | future types (merchant, event, …). */
     bountyType: varchar("bountyType", { length: 48 }).notNull(),
-    amountUsdMicro: int("amountUsdMicro").notNull(),
-    status: mysqlEnum("status", BOUNTY_STATUSES).notNull().default("pending"),
+    amountUsdMicro: integer("amountUsdMicro").notNull(),
+    status: bountyStatusEnum("status").notNull().default("pending"),
     /** Loose link to the source record (e.g. referral_attributions.id). */
     refType: varchar("refType", { length: 32 }),
-    refId: bigint("refId", { mode: "number", unsigned: true }),
-    meta: json("meta"),
+    refId: bigint("refId", { mode: "number" }),
+    meta: jsonb("meta"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     qualifiedAt: timestamp("qualifiedAt"),
     paidAt: timestamp("paidAt"),
@@ -1029,11 +1056,11 @@ export type InsertBountyObligation = typeof bountyObligations.$inferInsert;
  * one community game (e.g. a Spades table). Passes are game ACCESS only —
  * never Date-Coin, never cash value, unrelated to the DC economy.
  */
-export const adWatchSessions = mysqlTable(
+export const adWatchSessions = pgTable(
   "ad_watch_sessions",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     startedAt: timestamp("startedAt").defaultNow().notNull(),
@@ -1045,11 +1072,11 @@ export const adWatchSessions = mysqlTable(
 export type AdWatchSession = typeof adWatchSessions.$inferSelect;
 export type InsertAdWatchSession = typeof adWatchSessions.$inferInsert;
 
-export const gamePasses = mysqlTable(
+export const gamePasses = pgTable(
   "game_passes",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     /** 'ad' (rewarded watch) — v1 only source. */
@@ -1076,11 +1103,11 @@ export const STRIKE_BASES = [
   "high_conf_plus",
 ] as const;
 
-export const userStrikes = mysqlTable(
+export const userStrikes = pgTable(
   "user_strikes",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     /** 'A1' scam/fraud | 'A2' harassment/threats | 'A3' fake identity. */
@@ -1092,7 +1119,7 @@ export const userStrikes = mysqlTable(
     /** Comma-joined scam_signals/report IDs backing the strike. */
     signalRefs: varchar("signalRefs", { length: 255 }).notNull().default(""),
     /** The reviewing human (system strikes still store one, per §5.4). */
-    issuedBy: bigint("issuedBy", { mode: "number", unsigned: true })
+    issuedBy: bigint("issuedBy", { mode: "number" })
       .notNull()
       .references(() => users.id),
     acknowledgedAt: timestamp("acknowledgedAt"),
@@ -1121,19 +1148,19 @@ export const APPEAL_STATUSES = [
   "denied",
 ] as const;
 
-export const removalAppeals = mysqlTable(
+export const removalAppeals = pgTable(
   "removal_appeals",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("userId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("userId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    strikeId: bigint("strikeId", { mode: "number", unsigned: true })
+    strikeId: bigint("strikeId", { mode: "number" })
       .notNull()
       .references(() => userStrikes.id),
     body: text("body").notNull(),
     status: varchar("status", { length: 24 }).notNull().default("open"),
-    reviewedBy: bigint("reviewedBy", { mode: "number", unsigned: true }).references(
+    reviewedBy: bigint("reviewedBy", { mode: "number" }).references(
       () => users.id,
     ),
     /** SLA: first human response ≤ 72h, decision ≤ 7d (agent alerts on breach). */
@@ -1150,15 +1177,15 @@ export type RemovalAppeal = typeof removalAppeals.$inferSelect;
 export type InsertRemovalAppeal = typeof removalAppeals.$inferInsert;
 
 /** The audit trail for everything a moderator does. */
-export const moderationActions = mysqlTable(
+export const moderationActions = pgTable(
   "moderation_actions",
   {
-    id: serial("id").primaryKey(),
-    actorId: bigint("actorId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    actorId: bigint("actorId", { mode: "number" })
       .notNull()
       .references(() => users.id),
     action: varchar("action", { length: 48 }).notNull(),
-    targetUserId: bigint("targetUserId", { mode: "number", unsigned: true }).references(
+    targetUserId: bigint("targetUserId", { mode: "number" }).references(
       () => users.id,
     ),
     refs: varchar("refs", { length: 255 }).notNull().default(""),
@@ -1187,23 +1214,23 @@ export const SCAM_SIGNAL_DISPOSITIONS = [
   "confirmed",
 ] as const;
 
-export const scamSignals = mysqlTable(
+export const scamSignals = pgTable(
   "scam_signals",
   {
-    id: serial("id").primaryKey(),
+    id: bigserial("id", { mode: "number" }).primaryKey(),
     /** Not an FK — conversations may purge; signals must survive for review. */
-    conversationId: bigint("conversationId", { mode: "number", unsigned: true }).notNull(),
-    senderId: bigint("senderId", { mode: "number", unsigned: true })
+    conversationId: bigint("conversationId", { mode: "number" }).notNull(),
+    senderId: bigint("senderId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    messageId: bigint("messageId", { mode: "number", unsigned: true })
+    messageId: bigint("messageId", { mode: "number" })
       .notNull()
       .references(() => messages.id),
     /** Comma-joined pattern class IDs ('P1'..'P5') — the pattern, not the content. */
     patterns: varchar("patterns", { length: 64 }).notNull().default(""),
-    score: int("score").notNull().default(0),
+    score: integer("score").notNull().default(0),
     disposition: varchar("disposition", { length: 24 }).notNull().default("none"),
-    reviewedBy: bigint("reviewedBy", { mode: "number", unsigned: true }).references(
+    reviewedBy: bigint("reviewedBy", { mode: "number" }).references(
       () => users.id,
     ),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -1223,17 +1250,17 @@ export type InsertScamSignal = typeof scamSignals.$inferInsert;
  */
 export const VICTIM_WARNING_LEVELS = ["standard", "elevated"] as const;
 
-export const victimWarnings = mysqlTable(
+export const victimWarnings = pgTable(
   "victim_warnings",
   {
-    id: serial("id").primaryKey(),
-    signalId: bigint("signalId", { mode: "number", unsigned: true })
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    signalId: bigint("signalId", { mode: "number" })
       .notNull()
       .references(() => scamSignals.id),
-    recipientId: bigint("recipientId", { mode: "number", unsigned: true })
+    recipientId: bigint("recipientId", { mode: "number" })
       .notNull()
       .references(() => users.id),
-    conversationId: bigint("conversationId", { mode: "number", unsigned: true }).notNull(),
+    conversationId: bigint("conversationId", { mode: "number" }).notNull(),
     level: varchar("level", { length: 16 }).notNull().default("standard"),
     shownAt: timestamp("shownAt").defaultNow().notNull(),
     acknowledgedAt: timestamp("acknowledgedAt"),
@@ -1249,8 +1276,8 @@ export type InsertVictimWarning = typeof victimWarnings.$inferInsert;
 /** Local mirror of the URLhaus blocklist + manual entries, read via an in-memory cache. */
 export const BLOCKED_DOMAIN_SOURCES = ["urlhaus", "safe_browsing", "manual"] as const;
 
-export const blockedDomains = mysqlTable("blocked_domains", {
-  id: serial("id").primaryKey(),
+export const blockedDomains = pgTable("blocked_domains", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
   domain: varchar("domain", { length: 255 }).notNull().unique(),
   source: varchar("source", { length: 24 }).notNull().default("manual"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

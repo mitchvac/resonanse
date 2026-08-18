@@ -18,14 +18,6 @@ import * as schema from "@db/schema";
 import { audit, ensurePriceState, type DbOrTx } from "./db";
 import { PRICE_INCREMENT_MICRO } from "./constants";
 
-function affectedRows(result: unknown): number {
-  if (Array.isArray(result)) {
-    const head = result[0] as { affectedRows?: number } | undefined;
-    return head?.affectedRows ?? 0;
-  }
-  return (result as { affectedRows?: number })?.affectedRows ?? 0;
-}
-
 export async function getBalance(db: DbOrTx, walletId: string): Promise<number> {
   const rows = await db
     .select()
@@ -44,7 +36,8 @@ export async function creditBalance(
   await db
     .insert(schema.dcLedger)
     .values({ walletId, balance: amount })
-    .onDuplicateKeyUpdate({
+    .onConflictDoUpdate({
+      target: schema.dcLedger.walletId,
       set: { balance: sql`${schema.dcLedger.balance} + ${amount}` },
     });
 }
@@ -55,7 +48,7 @@ export async function debitBalanceOrThrow(
   walletId: string,
   amount: number,
 ): Promise<void> {
-  const result = await db
+  const rows = await db
     .update(schema.dcLedger)
     .set({ balance: sql`${schema.dcLedger.balance} - ${amount}` })
     .where(
@@ -63,8 +56,9 @@ export async function debitBalanceOrThrow(
         eq(schema.dcLedger.walletId, walletId),
         gte(schema.dcLedger.balance, amount),
       ),
-    );
-  if (affectedRows(result) !== 1) {
+    )
+    .returning({ walletId: schema.dcLedger.walletId });
+  if (rows.length !== 1) {
     throw new Error("Insufficient Date-Coin balance");
   }
 }

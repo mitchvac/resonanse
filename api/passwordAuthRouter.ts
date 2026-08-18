@@ -367,8 +367,9 @@ export const passwordAuthRouter = createRouter({
       const updated = await getDb()
         .update(schema.passwordCredentials)
         .set({ passwordHash })
-        .where(eq(schema.passwordCredentials.userId, row.userId));
-      if ((updated[0] as { affectedRows?: number }).affectedRows === 0) {
+        .where(eq(schema.passwordCredentials.userId, row.userId))
+        .returning({ userId: schema.passwordCredentials.userId });
+      if (updated.length === 0) {
         throw invalid();
       }
 

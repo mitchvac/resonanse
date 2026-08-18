@@ -52,7 +52,10 @@ export async function insertCallSession(data: {
   calleeId: number;
 }): Promise<CallSession> {
   const db = getDb();
-  const [{ id }] = await db.insert(callSessions).values(data).$returningId();
+  const [{ id }] = await db
+    .insert(callSessions)
+    .values(data)
+    .returning({ id: callSessions.id });
   const session = await findCallSessionById(id);
   if (!session) throw new Error("Failed to insert call session");
   return session;
@@ -139,7 +142,10 @@ export async function insertCallSignal(
   data: Omit<InsertCallSignal, "id">,
 ): Promise<CallSignal> {
   const db = getDb();
-  const [{ id }] = await db.insert(callSignals).values(data).$returningId();
+  const [{ id }] = await db
+    .insert(callSignals)
+    .values(data)
+    .returning({ id: callSignals.id });
   const rows = await db
     .select()
     .from(callSignals)

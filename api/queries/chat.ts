@@ -125,7 +125,10 @@ export async function findMessageById(
 
 export async function insertMessage(data: Omit<InsertMessage, "id">): Promise<Message> {
   const db = getDb();
-  const [{ id }] = await db.insert(messages).values(data).$returningId();
+  const [{ id }] = await db
+    .insert(messages)
+    .values(data)
+    .returning({ id: messages.id });
   const rows = await db.select().from(messages).where(eq(messages.id, id)).limit(1);
   const message = rows.at(0);
   if (!message) throw new Error("Failed to insert message");
@@ -136,7 +139,10 @@ export async function insertVideoNote(
   data: Omit<InsertVideoNote, "id">,
 ): Promise<VideoNote> {
   const db = getDb();
-  const [{ id }] = await db.insert(videoNotes).values(data).$returningId();
+  const [{ id }] = await db
+    .insert(videoNotes)
+    .values(data)
+    .returning({ id: videoNotes.id });
   const rows = await db
     .select()
     .from(videoNotes)
@@ -355,7 +361,10 @@ export async function removeMatchForUser(
     await db
       .insert(passes)
       .values({ fromUserId: userId, toProfileId: otherProfileId })
-      .onDuplicateKeyUpdate({ set: { toProfileId: otherProfileId } });
+      .onConflictDoUpdate({
+        target: [passes.fromUserId, passes.toProfileId],
+        set: { toProfileId: otherProfileId },
+      });
   }
 
   await db.delete(matches).where(eq(matches.id, matchId));

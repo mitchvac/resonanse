@@ -22,9 +22,9 @@ export const REF_TYPE_REFERRAL_ATTRIBUTION = "referral_attribution";
 function isDupEntry(err: unknown, depth = 0): boolean {
   if (typeof err !== "object" || err === null || depth > 4) return false;
   const e = err as { code?: string; cause?: unknown };
-  if (e.code === "ER_DUP_ENTRY") return true;
+  if (e.code === "ER_DUP_ENTRY" || e.code === "23505") return true;
   // drizzle wraps driver errors ("Failed query: …") with the original
-  // mysql2 error on .cause — walk the chain.
+  // driver error on .cause — walk the chain.
   return isDupEntry(e.cause, depth + 1);
 }
 
@@ -73,7 +73,7 @@ export async function claimReferralCode(
           source: "claim",
           status: "pending",
         })
-        .$returningId();
+        .returning({ id: schema.referralAttributions.id });
       await tx.insert(schema.bountyObligations).values({
         userId: referrerUserId,
         bountyType: BOUNTY_TYPE_REFERRAL_CONVERSION,

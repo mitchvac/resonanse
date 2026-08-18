@@ -46,7 +46,10 @@ export async function ensureProfile(
       relationshipGoal: "explore",
       onboardingComplete: false,
     })
-    .onDuplicateKeyUpdate({ set: { displayName: defaults.displayName } });
+    .onConflictDoUpdate({
+      target: profiles.userId,
+      set: { displayName: defaults.displayName },
+    });
   const created = await findProfileByUserId(userId);
   if (!created) throw new Error("Failed to create profile");
   return created;
@@ -64,7 +67,7 @@ export async function ensureEntitlement(userId: number): Promise<Entitlement> {
   await db
     .insert(entitlements)
     .values({ userId })
-    .onDuplicateKeyUpdate({ set: { userId } });
+    .onConflictDoUpdate({ target: entitlements.userId, set: { userId } });
   const created = await db
     .select()
     .from(entitlements)
@@ -107,7 +110,7 @@ export async function upsertProfile(
         age: data.age ?? 28,
         ...set,
       })
-      .onDuplicateKeyUpdate({ set });
+      .onConflictDoUpdate({ target: profiles.userId, set });
   }
 
   const profile = await findProfileByUserId(userId);
