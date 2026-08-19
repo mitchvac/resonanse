@@ -41,4 +41,13 @@ export const env = {
   libreTranslateUrl: process.env.LIBRETRANSLATE_URL ?? "",
   whisperUrl: process.env.WHISPER_URL ?? "",
   piperUrl: process.env.PIPER_URL ?? "",
+  // Kalshi prediction markets (read-only, public market data).
+  // Both optional with safe defaults — the public market-data API is
+  // UNAUTHENTICATED, so there is never any Kalshi credential here.
+  kalshiReferralUrl:
+    process.env.KALSHI_REFERRAL_URL ??
+    "https://kalshi.com/r/492bccee-98d1-4164-9f7d-6cef7b2766f5",
+  kalshiApiBase:
+    process.env.KALSHI_API_BASE ??
+    "https://external-api.kalshi.com/trade-api/v2",
 };

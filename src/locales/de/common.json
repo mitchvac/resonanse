@@ -8,7 +8,8 @@
     "community": "Community",
     "profile": "Profil",
     "likesBadge": "{{count}} Likes",
-    "unreadMessages": "Ungelesene Nachrichten"
+    "unreadMessages": "Ungelesene Nachrichten",
+    "markets": "Märkte"
   },
   "notFound": {
     "title": "Seite nicht gefunden",

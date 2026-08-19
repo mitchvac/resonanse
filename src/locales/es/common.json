@@ -8,7 +8,8 @@
     "community": "Comunidad",
     "profile": "Perfil",
     "likesBadge": "{{count}} me gusta",
-    "unreadMessages": "Mensajes sin leer"
+    "unreadMessages": "Mensajes sin leer",
+    "markets": "Mercados"
   },
   "notFound": {
     "title": "Página no encontrada",

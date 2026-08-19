@@ -1,0 +1,28 @@
+{
+  "markets": {
+    "header": "Marchés de prédiction",
+    "subtitle": "Marchés d'événements en direct — données Kalshi",
+    "categoriesAria": "Catégories de marchés",
+    "listAria": "Marchés ouverts",
+    "catTrending": "Tendances",
+    "catSports": "Sports",
+    "catCrypto": "Crypto",
+    "catPolitics": "Politique",
+    "catCulture": "Culture",
+    "catEconomics": "Économie",
+    "catClimate": "Climat",
+    "catTech": "Tech",
+    "yesLabel": "OUI",
+    "yesAria": "Probabilité OUI de {{pct}} pour cent",
+    "volume": "Vol. {{value}}",
+    "closes": "Clôture {{date}}",
+    "trade": "Trader sur Kalshi",
+    "tradeAria": "Trader {{title}} sur Kalshi (s'ouvre dans un nouvel onglet)",
+    "loading": "Chargement des marchés",
+    "unavailable": "Les marchés sont temporairement indisponibles — réessayez dans un instant",
+    "retry": "Réessayer",
+    "authTitle": "Connectez-vous pour voir les marchés en direct",
+    "signIn": "Se connecter",
+    "disclosure": "Données en direct de Kalshi. Les transactions se font sur kalshi.com (États-Unis uniquement, conditions d'éligibilité applicables). Resonance n'exécute jamais de transactions et ne détient jamais vos fonds."
+  }
+}

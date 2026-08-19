@@ -1,0 +1,28 @@
+{
+  "markets": {
+    "header": "预测市场",
+    "subtitle": "实时事件市场 — 数据由 Kalshi 提供",
+    "categoriesAria": "市场分类",
+    "listAria": "进行中的市场",
+    "catTrending": "热门",
+    "catSports": "体育",
+    "catCrypto": "加密",
+    "catPolitics": "政治",
+    "catCulture": "文化",
+    "catEconomics": "经济",
+    "catClimate": "气候",
+    "catTech": "科技",
+    "yesLabel": "YES",
+    "yesAria": "YES 概率 {{pct}}%",
+    "volume": "成交量 {{value}}",
+    "closes": "{{date}} 收盘",
+    "trade": "前往 Kalshi 交易",
+    "tradeAria": "在 Kalshi 交易 {{title}}（新标签页打开）",
+    "loading": "正在加载市场",
+    "unavailable": "市场暂时不可用 — 请稍后重试",
+    "retry": "重试",
+    "authTitle": "登录后查看实时市场",
+    "signIn": "登录",
+    "disclosure": "实时数据来自 Kalshi。交易在 kalshi.com 进行（仅限美国，需符合资格条件）。Resonance 从不执行任何交易，也从不保管您的资金。"
+  }
+}

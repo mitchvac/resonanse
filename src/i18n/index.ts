@@ -30,6 +30,7 @@ import enSettings from '@/locales/en/settings.json';
 import enConnect from '@/locales/en/connect.json';
 import enGames from '@/locales/en/games.json';
 import enSafety from '@/locales/en/safety.json';
+import enMarkets from '@/locales/en/markets.json';
 
 import esCommon from '@/locales/es/common.json';
 import esLanding from '@/locales/es/landing.json';
@@ -38,6 +39,7 @@ import esSettings from '@/locales/es/settings.json';
 import esConnect from '@/locales/es/connect.json';
 import esGames from '@/locales/es/games.json';
 import esSafety from '@/locales/es/safety.json';
+import esMarkets from '@/locales/es/markets.json';
 
 import deCommon from '@/locales/de/common.json';
 import deLanding from '@/locales/de/landing.json';
@@ -46,6 +48,7 @@ import deSettings from '@/locales/de/settings.json';
 import deConnect from '@/locales/de/connect.json';
 import deGames from '@/locales/de/games.json';
 import deSafety from '@/locales/de/safety.json';
+import deMarkets from '@/locales/de/markets.json';
 
 import frCommon from '@/locales/fr/common.json';
 import frLanding from '@/locales/fr/landing.json';
@@ -54,6 +57,7 @@ import frSettings from '@/locales/fr/settings.json';
 import frConnect from '@/locales/fr/connect.json';
 import frGames from '@/locales/fr/games.json';
 import frSafety from '@/locales/fr/safety.json';
+import frMarkets from '@/locales/fr/markets.json';
 
 import ptCommon from '@/locales/pt/common.json';
 import ptLanding from '@/locales/pt/landing.json';
@@ -62,6 +66,7 @@ import ptSettings from '@/locales/pt/settings.json';
 import ptConnect from '@/locales/pt/connect.json';
 import ptGames from '@/locales/pt/games.json';
 import ptSafety from '@/locales/pt/safety.json';
+import ptMarkets from '@/locales/pt/markets.json';
 
 import zhCommon from '@/locales/zh/common.json';
 import zhLanding from '@/locales/zh/landing.json';
@@ -70,6 +75,7 @@ import zhSettings from '@/locales/zh/settings.json';
 import zhConnect from '@/locales/zh/connect.json';
 import zhGames from '@/locales/zh/games.json';
 import zhSafety from '@/locales/zh/safety.json';
+import zhMarkets from '@/locales/zh/markets.json';
 
 import jaCommon from '@/locales/ja/common.json';
 import jaLanding from '@/locales/ja/landing.json';
@@ -78,6 +84,7 @@ import jaSettings from '@/locales/ja/settings.json';
 import jaConnect from '@/locales/ja/connect.json';
 import jaGames from '@/locales/ja/games.json';
 import jaSafety from '@/locales/ja/safety.json';
+import jaMarkets from '@/locales/ja/markets.json';
 
 import koCommon from '@/locales/ko/common.json';
 import koLanding from '@/locales/ko/landing.json';
@@ -86,6 +93,7 @@ import koSettings from '@/locales/ko/settings.json';
 import koConnect from '@/locales/ko/connect.json';
 import koGames from '@/locales/ko/games.json';
 import koSafety from '@/locales/ko/safety.json';
+import koMarkets from '@/locales/ko/markets.json';
 
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', label: 'English' },
@@ -105,14 +113,14 @@ void i18n
   .use(initReactI18next)
   .init({
     resources: {
-      en: { common: enCommon, landing: enLanding, discover: enDiscover, settings: enSettings, connect: enConnect, games: enGames, safety: enSafety },
-      es: { common: esCommon, landing: esLanding, discover: esDiscover, settings: esSettings, connect: esConnect, games: esGames, safety: esSafety },
-      de: { common: deCommon, landing: deLanding, discover: deDiscover, settings: deSettings, connect: deConnect, games: deGames, safety: deSafety },
-      fr: { common: frCommon, landing: frLanding, discover: frDiscover, settings: frSettings, connect: frConnect, games: frGames, safety: frSafety },
-      pt: { common: ptCommon, landing: ptLanding, discover: ptDiscover, settings: ptSettings, connect: ptConnect, games: ptGames, safety: ptSafety },
-      zh: { common: zhCommon, landing: zhLanding, discover: zhDiscover, settings: zhSettings, connect: zhConnect, games: zhGames, safety: zhSafety },
-      ja: { common: jaCommon, landing: jaLanding, discover: jaDiscover, settings: jaSettings, connect: jaConnect, games: jaGames, safety: jaSafety },
-      ko: { common: koCommon, landing: koLanding, discover: koDiscover, settings: koSettings, connect: koConnect, games: koGames, safety: koSafety },
+      en: { common: enCommon, landing: enLanding, discover: enDiscover, settings: enSettings, connect: enConnect, games: enGames, safety: enSafety, markets: enMarkets },
+      es: { common: esCommon, landing: esLanding, discover: esDiscover, settings: esSettings, connect: esConnect, games: esGames, safety: esSafety, markets: esMarkets },
+      de: { common: deCommon, landing: deLanding, discover: deDiscover, settings: deSettings, connect: deConnect, games: deGames, safety: deSafety, markets: deMarkets },
+      fr: { common: frCommon, landing: frLanding, discover: frDiscover, settings: frSettings, connect: frConnect, games: frGames, safety: frSafety, markets: frMarkets },
+      pt: { common: ptCommon, landing: ptLanding, discover: ptDiscover, settings: ptSettings, connect: ptConnect, games: ptGames, safety: ptSafety, markets: ptMarkets },
+      zh: { common: zhCommon, landing: zhLanding, discover: zhDiscover, settings: zhSettings, connect: zhConnect, games: zhGames, safety: zhSafety, markets: zhMarkets },
+      ja: { common: jaCommon, landing: jaLanding, discover: jaDiscover, settings: jaSettings, connect: jaConnect, games: jaGames, safety: jaSafety, markets: jaMarkets },
+      ko: { common: koCommon, landing: koLanding, discover: koDiscover, settings: koSettings, connect: koConnect, games: koGames, safety: koSafety, markets: koMarkets },
     },
     fallbackLng: 'en',
     defaultNS: 'common',

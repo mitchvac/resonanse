@@ -1,0 +1,28 @@
+{
+  "markets": {
+    "header": "Prediction Markets",
+    "subtitle": "Live event markets — data by Kalshi",
+    "categoriesAria": "Market categories",
+    "listAria": "Open markets",
+    "catTrending": "Trending",
+    "catSports": "Sports",
+    "catCrypto": "Crypto",
+    "catPolitics": "Politics",
+    "catCulture": "Culture",
+    "catEconomics": "Economics",
+    "catClimate": "Climate",
+    "catTech": "Tech",
+    "yesLabel": "YES",
+    "yesAria": "YES probability {{pct}} percent",
+    "volume": "Vol {{value}}",
+    "closes": "Closes {{date}}",
+    "trade": "Trade on Kalshi",
+    "tradeAria": "Trade {{title}} on Kalshi (opens in a new tab)",
+    "loading": "Loading markets",
+    "unavailable": "Markets are temporarily unavailable — try again shortly",
+    "retry": "Retry",
+    "authTitle": "Sign in to see live markets",
+    "signIn": "Sign in",
+    "disclosure": "Live data from Kalshi. Trading happens on kalshi.com (US only, eligibility applies). Resonance never places trades and never holds your funds."
+  }
+}

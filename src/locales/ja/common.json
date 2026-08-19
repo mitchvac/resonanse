@@ -8,7 +8,8 @@
     "community": "コミュニティ",
     "profile": "プロフィール",
     "likesBadge": "{{count}}件のいいね",
-    "unreadMessages": "未読メッセージ"
+    "unreadMessages": "未読メッセージ",
+    "markets": "マーケット"
   },
   "notFound": {
     "title": "ページが見つかりません",

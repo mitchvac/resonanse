@@ -8,6 +8,7 @@ import Likes from '@/pages/Likes'
 import Matches from '@/pages/Matches'
 import Chat from '@/pages/Chat'
 import Events from '@/pages/Events'
+import Markets from '@/pages/Markets'
 import Community from '@/pages/Community'
 import Concentration from '@/pages/Concentration'
 import Spades from '@/pages/Spades'
@@ -70,6 +71,7 @@ export default function App() {
         <Route path="/matches" element={<Matches />} />
         <Route path="/chat/:id" element={<Chat />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/markets" element={<Markets />} />
         <Route path="/community" element={<Community />} />
         <Route path="/community/concentration" element={<Concentration />} />
         <Route path="/community/spades" element={<Spades />} />

@@ -8,7 +8,8 @@
     "community": "社区",
     "profile": "我的",
     "likesBadge": "{{count}} 个喜欢",
-    "unreadMessages": "未读消息"
+    "unreadMessages": "未读消息",
+    "markets": "市场"
   },
   "notFound": {
     "title": "页面不存在",

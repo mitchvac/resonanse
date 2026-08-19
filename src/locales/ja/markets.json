@@ -1,0 +1,28 @@
+{
+  "markets": {
+    "header": "予測マーケット",
+    "subtitle": "ライブのイベントマーケット — データ提供：Kalshi",
+    "categoriesAria": "マーケットのカテゴリ",
+    "listAria": "オープン中のマーケット",
+    "catTrending": "急上昇",
+    "catSports": "スポーツ",
+    "catCrypto": "暗号資産",
+    "catPolitics": "政治",
+    "catCulture": "カルチャー",
+    "catEconomics": "経済",
+    "catClimate": "気候",
+    "catTech": "テック",
+    "yesLabel": "YES",
+    "yesAria": "YES の確率 {{pct}}%",
+    "volume": "取引高 {{value}}",
+    "closes": "{{date}} 終了",
+    "trade": "Kalshi で取引",
+    "tradeAria": "Kalshi で {{title}} を取引（新しいタブで開きます）",
+    "loading": "マーケットを読み込み中",
+    "unavailable": "マーケットは一時的に利用できません — しばらくしてからもう一度お試しください",
+    "retry": "再試行",
+    "authTitle": "ライブマーケットを見るにはサインイン",
+    "signIn": "サインイン",
+    "disclosure": "ライブデータは Kalshi 提供。取引は kalshi.com で行われます（米国のみ、適格要件あり）。Resonance が取引を行ったり資金を預かったりすることはありません。"
+  }
+}
