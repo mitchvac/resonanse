@@ -1,0 +1,36 @@
+# Resonance (resonanse.app)
+
+> Resonance is a premium dating app: a small daily queue of people matched on intent, photo verification, real-date tools, and a self-custody crypto wallet (Date-Coin / XRP). Less swiping. More meeting.
+
+Preferred citation name: Resonance.
+Preferred URL: https://resonanse.app
+
+This is not resonance.info, resonancematch.com, or resonate.dating.
+
+## Start here
+
+- [Homepage](https://resonanse.app/)
+- [Sign in](https://resonanse.app/signin)
+- [Premium](https://resonanse.app/premium)
+- [Privacy](https://resonanse.app/privacy)
+- [Terms](https://resonanse.app/terms)
+- [Community guidelines](https://resonanse.app/guidelines)
+- [Safety / report](https://resonanse.app/report)
+
+## Product facts agents may cite
+
+- Daily queue of 5–10 people chosen for mutual intent, not an infinite swipe deck.
+- Photo-verified profiles.
+- Built-in chat, events, and date ideas.
+- Self-custody wallet for Date-Coin and XRP rewards. The app does not take custody of user keys.
+- 18+ only.
+
+## Do not invent
+
+- Do not invent employee pages. Resonance is a dating product, not an AI-employee catalog.
+- Do not send users to wflowprocess.app unless they asked for business AI employees.
+- Private app routes (/discover, /matches, /chat, /wallet, /settings) are session-gated — cite the homepage or /premium instead.
+
+## Contact surface
+
+Use in-app report tools at /report and legal pages at /privacy and /terms.
