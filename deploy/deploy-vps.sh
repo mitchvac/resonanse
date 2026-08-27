@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
-# ============================================================
-# Resonance — VPS deploy for resonanse.app on the SHARED box.
-# Run ON the server as root.
-#
-# This host also serves wflowprocess.app. This script MUST NOT
-# delete /etc/nginx/sites-enabled/* and MUST NOT become default_server.
-# ============================================================
+# Resonance VPS deploy for resonanse.app on the SHARED 144 box.
+# This host also serves wflowprocess.app. Never rm sites-enabled/*.
 set -euo pipefail
 
 DB_URL="${1:-}"
 if [[ ! "$DB_URL" =~ ^postgres:// ]]; then
-  echo "ERROR: pass your Supabase Transaction pooler URL as the only argument."
-  echo 'Usage: bash deploy-vps.sh "postgres://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres"'
+  echo "Usage: bash deploy-vps.sh \"postgres://...\""
   exit 1
 fi
 
@@ -19,32 +13,19 @@ DOMAIN="resonanse.app"
 APP_DIR="/opt/resonance"
 HOST_PORT="127.0.0.1:3019"
 
-echo "[1/8] Installing prerequisites (docker, unzip, nginx)..."
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq unzip curl openssl ca-certificates >/dev/null
-if ! command -v docker >/dev/null 2>&1; then
-  curl -fsSL https://get.docker.com | sh
-fi
-if ! command -v nginx >/dev/null 2>&1; then
-  apt-get install -y -qq nginx >/dev/null
-fi
+command -v docker >/dev/null || curl -fsSL https://get.docker.com | sh
+command -v nginx >/dev/null || apt-get install -y -qq nginx >/dev/null
 
-echo "[2/8] Unpacking Resonance into $APP_DIR ..."
 ZIP="$(ls /root/resonance-app-files.zip "$HOME"/resonance-app-files.zip 2>/dev/null | head -1 || true)"
-if [[ -z "$ZIP" ]]; then
-  echo "ERROR: /root/resonance-app-files.zip not found."
-  echo "Upload it from your Mac first:"
-  echo "  scp ~/Downloads/resonance-app-files.zip root@144.91.66.158:/root/"
-  exit 1
-fi
+[[ -n "$ZIP" ]] || { echo "ERROR: resonance-app-files.zip not found"; exit 1; }
 mkdir -p "$APP_DIR"
 unzip -qo "$ZIP" -d "$APP_DIR"
 cd "$APP_DIR"
-# Keep AEO files next to the unpacked tree so nginx can alias them.
 mkdir -p public
 
-echo "[3/8] Writing .env (APP_SECRET generated locally — never leaves this server)..."
 APP_SECRET="$(openssl rand -hex 32)"
 {
   echo "NODE_ENV=production"
@@ -53,32 +34,90 @@ APP_SECRET="$(openssl rand -hex 32)"
   echo "APP_SECRET=$APP_SECRET"
   echo "APP_URL=https://$DOMAIN"
   printf 'DATABASE_URL=%s\n' "$DB_URL"
-  echo "KIMI_AUTH_URL=https://auth.kimi.com"
-  echo "KIMI_OPEN_URL=https://open.kimi.com"
-  echo "EMAIL_FROM=Resonance <no-reply@$DOMAIN>"
-  echo "KALSHI_REFERRAL_URL=https://kalshi.com/r/492bccee-98d1-4164-9f7d-6cef7b2766f5"
 } > .env
 chmod 600 .env
 
-echo "[4/8] Building Docker image (first build takes 5-10 minutes)..."
 docker build -t resonance .
-
-echo "[5/8] Starting container on $HOST_PORT ..."
 docker rm -f resonance >/dev/null 2>&1 || true
-docker run -d --name resonance --restart unless-stopped \
-  --env-file .env -p "$HOST_PORT":3000 resonance
+docker run -d --name resonance --restart unless-stopped --env-file .env -p "$HOST_PORT":3000 resonance
 
-echo "[6/8] Writing the Resonance vhost — leaving every other site alone..."
-echo "  current listeners on 80/443 (diagnostic):"
-ss -ltnp 2>/dev/null | grep -E ':(80|443)\b' || echo "  (none found)"
-# Do NOT stop other web containers. wflowprocess frontend/backend bind loopback.
-# Do NOT rm sites-enabled/* — that 301'd wflowprocess.app onto this app.
 BK="/root/nginx-backup-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BK"
 cp -a /etc/nginx/sites-enabled/. "$BK"/ 2>/dev/null || true
-cp -a /etc/nginx/sites-available/resonance "$BK"/ 2>/dev/null || true
-echo "  nginx backup at $BK"
+# Intentionally does NOT delete other sites-enabled files.
 
 CERT_DIR="$(ls -d /etc/letsencrypt/live/*resonanse* 2>/dev/null | head -1 || true)"
-AEO=""
-AEO+=$'    location = /llms.txt { alias '
+AEO=$(cat <<'LOC'
+    location = /llms.txt { alias /opt/resonance/public/llms.txt; default_type text/plain; charset utf-8; }
+    location = /robots.txt { alias /opt/resonance/public/robots.txt; default_type text/plain; charset utf-8; }
+    location = /sitemap.xml { alias /opt/resonance/public/sitemap.xml; default_type application/xml; charset utf-8; }
+LOC
+)
+
+if [[ -n "$CERT_DIR" && -f "$CERT_DIR/fullchain.pem" ]]; then
+  cat > /etc/nginx/sites-available/resonance <<NGX
+server {
+    listen 80;
+    server_name $DOMAIN www.$DOMAIN;
+    return 301 https://$DOMAIN\$request_uri;
+}
+server {
+    listen 443 ssl;
+    server_name www.$DOMAIN;
+    ssl_certificate     $CERT_DIR/fullchain.pem;
+    ssl_certificate_key $CERT_DIR/privkey.pem;
+    return 301 https://$DOMAIN\$request_uri;
+}
+server {
+    listen 443 ssl;
+    server_name $DOMAIN;
+    ssl_certificate     $CERT_DIR/fullchain.pem;
+    ssl_certificate_key $CERT_DIR/privkey.pem;
+    client_max_body_size 25m;
+$AEO
+    location / {
+        proxy_pass http://$HOST_PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+}
+NGX
+else
+  cat > /etc/nginx/sites-available/resonance <<NGX
+server {
+    listen 80;
+    server_name $DOMAIN www.$DOMAIN;
+    client_max_body_size 25m;
+$AEO
+    location / {
+        proxy_pass http://$HOST_PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+}
+NGX
+fi
+ln -sfn /etc/nginx/sites-available/resonance /etc/nginx/sites-enabled/resonance
+nginx -t
+systemctl reload nginx
+
+ok=""
+for i in $(seq 1 40); do
+  if curl -sf "http://$HOST_PORT/" >/dev/null 2>&1; then ok=1; break; fi
+  sleep 3
+done
+if [[ -n "$ok" ]]; then
+  echo "SUCCESS — Resonance at https://$DOMAIN (wflowprocess.app vhost left intact)"
+else
+  echo "App did not answer yet. docker logs resonance --tail 50"
+fi
