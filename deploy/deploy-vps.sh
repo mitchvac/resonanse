@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
 # ============================================================
-# Resonance — all-in-one VPS deploy for resonanse.app
-# Run ON the server as root:
-#   bash deploy-vps.sh "postgres://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres"
+# Resonance — VPS deploy for resonanse.app on the SHARED box.
+# Run ON the server as root.
 #
-# What it does: installs Docker+nginx, unpacks the app from
-# /root/resonance-app-files.zip, writes a clean .env (secrets
-# generated locally), builds + starts the container on
-# 127.0.0.1:3019, switches nginx from the old site to Resonance
-# (backs up old configs first), reuses the existing Let's
-# Encrypt certificate if present.
+# This host also serves wflowprocess.app. This script MUST NOT
+# delete /etc/nginx/sites-enabled/* and MUST NOT become default_server.
 # ============================================================
 set -euo pipefail
 
@@ -46,6 +41,8 @@ fi
 mkdir -p "$APP_DIR"
 unzip -qo "$ZIP" -d "$APP_DIR"
 cd "$APP_DIR"
+# Keep AEO files next to the unpacked tree so nginx can alias them.
+mkdir -p public
 
 echo "[3/8] Writing .env (APP_SECRET generated locally — never leaves this server)..."
 APP_SECRET="$(openssl rand -hex 32)"
@@ -71,94 +68,17 @@ docker rm -f resonance >/dev/null 2>&1 || true
 docker run -d --name resonance --restart unless-stopped \
   --env-file .env -p "$HOST_PORT":3000 resonance
 
-echo "[6/8] Switching web traffic from the old site to Resonance..."
+echo "[6/8] Writing the Resonance vhost — leaving every other site alone..."
 echo "  current listeners on 80/443 (diagnostic):"
 ss -ltnp 2>/dev/null | grep -E ':(80|443)\b' || echo "  (none found)"
-# stop old docker containers publishing web ports (old landing page)
-for c in $(docker ps --format '{{.Names}} {{.Ports}}' | grep -E ':(80|443)->' | awk '{print $1}'); do
-  [[ "$c" == "resonance" ]] && continue
-  echo "  stopping old web container: $c"
-  docker stop "$c" >/dev/null 2>&1 || true
-done
-# back up and clear old nginx sites
+# Do NOT stop other web containers. wflowprocess frontend/backend bind loopback.
+# Do NOT rm sites-enabled/* — that 301'd wflowprocess.app onto this app.
 BK="/root/nginx-backup-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BK"
 cp -a /etc/nginx/sites-enabled/. "$BK"/ 2>/dev/null || true
-rm -f /etc/nginx/sites-enabled/*
-echo "  old nginx configs backed up to $BK"
+cp -a /etc/nginx/sites-available/resonance "$BK"/ 2>/dev/null || true
+echo "  nginx backup at $BK"
 
 CERT_DIR="$(ls -d /etc/letsencrypt/live/*resonanse* 2>/dev/null | head -1 || true)"
-if [[ -n "$CERT_DIR" && -f "$CERT_DIR/fullchain.pem" ]]; then
-  echo "  existing SSL certificate found at $CERT_DIR — configuring HTTPS"
-  cat > /etc/nginx/sites-available/resonance <<NGX
-server {
-    listen 80;
-    server_name $DOMAIN www.$DOMAIN;
-    return 301 https://$DOMAIN\$request_uri;
-}
-server {
-    listen 443 ssl;
-    server_name www.$DOMAIN;
-    ssl_certificate     $CERT_DIR/fullchain.pem;
-    ssl_certificate_key $CERT_DIR/privkey.pem;
-    return 301 https://$DOMAIN\$request_uri;
-}
-server {
-    listen 443 ssl;
-    server_name $DOMAIN;
-    ssl_certificate     $CERT_DIR/fullchain.pem;
-    ssl_certificate_key $CERT_DIR/privkey.pem;
-    client_max_body_size 25m;
-    location / {
-        proxy_pass http://$HOST_PORT;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_read_timeout 120s;
-        proxy_send_timeout 120s;
-    }
-}
-NGX
-else
-  echo "  no SSL certificate found — configuring HTTP only."
-  echo "  AFTER the site loads, run:  apt-get install -y certbot python3-certbot-nginx && certbot --nginx -d $DOMAIN -d www.$DOMAIN"
-  cat > /etc/nginx/sites-available/resonance <<NGX
-server {
-    listen 80;
-    server_name $DOMAIN www.$DOMAIN;
-    client_max_body_size 25m;
-    location / {
-        proxy_pass http://$HOST_PORT;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_read_timeout 120s;
-        proxy_send_timeout 120s;
-    }
-}
-NGX
-fi
-ln -sf /etc/nginx/sites-available/resonance /etc/nginx/sites-enabled/resonance
-nginx -t
-systemctl reload nginx
-
-echo "[7/8] Waiting for the app to answer..."
-ok=""
-for i in $(seq 1 40); do
-  if curl -sf "http://$HOST_PORT/" >/dev/null 2>&1; then ok=1; break; fi
-  sleep 3
-done
-
-echo "[8/8] Finished."
-if [[ -n "$ok" ]]; then
-  echo "============================================================"
-  echo " SUCCESS — Resonance is live at https://$DOMAIN"
-  echo "============================================================"
-else
-  echo "The app did not answer yet. Check what it said:"
-  echo "  docker logs resonance --tail 50"
-fi
+AEO=""
+AEO+=$'    location = /llms.txt { alias '
