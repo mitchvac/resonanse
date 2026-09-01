@@ -54,6 +54,17 @@ AEO=$(cat <<'LOC'
     location = /.well-known/botcentral.txt { alias /opt/resonance/public/.well-known/botcentral.txt; default_type text/plain; charset utf-8; }
 LOC
 )
+# Security headers — keep in sync with deploy/nginx-resonanse.conf (see the
+# comments there for the CSP hash recompute command).
+SEC=$(cat <<'HDR'
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(self), microphone=(self), geolocation=(self), payment=(), usb=()" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-bYWiin1dnqUAQCPDEcAAh201xjP0jvZJ1hVzRHm0o6Q=' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.doubleclick.net https://www.googletagservices.com https://partner.googleadservices.com https://adservice.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.gstatic.com; media-src 'self' blob:; frame-src 'self' https://www.openstreetmap.org https://*.googlesyndication.com https://*.doubleclick.net https://www.google.com; connect-src 'self' wss://resonanse.app https://*.googlesyndication.com https://*.doubleclick.net https://adservice.google.com https://*.google.com https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests" always;
+HDR
+)
 
 if [[ -n "$CERT_DIR" && -f "$CERT_DIR/fullchain.pem" ]]; then
   cat > /etc/nginx/sites-available/resonance <<NGX
@@ -75,6 +86,7 @@ server {
     ssl_certificate     $CERT_DIR/fullchain.pem;
     ssl_certificate_key $CERT_DIR/privkey.pem;
     client_max_body_size 25m;
+$SEC
 $AEO
     location / {
         proxy_pass http://$HOST_PORT;
@@ -94,6 +106,7 @@ server {
     listen 80;
     server_name $DOMAIN www.$DOMAIN;
     client_max_body_size 25m;
+$SEC
 $AEO
     location / {
         proxy_pass http://$HOST_PORT;
