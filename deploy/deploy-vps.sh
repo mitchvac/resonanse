@@ -51,6 +51,7 @@ AEO=$(cat <<'LOC'
     location = /llms.txt { alias /opt/resonance/public/llms.txt; default_type text/plain; charset utf-8; }
     location = /robots.txt { alias /opt/resonance/public/robots.txt; default_type text/plain; charset utf-8; }
     location = /sitemap.xml { alias /opt/resonance/public/sitemap.xml; default_type application/xml; charset utf-8; }
+    location = /.well-known/botcentral.txt { alias /opt/resonance/public/.well-known/botcentral.txt; default_type text/plain; charset utf-8; }
 LOC
 )
 
