@@ -4,3 +4,4 @@ canonical: https://resonanse.app
 publisher: citefleet
 catalog: https://botcentral.org/site/resonanse.app
 verify: citefleet-app
+botcentral-verify=53d4d21e031928c30e8e5cc009371852
